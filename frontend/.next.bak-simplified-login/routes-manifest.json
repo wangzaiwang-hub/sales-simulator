@@ -1,0 +1,104 @@
+{
+  "version": 3,
+  "pages404": true,
+  "caseSensitive": false,
+  "basePath": "",
+  "redirects": [
+    {
+      "source": "/:path+/",
+      "destination": "/:path+",
+      "internal": true,
+      "statusCode": 308,
+      "regex": "^(?:/((?:[^/]+?)(?:/(?:[^/]+?))*))/$"
+    }
+  ],
+  "headers": [],
+  "rewrites": {
+    "beforeFiles": [],
+    "afterFiles": [
+      {
+        "source": "/api/:path*",
+        "destination": "http://localhost:3001/api/:path*",
+        "regex": "^/api(?:/((?:[^/]+?)(?:/(?:[^/]+?))*))?(?:/)?$"
+      },
+      {
+        "source": "/resource/:path*",
+        "destination": "http://localhost:3001/resource/:path*",
+        "regex": "^/resource(?:/((?:[^/]+?)(?:/(?:[^/]+?))*))?(?:/)?$"
+      },
+      {
+        "source": "/editor-runtime/tileset-editor",
+        "destination": "http://localhost:3001/tools/tileset-editor",
+        "regex": "^/editor-runtime/tileset-editor(?:/)?$"
+      },
+      {
+        "source": "/editor-runtime/map-test",
+        "destination": "http://localhost:3001/tools/map-test",
+        "regex": "^/editor-runtime/map-test(?:/)?$"
+      }
+    ],
+    "fallback": []
+  },
+  "dynamicRoutes": [],
+  "staticRoutes": [
+    {
+      "page": "/",
+      "regex": "^/(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/(?:/)?$"
+    },
+    {
+      "page": "/_not-found",
+      "regex": "^/_not\\-found(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/_not\\-found(?:/)?$"
+    },
+    {
+      "page": "/auth/callback",
+      "regex": "^/auth/callback(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/auth/callback(?:/)?$"
+    },
+    {
+      "page": "/auth/login",
+      "regex": "^/auth/login(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/auth/login(?:/)?$"
+    },
+    {
+      "page": "/character-creator",
+      "regex": "^/character\\-creator(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/character\\-creator(?:/)?$"
+    },
+    {
+      "page": "/editor",
+      "regex": "^/editor(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/editor(?:/)?$"
+    },
+    {
+      "page": "/game",
+      "regex": "^/game(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/game(?:/)?$"
+    }
+  ],
+  "dataRoutes": [],
+  "rsc": {
+    "header": "rsc",
+    "varyHeader": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch",
+    "prefetchHeader": "next-router-prefetch",
+    "didPostponeHeader": "x-nextjs-postponed",
+    "contentTypeHeader": "text/x-component",
+    "suffix": ".rsc",
+    "prefetchSuffix": ".prefetch.rsc",
+    "prefetchSegmentHeader": "next-router-segment-prefetch",
+    "prefetchSegmentSuffix": ".segment.rsc",
+    "prefetchSegmentDirSuffix": ".segments"
+  },
+  "rewriteHeaders": {
+    "pathHeader": "x-nextjs-rewritten-path",
+    "queryHeader": "x-nextjs-rewritten-query"
+  }
+}

@@ -1,0 +1,32 @@
+import fs from 'fs';
+import path from 'path';
+
+const projectRoot = path.resolve(process.cwd(), '..');
+const backendRoot = process.cwd();
+
+const copyTargets = [
+  ['resource', 'resource'],
+  ['tileset-editor.html', 'tileset-editor.html'],
+  ['map-test.html', 'map-test.html'],
+  ['character-editor.html', 'character-editor.html'],
+  ['character-customizer.html', 'character-customizer.html'],
+  ['character-creator.html', 'character-creator.html'],
+  ['test-character-assets.html', 'test-character-assets.html'],
+  ['test-assets.html', 'test-assets.html'],
+];
+
+for (const [sourceRelativePath, targetRelativePath] of copyTargets) {
+  const sourcePath = path.join(projectRoot, sourceRelativePath);
+  const targetPath = path.join(backendRoot, targetRelativePath);
+
+  if (!fs.existsSync(sourcePath)) {
+    continue;
+  }
+
+  fs.cpSync(sourcePath, targetPath, {
+    force: true,
+    recursive: true,
+  });
+}
+
+console.log('Prepared deployment assets for Railway.');

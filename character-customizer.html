@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>角色定制器 - Character Customizer</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Courier New', monospace;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: #fff;
+      padding: 20px;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 1600px;
+      margin: 0 auto;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 12px;
+      padding: 20px;
+      backdrop-filter: blur(10px);
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+      font-size: 32px;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    }
+
+    .editor-layout {
+      display: grid;
+      grid-template-columns: 350px 1fr 350px;
+      gap: 20px;
+    }
+
+    .panel {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      padding: 15px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      max-height: 800px;
+      overflow-y: auto;
+    }
+
+    .panel h2 {
+      font-size: 18px;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .layer-group {
+      margin-bottom: 20px;
+      background: rgba(0, 0, 0, 0.2);
+      padding: 10px;
+      border-radius: 6px;
+    }
+
+    .layer-group h3 {
+      font-size: 14px;
+      margin-bottom: 10px;
+      color: #4facfe;
+    }
+
+    .layer-options {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    .layer-option {
+      aspect-ratio: 1;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: rgba(0, 0, 0, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .layer-option:hover {
+      border-color: #4facfe;
+      transform: scale(1.05);
+    }
+
+    .layer-option.active {
+      border-color: #f5576c;
+      background: rgba(245, 87, 108, 0.2);
+    }
+
+    .layer-option img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      image-rendering: pixelated;
+    }
+
+    .layer-option.none {
+      font-size: 24px;
+    }
+
+    .preview-area {
+      text-align: center;
+    }
+
+    .preview-canvas {
+      border: 3px solid #fff;
+      background: #2a2a2a;
+      image-rendering: pixelated;
+      margin: 10px auto;
+      display: block;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    }
+
+    .direction-tabs {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+
+    .direction-tab {
+      padding: 10px 20px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 6px;
+      background: rgba(0, 0, 0, 0.3);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .direction-tab:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .direction-tab.active {
+      border-color: #4facfe;
+      background: rgba(79, 172, 254, 0.3);
+    }
+
+    button {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 6px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: #fff;
+      font-weight: bold;
+      cursor: pointer;
+      font-family: 'Courier New', monospace;
+      transition: transform 0.2s;
+      width: 100%;
+      margin-top: 10px;
+    }
+
+    button:hover {
+      transform: scale(1.05);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    }
+
+    .btn-success {
+      background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    }
+
+    .character-info {
+      background: rgba(0, 0, 0, 0.3);
+      padding: 15px;
+      border-radius: 6px;
+      margin-bottom: 15px;
+    }
+
+    .character-info input {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      border-radius: 4px;
+      background: rgba(0, 0, 0, 0.3);
+      color: #fff;
+      font-family: 'Courier New', monospace;
+      margin-top: 5px;
+    }
+
+    .saved-characters {
+      display: grid;
+      gap: 10px;
+    }
+
+    .saved-character {
+      background: rgba(0, 0, 0, 0.3);
+      padding: 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .saved-character:hover {
+      border-color: rgba(255, 255, 255, 0.3);
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .saved-character.active {
+      border-color: #4facfe;
+      background: rgba(79, 172, 254, 0.2);
+    }
+
+    .saved-character canvas {
+      width: 48px;
+      height: 48px;
+      image-rendering: pixelated;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .info-box {
+      background: rgba(79, 172, 254, 0.2);
+      padding: 10px;
+      border-radius: 4px;
+      font-size: 12px;
+      line-height: 1.6;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🎨 角色定制器 Character Customizer</h1>
+    
+    <div class="editor-layout">
+      <!-- 左侧：图层选择 -->
+      <div class="panel">
+        <h2>🎭 图层选择</h2>
+        
+        <!-- 身体 -->
+        <div class="layer-group">
+          <h3>👤 身体 (Character)</h3>
+          <div class="layer-options" id="characterOptions"></div>
+        </div>
+
+        <!-- 上衣 -->
+        <div class="layer-group">
+          <h3>👕 上衣 (Tops)</h3>
+          <div class="layer-options" id="topsOptions"></div>
+        </div>
+
+        <!-- 裤子 -->
+        <div class="layer-group">
+          <h3>👖 裤子 (Bottoms)</h3>
+          <div class="layer-options" id="bottomsOptions"></div>
+        </div>
+
+        <!-- 鞋子 -->
+        <div class="layer-group">
+          <h3>👟 鞋子 (Shoes)</h3>
+          <div class="layer-options" id="shoesOptions"></div>
+        </div>
+
+        <!-- 头发 -->
+        <div class="layer-group">
+          <h3>💇 头发 (Hair)</h3>
+          <div class="layer-options" id="hairOptions"></div>
+        </div>
+
+        <!-- 眼睛 -->
+        <div class="layer-group">
+          <h3>👁️ 眼睛 (Eyes)</h3>
+          <div class="layer-options" id="eyesOptions"></div>
+        </div>
+      </div>
+
+      <!-- 中间：预览 -->
+      <div class="panel">
+        <h2>👁️ 预览</h2>
+        
+        <div class="direction-tabs">
+          <div class="direction-tab active" data-direction="Front">前 Front</div>
+          <div class="direction-tab" data-direction="Back">后 Back</div>
+          <div class="direction-tab" data-direction="Left">左 Left</div>
+          <div class="direction-tab" data-direction="Right">右 Right</div>
+        </div>
+
+        <div class="preview-area">
+          <canvas id="previewCanvas" width="192" height="192"></canvas>
+          <p style="margin-top: 10px; font-size: 14px;">当前方向: <span id="currentDirection">Front</span></p>
+        </div>
+
+        <div class="info-box">
+          💡 提示：<br>
+          • 选择不同的图层组合创建独特角色<br>
+          • 切换方向查看不同角度<br>
+          • 保存后可导出配置文件
+        </div>
+      </div>
+
+      <!-- 右侧：保存和管理 -->
+      <div class="panel">
+        <h2>💾 角色管理</h2>
+        
+        <div class="character-info">
+          <label>角色名称：</label>
+          <input type="text" id="characterName" placeholder="输入角色名称">
+        </div>
+
+        <button class="btn-primary" onclick="saveCharacter()">💾 保存角色</button>
+        <button class="btn-success" onclick="exportConfig()">📤 导出配置</button>
+        <button onclick="newCharacter()">➕ 新建角色</button>
+
+        <h2 style="margin-top: 20px;">📋 已保存角色</h2>
+        <div class="saved-characters" id="savedCharacters"></div>
+
+        <div class="info-box">
+          📊 已保存 <span id="characterCount">0</span> 个角色
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 使用URL编码的路径以确保浏览器正确解析
+    const basePath = '/resource/32x32%20Customizable%20Character%20Pack/Walk/';
+    
+    let currentLayers = {
+      character: 0,
+      tops: 0,
+      bottoms: 0,
+      shoes: 0,
+      hair: 0,
+      eyes: 0
+    };
+
+    let currentDirection = 'Front';
+    let savedCharacters = [];
+    let currentCharacterId = null;
+
+    // 每个图层的变体数量（根据精灵图的行数）
+    const layerVariants = {
+      character: 5,   // 128x160 = 5行
+      tops: 29,       // 128x928 = 29行
+      bottoms: 14,    // 128x448 = 14行
+      shoes: 10,      // 128x320 = 10行
+      hair: 25,       // 128x800 = 25行
+      eyes: 4         // 128x128 = 4行
+    };
+
+    const layerFiles = {
+      character: 'Character_Walk',
+      tops: 'Clothing_Tops_Walk',
+      bottoms: 'Clothing_Bottoms_Walk',
+      shoes: 'Clothing_Shoes_Walk',
+      hair: 'Hair_Walk',
+      eyes: 'Eyes_Walk'
+    };
+
+    // 初始化
+    async function init() {
+      console.log('初始化角色定制器...');
+      
+      // 先获取可用素材
+      try {
+        const response = await fetch('/api/character-assets');
+        const assets = await response.json();
+        console.log('📦 可用素材:', assets);
+      } catch (error) {
+        console.error('❌ 获取素材列表失败:', error);
+      }
+      
+      loadLayerOptions();
+      setupDirectionTabs();
+      updatePreview();
+      loadSavedCharacters();
+    }
+
+    // 加载图层选项
+    function loadLayerOptions() {
+      const layers = ['character', 'tops', 'bottoms', 'shoes', 'hair', 'eyes'];
+      
+      layers.forEach(layer => {
+        const container = document.getElementById(`${layer}Options`);
+        
+        // 添加"无"选项
+        const noneOption = document.createElement('div');
+        noneOption.className = 'layer-option none';
+        noneOption.textContent = '✖';
+        noneOption.title = '无';
+        noneOption.onclick = () => selectLayer(layer, -1);
+        if (currentLayers[layer] === -1) noneOption.classList.add('active');
+        container.appendChild(noneOption);
+
+        // 添加所有变体选项
+        const variantCount = layerVariants[layer];
+        for (let i = 0; i < variantCount; i++) {
+          const option = document.createElement('div');
+          option.className = 'layer-option';
+          option.onclick = () => selectLayer(layer, i);
+          if (currentLayers[layer] === i) option.classList.add('active');
+          
+          // 创建预览图
+          const preview = document.createElement('canvas');
+          preview.width = 32;
+          preview.height = 32;
+          const ctx = preview.getContext('2d');
+          ctx.imageSmoothingEnabled = false;
+          
+          // 加载并绘制预览
+          const img = new Image();
+          img.onload = () => {
+            // 绘制对应行的第一帧作为预览
+            // 每个变体占一行，每行高度32px
+            ctx.drawImage(img, 0, i * 32, 32, 32, 0, 0, 32, 32);
+          };
+          img.onerror = (e) => {
+            console.error(`❌ 加载失败: ${layer} variant ${i}`, img.src);
+            // 显示错误提示
+            ctx.fillStyle = '#ff0000';
+            ctx.fillRect(0, 0, 32, 32);
+            ctx.fillStyle = '#ffffff';
+            ctx.font = '20px Arial';
+            ctx.fillText('?', 10, 22);
+          };
+          
+          const fileName = layerFiles[layer];
+          const folder = getLayerFolder(layer);
+          img.src = `${basePath}${folder}/${fileName}_${currentDirection}-Sheet.png`;
+          
+          option.appendChild(preview);
+          container.appendChild(option);
+        }
+      });
+    }
+
+    function getLayerFolder(layer) {
+      const folders = {
+        character: 'Character',
+        tops: 'Clothing',
+        bottoms: 'Clothing',
+        shoes: 'Clothing',
+        hair: 'Hair',
+        eyes: 'Eyes'
+      };
+      return folders[layer];
+    }
+
+    // 选择图层
+    function selectLayer(layer, index) {
+      currentLayers[layer] = index;
+      
+      // 更新UI
+      const container = document.getElementById(`${layer}Options`);
+      const options = container.querySelectorAll('.layer-option');
+      options.forEach((opt, i) => {
+        opt.classList.toggle('active', i === index + 1);
+      });
+      
+      updatePreview();
+    }
+
+    // 设置方向标签
+    function setupDirectionTabs() {
+      const tabs = document.querySelectorAll('.direction-tab');
+      tabs.forEach(tab => {
+        tab.onclick = () => {
+          tabs.forEach(t => t.classList.remove('active'));
+          tab.classList.add('active');
+          currentDirection = tab.dataset.direction;
+          document.getElementById('currentDirection').textContent = currentDirection;
+          updatePreview();
+        };
+      });
+    }
+
+    // 更新预览
+    async function updatePreview() {
+      const canvas = document.getElementById('previewCanvas');
+      const ctx = canvas.getContext('2d');
+      ctx.imageSmoothingEnabled = false;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // 绘制背景网格
+      ctx.fillStyle = '#1a1a1a';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      
+      ctx.strokeStyle = '#333';
+      for (let x = 0; x < canvas.width; x += 32) {
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, canvas.height);
+        ctx.stroke();
+      }
+      for (let y = 0; y < canvas.height; y += 32) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(canvas.width, y);
+        ctx.stroke();
+      }
+
+      // 按正确的顺序绘制图层（从下到上）
+      const layers = ['character', 'shoes', 'bottoms', 'tops', 'hair', 'eyes'];
+      
+      for (const layer of layers) {
+        if (currentLayers[layer] === -1) continue;
+        
+        const fileName = layerFiles[layer];
+        const folder = getLayerFolder(layer);
+        const imgPath = `${basePath}${folder}/${fileName}_${currentDirection}-Sheet.png`;
+        const variantIndex = currentLayers[layer];
+        
+        await drawLayer(ctx, imgPath, variantIndex);
+      }
+    }
+
+    function drawLayer(ctx, imgPath, variantIndex) {
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.onload = () => {
+          // 绘制4帧动画（每个变体一行，包含4帧）
+          for (let frame = 0; frame < 4; frame++) {
+            ctx.drawImage(
+              img,
+              frame * 32, variantIndex * 32, 32, 32,  // 从精灵图的对应行读取
+              frame * 48, 72, 48, 48  // 绘制到画布上
+            );
+          }
+          resolve();
+        };
+        img.onerror = (e) => {
+          console.error(`❌ 图层加载失败: ${imgPath}`, e);
+          resolve();
+        };
+        img.src = imgPath;
+      });
+    }
+
+    // 保存角色
+    function saveCharacter() {
+      const name = document.getElementById('characterName').value.trim();
+      if (!name) {
+        alert('请输入角色名称！');
+        return;
+      }
+
+      const character = {
+        id: currentCharacterId || Date.now().toString(),
+        name: name,
+        layers: { ...currentLayers }
+      };
+
+      const existingIndex = savedCharacters.findIndex(c => c.id === character.id);
+      if (existingIndex >= 0) {
+        savedCharacters[existingIndex] = character;
+      } else {
+        savedCharacters.push(character);
+      }
+
+      currentCharacterId = character.id;
+      loadSavedCharacters();
+      alert('角色已保存！');
+    }
+
+    // 加载已保存角色
+    function loadSavedCharacters() {
+      const container = document.getElementById('savedCharacters');
+      container.innerHTML = '';
+
+      savedCharacters.forEach(char => {
+        const item = document.createElement('div');
+        item.className = 'saved-character';
+        if (char.id === currentCharacterId) item.classList.add('active');
+
+        const preview = document.createElement('canvas');
+        preview.width = 32;
+        preview.height = 32;
+        
+        const info = document.createElement('div');
+        info.innerHTML = `<strong>${char.name}</strong>`;
+
+        item.appendChild(preview);
+        item.appendChild(info);
+        item.onclick = () => loadCharacter(char.id);
+        
+        container.appendChild(item);
+      });
+
+      document.getElementById('characterCount').textContent = savedCharacters.length;
+    }
+
+    // 加载角色
+    function loadCharacter(id) {
+      const char = savedCharacters.find(c => c.id === id);
+      if (!char) return;
+
+      currentCharacterId = id;
+      document.getElementById('characterName').value = char.name;
+      currentLayers = { ...char.layers };
+      
+      // 更新UI
+      Object.keys(currentLayers).forEach(layer => {
+        const container = document.getElementById(`${layer}Options`);
+        const options = container.querySelectorAll('.layer-option');
+        options.forEach((opt, i) => {
+          opt.classList.toggle('active', i === currentLayers[layer] + 1);
+        });
+      });
+
+      updatePreview();
+      loadSavedCharacters();
+    }
+
+    // 新建角色
+    function newCharacter() {
+      currentCharacterId = null;
+      document.getElementById('characterName').value = '';
+      currentLayers = {
+        character: 0,
+        tops: 0,
+        bottoms: 0,
+        shoes: 0,
+        hair: 0,
+        eyes: 0
+      };
+      
+      Object.keys(currentLayers).forEach(layer => {
+        const container = document.getElementById(`${layer}Options`);
+        const options = container.querySelectorAll('.layer-option');
+        options.forEach((opt, i) => {
+          opt.classList.toggle('active', i === 1);
+        });
+      });
+
+      updatePreview();
+      loadSavedCharacters();
+    }
+
+    // 导出配置
+    function exportConfig() {
+      if (savedCharacters.length === 0) {
+        alert('没有角色可导出！');
+        return;
+      }
+
+      const config = {
+        characters: savedCharacters
+      };
+
+      const json = JSON.stringify(config, null, 2);
+      const blob = new Blob([json], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'characters-config.json';
+      a.click();
+      URL.revokeObjectURL(url);
+
+      alert('配置已导出！');
+    }
+
+    // 初始化
+    init();
+  </script>
+</body>
+</html>

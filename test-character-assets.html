@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>测试角色素材加载</title>
+  <style>
+    body {
+      font-family: monospace;
+      padding: 20px;
+      background: #1a1a1a;
+      color: #fff;
+    }
+    .test-item {
+      margin: 20px 0;
+      padding: 10px;
+      background: #2a2a2a;
+      border-radius: 8px;
+    }
+    img {
+      border: 2px solid #fff;
+      margin: 10px;
+      image-rendering: pixelated;
+    }
+    .error {
+      color: #ff4444;
+    }
+    .success {
+      color: #44ff44;
+    }
+  </style>
+</head>
+<body>
+  <h1>🧪 角色素材加载测试</h1>
+  <div id="results"></div>
+
+  <script>
+    const basePath = '/resource/32x32%20Customizable%20Character%20Pack/Walk';
+    const tests = [
+      { name: 'Character Front', path: `${basePath}/Character/Character_Walk_Front-Sheet.png` },
+      { name: 'Tops Front', path: `${basePath}/Clothing/Clothing_Tops_Walk_Front-Sheet.png` },
+      { name: 'Bottoms Front', path: `${basePath}/Clothing/Clothing_Bottoms_Walk_Front-Sheet.png` },
+      { name: 'Shoes Front', path: `${basePath}/Clothing/Clothing_Shoes_Walk_Front-Sheet.png` },
+      { name: 'Hair Front', path: `${basePath}/Hair/Hair_Walk_Front-Sheet.png` },
+      { name: 'Eyes Front', path: `${basePath}/Eyes/Eyes_Walk_Front-Sheet.png` },
+    ];
+
+    const resultsDiv = document.getElementById('results');
+
+    tests.forEach(test => {
+      const div = document.createElement('div');
+      div.className = 'test-item';
+      div.innerHTML = `<strong>${test.name}</strong><br>路径: ${test.path}<br>`;
+      
+      const img = new Image();
+      const statusSpan = document.createElement('span');
+      
+      img.onload = () => {
+        statusSpan.className = 'success';
+        statusSpan.textContent = `✅ 加载成功 (${img.width}x${img.height})`;
+        div.appendChild(img);
+      };
+      
+      img.onerror = (e) => {
+        statusSpan.className = 'error';
+        statusSpan.textContent = `❌ 加载失败`;
+        console.error('Failed to load:', test.path, e);
+      };
+      
+      img.src = test.path;
+      img.width = 128;
+      
+      div.appendChild(statusSpan);
+      resultsDiv.appendChild(div);
+    });
+  </script>
+</body>
+</html>

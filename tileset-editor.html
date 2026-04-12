@@ -1,0 +1,1202 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <base href="/">
+    <title>瓦片地图编辑器 - 使用你的素材</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { margin: 0; padding: 20px; background: #1a1a1a; color: #fff; font-family: Arial, sans-serif; }
+        h1 { color: #4CAF50; text-align: center; }
+        .layout { display: grid; grid-template-columns: 300px 1fr 300px; gap: 20px; max-width: 1800px; margin: 0 auto; }
+        .panel { background: #2c2c2c; padding: 15px; border-radius: 8px; }
+        h3 { color: #4CAF50; margin-top: 0; border-bottom: 2px solid #4CAF50; padding-bottom: 8px; }
+        canvas { border: 3px solid #4CAF50; background: #000; image-rendering: pixelated; display: block; cursor: crosshair; }
+        #tilesetCanvas { max-width: 100%; cursor: pointer; }
+        button { background: #4CAF50; color: white; border: none; padding: 10px; margin: 5px 0; border-radius: 4px; cursor: pointer; width: 100%; }
+        button:hover { background: #45a049; }
+        button.active { background: #ff9800; }
+        select, input, textarea { width: 100%; padding: 8px; background: #333; color: #fff; border: 1px solid #555; border-radius: 4px; margin: 5px 0; }
+        textarea { height: 120px; font-family: monospace; font-size: 11px; }
+        .info { background: #333; padding: 10px; margin: 10px 0; border-radius: 4px; font-size: 12px; }
+        .preview { max-height: 400px; overflow-y: auto; background: #1a1a1a; padding: 10px; border-radius: 4px; }
+        .layer-item {
+            background: #333;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 4px;
+            cursor: move;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            min-height: 50px;
+            user-select: none;
+        }
+        .layer-item.active {
+            background: #4CAF50;
+        }
+        .layer-item.dragging {
+            opacity: 0.5;
+        }
+        .layer-order {
+            background: #555;
+            color: #fff;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎨 瓦片地图编辑器</h1>
+    <p style="text-align:center; color:#999;">使用你的真实素材创建地图</p>
+    
+    <div class="layout">
+        <!-- 左侧面板 - 瓦片集选择 -->
+        <div class="panel">
+            <h3>🖼️ 瓦片集</h3>
+            <select id="tileset" onchange="loadTileset()">
+                <optgroup label="室内/房屋场景 (48x48)">
+                    <option value="resource/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png" data-size="48">室内场景瓦片</option>
+                    <option value="resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png" data-size="48">城市瓦片A2</option>
+                    <option value="resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A5.png" data-size="48">城市瓦片A5</option>
+                </optgroup>
+                <optgroup label="城市场景 (30x30)">
+                    <option value="resource/225525db3ab3e4a8/Urban City Tileset Free Demo version Dlou Saiyan/Urban City Tileset Free Demo version 30x30 Dlou Saiyan.png" data-size="30">城市瓦片集 30x30</option>
+                </optgroup>
+                <optgroup label="其他瓦片集">
+                    <option value="resource/CP_V1.1.0_nyknck/CP_V1.0.4_nyknck/CP_V1.0.4.png" data-size="32">CP瓦片集 (32x32)</option>
+                    <option value="resource/4dc7190bd20eb0ee/spritesheet.png" data-size="16">桌面物品集 (16x16)</option>
+                </optgroup>
+            </select>
+            
+            <label style="margin-top: 10px; display: block;">瓦片大小：</label>
+            <div style="display: flex; gap: 5px;">
+                <input type="number" id="tileSize" value="48" min="8" max="128" style="flex: 1;">
+                <button onclick="changeTileSize()" style="width: auto; padding: 8px 15px;">应用</button>
+            </div>
+            
+            <label style="margin-top: 10px; display: block;">显示模式：</label>
+            <select id="viewMode" onchange="changeViewMode()">
+                <option value="grid">网格（紧凑）</option>
+                <option value="spaced">网格（间距）</option>
+                <option value="list">列表（大图标）</option>
+            </select>
+            <div class="info" style="font-size: 11px; color: #999;">
+                💡 如果瓦片显示不对，调整瓦片大小
+            </div>
+            <div class="preview"><canvas id="tilesetCanvas"></canvas></div>
+            <div class="info">
+                <strong>选中瓦片：</strong><span id="tileInfo">点击选择</span><br>
+                <div style="margin-top: 10px; text-align: center;">
+                    <canvas id="previewCanvas" width="96" height="96" style="border: 2px solid #4CAF50; background: #000; image-rendering: pixelated;"></canvas>
+                    <p style="margin: 5px 0; font-size: 11px; color: #999;">选中瓦片预览（2倍放大）</p>
+                </div>
+            </div>
+            
+            <h3>🛠️ 工具</h3>
+            <button id="brush" class="active" onclick="tool='brush';updateTool()">🖌️ 画笔 (B)</button>
+            <button id="eraser" onclick="tool='eraser';updateTool()">🧹 橡皮 (E)</button>
+            
+            <h3>⚙️ 瓦片属性</h3>
+            <label style="display: flex; align-items: center; gap: 8px; margin: 10px 0; cursor: pointer;">
+                <input type="checkbox" id="collisionMode" onchange="updateCollisionMode()" style="cursor: pointer;">
+                <span style="white-space: nowrap;">碰撞瓦片</span>
+            </label>
+            <div class="info" style="font-size: 11px;">
+                💡 勾选后绘制的瓦片会阻挡角色移动
+            </div>
+        </div>
+        
+        <!-- 中间面板 - 画布 -->
+        <div class="panel">
+            <h3>🗺️ 画布</h3>
+            <div style="overflow:auto; max-height:800px; max-width:100%;">
+                <canvas id="map" style="max-width: 100%; height: auto;"></canvas>
+            </div>
+            <div class="info">左键绘制 | 右键删除 | 画布会自动缩放适应窗口</div>
+        </div>
+        
+        <!-- 右侧面板 - 图层和操作 -->
+        <div class="panel">
+            <h3>🔄 变换</h3>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 5px;">
+                <button onclick="rotate(90)" style="padding: 8px;">↻ 旋转 (R)</button>
+                <button onclick="rotate(-90)" style="padding: 8px;">↺ 反转</button>
+                <button onclick="flipH = !flipH; updateTransform()">↔️ 水平 (H)</button>
+                <button onclick="flipV = !flipV; updateTransform()">↕️ 垂直 (V)</button>
+            </div>
+            <div class="info" style="font-size: 11px;">
+                <strong>当前变换：</strong><br>
+                旋转: <span id="rotInfo">0°</span> | 
+                水平: <span id="flipHInfo">否</span> | 
+                垂直: <span id="flipVInfo">否</span>
+            </div>
+            <button onclick="resetTransform()" style="background: #666;">重置变换</button>
+            
+            <h3>📐 地图设置</h3>
+            <label>宽度：</label>
+            <input type="number" id="w" value="20" min="5" max="40" placeholder="宽">
+            <label>高度：</label>
+            <input type="number" id="h" value="15" min="5" max="40" placeholder="高">
+            <button onclick="resize()">调整大小</button>
+            
+            <h3>📚 图层</h3>
+            <div class="info" style="font-size: 11px; margin-bottom: 10px; line-height: 1.6;">
+                💡 <strong>图层系统说明：</strong><br>
+                • 数字越小，图层越靠下（0=最底层）<br>
+                • 拖动图层可以调整顺序<br>
+                • 👁️ 点击复选框切换可见性<br>
+                • 🔒 点击锁图标锁定/解锁图层<br>
+                • ✏️ 点击图层名称切换当前编辑图层
+            </div>
+            <div id="layerList" style="margin: 10px 0;"></div>
+            <button onclick="addLayer()">➕ 添加图层</button>
+            <button onclick="deleteLayer()">➖ 删除当前图层</button>
+            
+            <h3>💾 导出/导入</h3>
+            <label>后端 API 地址：</label>
+            <input type="text" id="apiUrl" value="" placeholder="留空使用当前域名">
+            <label>登录 Token：</label>
+            <textarea id="authToken" placeholder="粘贴登录后的 sales-simulator-token" style="height: 70px;"></textarea>
+            <button onclick="saveMapToDatabase()">☁️ 保存到数据库</button>
+            <button onclick="loadMapFromDatabase()">☁️ 从数据库加载</button>
+            <button onclick="clear()">清空当前图层</button>
+            <button onclick="exportMapToFile()">💾 导出为文件</button>
+            <button onclick="exportMap()">📋 复制JSON</button>
+            <button onclick="importMap()">导入JSON</button>
+            <button onclick="test()">🎮 测试地图</button>
+            
+            <textarea id="data" placeholder="JSON数据（可以粘贴导出的数据后点击导入）"></textarea>
+        </div>
+    </div>
+
+    <script>
+        let SIZE = 48;
+        let w = 20, h = 15, tool = 'brush', sel = {x:0,y:0}, drawing = false;
+        let img = null, path = '', cols = 0, rows = 0;
+        let viewMode = 'grid';
+        let collisionMode = false; // 是否绘制碰撞瓦片
+        
+        // 图层系统（只保留一个初始图层）
+        let layers = [
+            {name: '图层 1', data: [], visible: true, locked: false, tileset: '', tileSize: 48}
+        ];
+        let currentLayer = 0;
+        
+        // 多选功能
+        let isSelecting = false;
+        let selectionStart = null;
+        let selectionEnd = null;
+        let selectedTiles = null;
+        
+        // 旋转和翻转
+        let rotation = 0;
+        let flipH = false;
+        let flipV = false;
+        
+        const tc = document.getElementById('tilesetCanvas'), tctx = tc.getContext('2d');
+        const mc = document.getElementById('map'), mctx = mc.getContext('2d');
+        const pc = document.getElementById('previewCanvas'), pctx = pc.getContext('2d');
+        
+        function init() {
+            layers.forEach(layer => {
+                layer.data = Array(h).fill().map(() => Array(w).fill().map(() => ({x:-1,y:-1,r:0,fh:false,fv:false,collision:false})));
+            });
+            mc.width = w * SIZE;
+            mc.height = h * SIZE;
+            updateLayerList();
+            draw();
+        }
+        
+        function loadTileset() {
+            const select = document.getElementById('tileset');
+            const option = select.options[select.selectedIndex];
+            path = option.value;
+            
+            // 获取推荐的瓦片大小
+            const recommendedSize = option.getAttribute('data-size');
+            if (recommendedSize) {
+                SIZE = parseInt(recommendedSize);
+                document.getElementById('tileSize').value = SIZE;
+            }
+            
+            // 保存当前图层的瓦片集信息
+            if (layers[currentLayer]) {
+                layers[currentLayer].tileset = path;
+                layers[currentLayer].tileSize = SIZE;
+                console.log(`图层 ${currentLayer} 已设置瓦片集:`, path);
+            }
+            
+            img = new Image();
+            img.onload = () => {
+                cols = Math.floor(img.width / SIZE);
+                rows = Math.floor(img.height / SIZE);
+                tc.width = img.width;
+                tc.height = img.height;
+                drawTileset();
+                draw();
+                console.log(`瓦片集加载: ${cols}x${rows} 瓦片 (${SIZE}x${SIZE}px)`);
+            };
+            img.onerror = () => alert('加载失败: ' + path);
+            img.src = path;
+        }
+        
+        function changeTileSize() {
+            const newSize = parseInt(document.getElementById('tileSize').value);
+            if (newSize < 8 || newSize > 128) {
+                alert('瓦片大小必须在8-128之间');
+                return;
+            }
+            SIZE = newSize;
+            if (img && img.complete) {
+                cols = Math.floor(img.width / SIZE);
+                rows = Math.floor(img.height / SIZE);
+                drawTileset();
+                draw();
+                console.log(`瓦片大小已更改为: ${SIZE}x${SIZE}px, 瓦片数: ${cols}x${rows}`);
+            }
+        }
+        
+        function drawTileset() {
+            if (!img) return;
+            
+            if (viewMode === 'grid') {
+                tc.width = img.width;
+                tc.height = img.height;
+                tctx.clearRect(0, 0, tc.width, tc.height);
+                tctx.drawImage(img, 0, 0);
+                
+                tctx.strokeStyle = 'rgba(255,255,255,0.3)';
+                tctx.lineWidth = 1;
+                for (let x = 0; x <= cols; x++) {
+                    tctx.beginPath();
+                    tctx.moveTo(x * SIZE, 0);
+                    tctx.lineTo(x * SIZE, rows * SIZE);
+                    tctx.stroke();
+                }
+                for (let y = 0; y <= rows; y++) {
+                    tctx.beginPath();
+                    tctx.moveTo(0, y * SIZE);
+                    tctx.lineTo(cols * SIZE, y * SIZE);
+                    tctx.stroke();
+                }
+                
+                // 绘制选择区域
+                if (isSelecting && selectionStart && selectionEnd) {
+                    const startX = Math.min(selectionStart.x, selectionEnd.x);
+                    const startY = Math.min(selectionStart.y, selectionEnd.y);
+                    const endX = Math.max(selectionStart.x, selectionEnd.x);
+                    const endY = Math.max(selectionStart.y, selectionEnd.y);
+                    
+                    tctx.fillStyle = 'rgba(76, 175, 80, 0.3)';
+                    tctx.fillRect(startX * SIZE, startY * SIZE, (endX - startX + 1) * SIZE, (endY - startY + 1) * SIZE);
+                    tctx.strokeStyle = '#4CAF50';
+                    tctx.lineWidth = 3;
+                    tctx.strokeRect(startX * SIZE + 1.5, startY * SIZE + 1.5, (endX - startX + 1) * SIZE - 3, (endY - startY + 1) * SIZE - 3);
+                } else if (selectedTiles) {
+                    tctx.fillStyle = 'rgba(76, 175, 80, 0.3)';
+                    tctx.fillRect(
+                        selectedTiles.startX * SIZE, selectedTiles.startY * SIZE,
+                        (selectedTiles.endX - selectedTiles.startX + 1) * SIZE,
+                        (selectedTiles.endY - selectedTiles.startY + 1) * SIZE
+                    );
+                    tctx.strokeStyle = '#4CAF50';
+                    tctx.lineWidth = 3;
+                    tctx.strokeRect(
+                        selectedTiles.startX * SIZE + 1.5, selectedTiles.startY * SIZE + 1.5,
+                        (selectedTiles.endX - selectedTiles.startX + 1) * SIZE - 3,
+                        (selectedTiles.endY - selectedTiles.startY + 1) * SIZE - 3
+                    );
+                }
+                
+            } else if (viewMode === 'spaced') {
+                const spacing = 4;
+                const tileWithSpacing = SIZE + spacing;
+                tc.width = cols * tileWithSpacing;
+                tc.height = rows * tileWithSpacing;
+                tctx.clearRect(0, 0, tc.width, tc.height);
+                tctx.fillStyle = '#1a1a1a';
+                tctx.fillRect(0, 0, tc.width, tc.height);
+                
+                for (let y = 0; y < rows; y++) {
+                    for (let x = 0; x < cols; x++) {
+                        tctx.drawImage(
+                            img,
+                            x * SIZE, y * SIZE, SIZE, SIZE,
+                            x * tileWithSpacing, y * tileWithSpacing, SIZE, SIZE
+                        );
+                        tctx.strokeStyle = '#333';
+                        tctx.lineWidth = 1;
+                        tctx.strokeRect(x * tileWithSpacing, y * tileWithSpacing, SIZE, SIZE);
+                    }
+                }
+                
+                if (selectedTiles) {
+                    tctx.strokeStyle = '#4CAF50';
+                    tctx.lineWidth = 3;
+                    tctx.strokeRect(
+                        selectedTiles.startX * tileWithSpacing + 1.5,
+                        selectedTiles.startY * tileWithSpacing + 1.5,
+                        (selectedTiles.endX - selectedTiles.startX + 1) * tileWithSpacing - 3,
+                        (selectedTiles.endY - selectedTiles.startY + 1) * tileWithSpacing - 3
+                    );
+                }
+                
+            } else if (viewMode === 'list') {
+                const iconSize = 64;
+                const padding = 8;
+                const itemsPerRow = 4;
+                const itemWidth = iconSize + padding * 2;
+                const itemHeight = iconSize + padding * 2;
+                const totalRows = Math.ceil((cols * rows) / itemsPerRow);
+                
+                tc.width = itemsPerRow * itemWidth;
+                tc.height = totalRows * itemHeight;
+                tctx.clearRect(0, 0, tc.width, tc.height);
+                tctx.fillStyle = '#1a1a1a';
+                tctx.fillRect(0, 0, tc.width, tc.height);
+                
+                let index = 0;
+                for (let y = 0; y < rows; y++) {
+                    for (let x = 0; x < cols; x++) {
+                        const row = Math.floor(index / itemsPerRow);
+                        const col = index % itemsPerRow;
+                        const px = col * itemWidth + padding;
+                        const py = row * itemHeight + padding;
+                        
+                        tctx.drawImage(
+                            img,
+                            x * SIZE, y * SIZE, SIZE, SIZE,
+                            px, py, iconSize, iconSize
+                        );
+                        
+                        tctx.strokeStyle = '#333';
+                        tctx.lineWidth = 1;
+                        tctx.strokeRect(px, py, iconSize, iconSize);
+                        
+                        if (selectedTiles && x >= selectedTiles.startX && x <= selectedTiles.endX &&
+                            y >= selectedTiles.startY && y <= selectedTiles.endY) {
+                            tctx.strokeStyle = '#4CAF50';
+                            tctx.lineWidth = 3;
+                            tctx.strokeRect(px - 2, py - 2, iconSize + 4, iconSize + 4);
+                        }
+                        
+                        index++;
+                    }
+                }
+            }
+        }
+        
+        function changeViewMode() {
+            viewMode = document.getElementById('viewMode').value;
+            drawTileset();
+        }
+        
+        function updatePreview() {
+            if (!img || !img.complete || !pc) return;
+            pctx.clearRect(0, 0, pc.width, pc.height);
+            pctx.fillStyle = '#1a1a1a';
+            pctx.fillRect(0, 0, pc.width, pc.height);
+            
+            if (selectedTiles) {
+                // 显示选中的多个瓦片（带变换）
+                const width = selectedTiles.endX - selectedTiles.startX + 1;
+                const height = selectedTiles.endY - selectedTiles.startY + 1;
+                const scale = Math.min(96 / (width * SIZE), 96 / (height * SIZE));
+                
+                // 如果有旋转或翻转，显示变换后的效果
+                if (rotation !== 0 || flipH || flipV) {
+                    pctx.save();
+                    pctx.translate(48, 48);
+                    pctx.rotate(rotation * Math.PI / 180);
+                    pctx.scale(flipH ? -1 : 1, flipV ? -1 : 1);
+                    
+                    for (let dy = 0; dy < height; dy++) {
+                        for (let dx = 0; dx < width; dx++) {
+                            try {
+                                pctx.drawImage(
+                                    img,
+                                    (selectedTiles.startX + dx) * SIZE,
+                                    (selectedTiles.startY + dy) * SIZE,
+                                    SIZE, SIZE,
+                                    (dx - width/2) * SIZE * scale,
+                                    (dy - height/2) * SIZE * scale,
+                                    SIZE * scale, SIZE * scale
+                                );
+                            } catch (e) {}
+                        }
+                    }
+                    pctx.restore();
+                } else {
+                    for (let dy = 0; dy < height; dy++) {
+                        for (let dx = 0; dx < width; dx++) {
+                            try {
+                                pctx.drawImage(
+                                    img,
+                                    (selectedTiles.startX + dx) * SIZE,
+                                    (selectedTiles.startY + dy) * SIZE,
+                                    SIZE, SIZE,
+                                    dx * SIZE * scale, dy * SIZE * scale,
+                                    SIZE * scale, SIZE * scale
+                                );
+                            } catch (e) {}
+                        }
+                    }
+                }
+            } else {
+                // 显示单个瓦片（带变换）
+                if (rotation !== 0 || flipH || flipV) {
+                    drawTileTransformed(pctx, sel.x, sel.y, 0, 0, 96);
+                } else {
+                    try {
+                        pctx.drawImage(
+                            img,
+                            sel.x * SIZE, sel.y * SIZE,
+                            SIZE, SIZE,
+                            0, 0,
+                            96, 96
+                        );
+                    } catch (e) {
+                        pctx.fillStyle = '#f00';
+                        pctx.font = '12px Arial';
+                        pctx.fillText('无效', 40, 50);
+                    }
+                }
+            }
+        }
+        
+        // 缓存已加载的瓦片集图片
+        const tilesetCache = {};
+        
+        function draw() {
+            mctx.clearRect(0, 0, mc.width, mc.height);
+            
+            // 绘制背景
+            mctx.fillStyle = '#1a1a1a';
+            mctx.fillRect(0, 0, mc.width, mc.height);
+            
+            // 按顺序绘制所有可见图层
+            layers.forEach((layer, idx) => {
+                if (!layer.visible || !layer.tileset) return;
+                
+                // 获取该图层的瓦片集图片
+                let layerImg = tilesetCache[layer.tileset];
+                if (!layerImg) {
+                    // 如果还没加载，创建并缓存
+                    layerImg = new Image();
+                    layerImg.src = layer.tileset;
+                    tilesetCache[layer.tileset] = layerImg;
+                }
+                
+                if (!layerImg.complete) return; // 图片还没加载完
+                
+                const layerTileSize = layer.tileSize || SIZE;
+                
+                for (let y = 0; y < h; y++) {
+                    for (let x = 0; x < w; x++) {
+                        const t = layer.data[y][x];
+                        if (t.x >= 0 && t.y >= 0) {
+                            try {
+                                mctx.save();
+                                mctx.translate(x * SIZE + SIZE / 2, y * SIZE + SIZE / 2);
+                                mctx.rotate(t.r * Math.PI / 180);
+                                mctx.scale(t.fh ? -1 : 1, t.fv ? -1 : 1);
+                                
+                                // 如果不是当前图层，稍微透明一点
+                                if (idx !== currentLayer) {
+                                    mctx.globalAlpha = 0.6;
+                                }
+                                
+                                mctx.drawImage(
+                                    layerImg,
+                                    t.x * layerTileSize, t.y * layerTileSize, layerTileSize, layerTileSize,
+                                    -SIZE / 2, -SIZE / 2, SIZE, SIZE
+                                );
+                                
+                                // 如果有碰撞属性，绘制红色边框
+                                if (t.collision) {
+                                    mctx.strokeStyle = 'rgba(255, 0, 0, 0.6)';
+                                    mctx.lineWidth = 2;
+                                    mctx.strokeRect(-SIZE / 2 + 1, -SIZE / 2 + 1, SIZE - 2, SIZE - 2);
+                                }
+                                
+                                mctx.restore();
+                            } catch (e) {}
+                        }
+                    }
+                }
+            });
+            
+            // 绘制网格
+            mctx.strokeStyle = 'rgba(255,255,255,0.15)';
+            for (let x = 0; x <= w; x++) {
+                mctx.beginPath();
+                mctx.moveTo(x * SIZE, 0);
+                mctx.lineTo(x * SIZE, h * SIZE);
+                mctx.stroke();
+            }
+            for (let y = 0; y <= h; y++) {
+                mctx.beginPath();
+                mctx.moveTo(0, y * SIZE);
+                mctx.lineTo(w * SIZE, y * SIZE);
+                mctx.stroke();
+            }
+        }
+        
+        // 瓦片集选择事件
+        tc.onmousedown = (e) => {
+            const r = tc.getBoundingClientRect();
+            const scaleX = tc.width / r.width;
+            const scaleY = tc.height / r.height;
+            const clickX = (e.clientX - r.left) * scaleX;
+            const clickY = (e.clientY - r.top) * scaleY;
+            
+            const coords = getTileCoords(clickX, clickY);
+            if (coords) {
+                isSelecting = true;
+                selectionStart = coords;
+                selectionEnd = coords;
+                drawTileset();
+            }
+        };
+        
+        tc.onmousemove = (e) => {
+            const r = tc.getBoundingClientRect();
+            const scaleX = tc.width / r.width;
+            const scaleY = tc.height / r.height;
+            const clickX = (e.clientX - r.left) * scaleX;
+            const clickY = (e.clientY - r.top) * scaleY;
+            
+            if (isSelecting) {
+                // 正在拖动选择
+                const coords = getTileCoords(clickX, clickY);
+                if (coords) {
+                    selectionEnd = coords;
+                    drawTileset();
+                }
+            } else {
+                // 显示悬停信息
+                const x = Math.floor(clickX / SIZE);
+                const y = Math.floor(clickY / SIZE);
+                if (x >= 0 && x < cols && y >= 0 && y < rows) {
+                    if (selectedTiles) {
+                        const width = selectedTiles.endX - selectedTiles.startX + 1;
+                        const height = selectedTiles.endY - selectedTiles.startY + 1;
+                        document.getElementById('tileInfo').textContent = 
+                            `悬停: (${x}, ${y}) | 选中: ${width}x${height}`;
+                    } else {
+                        document.getElementById('tileInfo').textContent = `悬停: (${x}, ${y})`;
+                    }
+                }
+            }
+        };
+        
+        tc.onmouseup = () => {
+            if (isSelecting && selectionStart && selectionEnd) {
+                // 确定选择区域
+                selectedTiles = {
+                    startX: Math.min(selectionStart.x, selectionEnd.x),
+                    startY: Math.min(selectionStart.y, selectionEnd.y),
+                    endX: Math.max(selectionStart.x, selectionEnd.x),
+                    endY: Math.max(selectionStart.y, selectionEnd.y)
+                };
+                
+                sel = {x: selectedTiles.startX, y: selectedTiles.startY};
+                
+                const width = selectedTiles.endX - selectedTiles.startX + 1;
+                const height = selectedTiles.endY - selectedTiles.startY + 1;
+                document.getElementById('tileInfo').textContent = 
+                    `选中: ${width}x${height} 瓦片`;
+                
+                updatePreview();
+            }
+            isSelecting = false;
+            drawTileset();
+        };
+        
+        tc.onmouseleave = () => {
+            isSelecting = false;
+        };
+        
+        function getTileCoords(clickX, clickY) {
+            let x, y;
+            
+            if (viewMode === 'grid') {
+                x = Math.floor(clickX / SIZE);
+                y = Math.floor(clickY / SIZE);
+            } else if (viewMode === 'spaced') {
+                const spacing = 4;
+                const tileWithSpacing = SIZE + spacing;
+                x = Math.floor(clickX / tileWithSpacing);
+                y = Math.floor(clickY / tileWithSpacing);
+            } else if (viewMode === 'list') {
+                const iconSize = 64;
+                const padding = 8;
+                const itemsPerRow = 4;
+                const itemWidth = iconSize + padding * 2;
+                const itemHeight = iconSize + padding * 2;
+                
+                const col = Math.floor(clickX / itemWidth);
+                const row = Math.floor(clickY / itemHeight);
+                const index = row * itemsPerRow + col;
+                
+                x = index % cols;
+                y = Math.floor(index / cols);
+            }
+            
+            if (x >= 0 && x < cols && y >= 0 && y < rows) {
+                return {x, y};
+            }
+            return null;
+        }
+        
+        mc.onmousedown = (e) => { drawing = true; paint(e); };
+        mc.onmousemove = (e) => { if (drawing) paint(e); };
+        mc.onmouseup = () => drawing = false;
+        mc.onmouseleave = () => drawing = false;
+        mc.oncontextmenu = (e) => { e.preventDefault(); return false; };
+        
+        function paint(e) {
+            const r = mc.getBoundingClientRect();
+            // 考虑画布的缩放比例
+            const scaleX = mc.width / r.width;
+            const scaleY = mc.height / r.height;
+            const x = Math.floor(((e.clientX - r.left) * scaleX) / SIZE);
+            const y = Math.floor(((e.clientY - r.top) * scaleY) / SIZE);
+            if (x < 0 || x >= w || y < 0 || y >= h) return;
+            
+            const layer = layers[currentLayer];
+            if (!layer) {
+                console.error('当前图层不存在！currentLayer:', currentLayer, 'layers.length:', layers.length);
+                return;
+            }
+            
+            if (layer.locked) {
+                console.log('图层已锁定，无法编辑');
+                return;
+            }
+            
+            if (tool === 'brush') {
+                if (e.buttons === 1) {
+                    if (selectedTiles) {
+                        const width = selectedTiles.endX - selectedTiles.startX + 1;
+                        const height = selectedTiles.endY - selectedTiles.startY + 1;
+                        
+                        for (let dy = 0; dy < height; dy++) {
+                            for (let dx = 0; dx < width; dx++) {
+                                const mapX = x + dx;
+                                const mapY = y + dy;
+                                if (mapX < w && mapY < h) {
+                                    layer.data[mapY][mapX] = {
+                                        x: selectedTiles.startX + dx,
+                                        y: selectedTiles.startY + dy,
+                                        r: rotation,
+                                        fh: flipH,
+                                        fv: flipV,
+                                        collision: collisionMode
+                                    };
+                                }
+                            }
+                        }
+                    } else {
+                        layer.data[y][x] = {
+                            x: sel.x,
+                            y: sel.y,
+                            r: rotation,
+                            fh: flipH,
+                            fv: flipV,
+                            collision: collisionMode
+                        };
+                    }
+                } else if (e.buttons === 2) {
+                    layer.data[y][x] = {x: -1, y: -1, r: 0, fh: false, fv: false, collision: false};
+                }
+            } else if (tool === 'eraser') {
+                layer.data[y][x] = {x: -1, y: -1, r: 0, fh: false, fv: false, collision: false};
+            }
+            draw();
+        }
+        
+        function updateTool() {
+            document.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+            document.getElementById(tool).classList.add('active');
+        }
+        
+        function rotate(deg) {
+            rotation = (rotation + deg + 360) % 360;
+            updateTransform();
+        }
+        
+        function resetTransform() {
+            rotation = 0;
+            flipH = false;
+            flipV = false;
+            updateTransform();
+        }
+        
+        function updateTransform() {
+            document.getElementById('rotInfo').textContent = rotation + '°';
+            document.getElementById('flipHInfo').textContent = flipH ? '是' : '否';
+            document.getElementById('flipVInfo').textContent = flipV ? '是' : '否';
+            updatePreview();
+        }
+        
+        function drawTileTransformed(ctx, tileX, tileY, destX, destY, destSize) {
+            ctx.save();
+            
+            // 移动到目标位置中心
+            ctx.translate(destX + destSize / 2, destY + destSize / 2);
+            
+            // 应用旋转
+            ctx.rotate(rotation * Math.PI / 180);
+            
+            // 应用翻转
+            ctx.scale(flipH ? -1 : 1, flipV ? -1 : 1);
+            
+            // 绘制瓦片（从中心点绘制）
+            ctx.drawImage(
+                img,
+                tileX * SIZE, tileY * SIZE, SIZE, SIZE,
+                -destSize / 2, -destSize / 2, destSize, destSize
+            );
+            
+            ctx.restore();
+        }
+        
+        function resize() {
+            const newW = parseInt(document.getElementById('w').value);
+            const newH = parseInt(document.getElementById('h').value);
+            if (newW < 5 || newW > 40 || newH < 5 || newH > 40) {
+                alert('大小必须在5-40之间');
+                return;
+            }
+            
+            // 保存旧数据
+            const oldW = w;
+            const oldH = h;
+            
+            // 更新尺寸
+            w = newW;
+            h = newH;
+            
+            // 更新画布实际大小（像素）
+            mc.width = w * SIZE;
+            mc.height = h * SIZE;
+            
+            // 重新初始化图层数据，保留旧数据
+            layers.forEach(layer => {
+                const oldData = layer.data;
+                layer.data = Array(h).fill().map(() => Array(w).fill().map(() => ({x:-1,y:-1,r:0,fh:false,fv:false,collision:false})));
+                
+                // 复制旧数据到新数组
+                if (oldData && oldData.length > 0) {
+                    for (let y = 0; y < Math.min(oldH, h); y++) {
+                        for (let x = 0; x < Math.min(oldW, w); x++) {
+                            layer.data[y][x] = oldData[y][x];
+                        }
+                    }
+                }
+            });
+            
+            updateLayerList();
+            draw();
+        }
+        
+        function updateLayerList() {
+            const list = document.getElementById('layerList');
+            list.innerHTML = '';
+            
+            layers.forEach((layer, idx) => {
+                const div = document.createElement('div');
+                div.className = 'layer-item';
+                div.draggable = true;
+                div.dataset.index = idx;
+                
+                if (idx === currentLayer) {
+                    div.classList.add('active');
+                }
+                
+                // 图层顺序号（0是最底层）
+                const orderSpan = document.createElement('span');
+                orderSpan.className = 'layer-order';
+                orderSpan.textContent = idx;
+                orderSpan.title = '图层顺序（0=最底层）';
+                
+                // 创建复选框
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.checked = layer.visible;
+                checkbox.style.cssText = 'cursor: pointer; flex-shrink: 0;';
+                checkbox.onclick = (e) => {
+                    e.stopPropagation();
+                    toggleLayerVisibility(idx);
+                };
+                
+                // 创建文字容器
+                const textContainer = document.createElement('div');
+                textContainer.style.cssText = 'flex: 1; min-width: 0; overflow: hidden;';
+                
+                const nameSpan = document.createElement('div');
+                nameSpan.textContent = layer.name;
+                nameSpan.style.cssText = 'font-weight: bold; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;';
+                
+                const tilesetName = layer.tileset ? layer.tileset.split('/').pop().substring(0, 20) : '未设置';
+                const tilesetSpan = document.createElement('div');
+                tilesetSpan.textContent = tilesetName;
+                tilesetSpan.style.cssText = 'font-size: 10px; opacity: 0.7; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;';
+                
+                textContainer.appendChild(nameSpan);
+                textContainer.appendChild(tilesetSpan);
+                
+                // 创建锁图标
+                const lockIcon = document.createElement('span');
+                lockIcon.textContent = layer.locked ? '🔒' : '🔓';
+                lockIcon.style.cssText = 'font-size: 16px; cursor: pointer; padding: 4px; flex-shrink: 0;';
+                lockIcon.onclick = (e) => {
+                    e.stopPropagation();
+                    toggleLayerLock(idx);
+                };
+                
+                div.appendChild(orderSpan);
+                div.appendChild(checkbox);
+                div.appendChild(textContainer);
+                div.appendChild(lockIcon);
+                
+                // 拖动事件
+                div.ondragstart = (e) => {
+                    e.dataTransfer.effectAllowed = 'move';
+                    e.dataTransfer.setData('text/plain', idx);
+                    div.classList.add('dragging');
+                };
+                
+                div.ondragend = (e) => {
+                    div.classList.remove('dragging');
+                };
+                
+                div.ondragover = (e) => {
+                    e.preventDefault();
+                    e.dataTransfer.dropEffect = 'move';
+                };
+                
+                div.ondrop = (e) => {
+                    e.preventDefault();
+                    const fromIndex = parseInt(e.dataTransfer.getData('text/plain'));
+                    const toIndex = idx;
+                    
+                    if (fromIndex !== toIndex) {
+                        // 移动图层
+                        const movedLayer = layers.splice(fromIndex, 1)[0];
+                        layers.splice(toIndex, 0, movedLayer);
+                        
+                        // 更新当前图层索引
+                        if (currentLayer === fromIndex) {
+                            currentLayer = toIndex;
+                        } else if (fromIndex < currentLayer && toIndex >= currentLayer) {
+                            currentLayer--;
+                        } else if (fromIndex > currentLayer && toIndex <= currentLayer) {
+                            currentLayer++;
+                        }
+                        
+                        updateLayerList();
+                        draw();
+                    }
+                };
+                
+                div.onclick = () => {
+                    currentLayer = idx;
+                    
+                    // 切换到该图层的瓦片集
+                    if (layer.tileset) {
+                        // 图层有瓦片集，加载它
+                        path = layer.tileset;
+                        SIZE = layer.tileSize || 48;
+                        
+                        // 更新UI
+                        const select = document.getElementById('tileset');
+                        for (let i = 0; i < select.options.length; i++) {
+                            if (select.options[i].value === path) {
+                                select.selectedIndex = i;
+                                break;
+                            }
+                        }
+                        document.getElementById('tileSize').value = SIZE;
+                        
+                        // 重新加载瓦片集预览
+                        img = new Image();
+                        img.onload = () => {
+                            cols = Math.floor(img.width / SIZE);
+                            rows = Math.floor(img.height / SIZE);
+                            tc.width = img.width;
+                            tc.height = img.height;
+                            drawTileset();
+                        };
+                        img.src = path;
+                    } else {
+                        // 图层没有瓦片集，使用当前瓦片集并保存到图层
+                        if (path) {
+                            layer.tileset = path;
+                            layer.tileSize = SIZE;
+                            console.log(`图层 ${idx} 自动设置瓦片集:`, path);
+                        } else {
+                            console.warn(`图层 ${idx} 没有瓦片集，请先选择瓦片集`);
+                        }
+                    }
+                    
+                    updateLayerList();
+                    draw();
+                };
+                
+                list.appendChild(div);
+            });
+        }
+        
+        function toggleLayerVisibility(idx) {
+            layers[idx].visible = !layers[idx].visible;
+            updateLayerList();
+            draw();
+        }
+        
+        function toggleLayerLock(idx) {
+            layers[idx].locked = !layers[idx].locked;
+            updateLayerList();
+        }
+        
+        function addLayer() {
+            const name = prompt('图层名称:', `图层 ${layers.length + 1}`);
+            if (name) {
+                // 确保使用当前的瓦片集和尺寸
+                const newLayer = {
+                    name: name,
+                    data: Array(h).fill().map(() => Array(w).fill().map(() => ({x:-1,y:-1,r:0,fh:false,fv:false,collision:false}))),
+                    visible: true,
+                    locked: false,
+                    tileset: path || '',  // 使用当前瓦片集
+                    tileSize: SIZE
+                };
+                
+                layers.push(newLayer);
+                currentLayer = layers.length - 1;
+                
+                console.log('新图层已添加:', newLayer);
+                console.log('当前图层索引:', currentLayer);
+                console.log('总图层数:', layers.length);
+                
+                updateLayerList();
+                draw();
+                
+                alert(`图层"${name}"已添加！\n当前编辑图层: ${currentLayer}\n瓦片集: ${path ? path.split('/').pop() : '未设置'}`);
+            }
+        }
+        
+        function deleteLayer() {
+            if (layers.length <= 1) {
+                alert('至少需要保留一个图层！');
+                return;
+            }
+            if (confirm(`确定删除图层"${layers[currentLayer].name}"？`)) {
+                layers.splice(currentLayer, 1);
+                currentLayer = Math.min(currentLayer, layers.length - 1);
+                updateLayerList();
+                draw();
+            }
+        }
+        
+        function clear() {
+            if (confirm(`确定清空图层"${layers[currentLayer].name}"？`)) {
+                layers[currentLayer].data = Array(h).fill().map(() => Array(w).fill().map(() => ({x:-1,y:-1,r:0,fh:false,fv:false,collision:false})));
+                draw();
+            }
+        }
+        
+        function exportMap() {
+            const json = JSON.stringify(buildMapPayload(), null, 2);
+            document.getElementById('data').value = json;
+            navigator.clipboard.writeText(json).then(() => alert('已复制到剪贴板！\n\n包含所有图层数据'));
+        }
+
+        function buildMapPayload() {
+            return {
+                width: w,
+                height: h,
+                tileSize: SIZE,
+                tileset: path,
+                layers: layers
+            };
+        }
+        
+        function exportMapToFile() {
+            const json = JSON.stringify(buildMapPayload(), null, 2);
+            
+            // 创建Blob
+            const blob = new Blob([json], { type: 'application/json' });
+            
+            // 创建下载链接
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            
+            // 生成文件名（使用时间戳）
+            const timestamp = new Date().toISOString().replace(/[:.]/g, '-').substring(0, 19);
+            a.download = `map_${w}x${h}_${timestamp}.json`;
+            
+            // 触发下载
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            
+            // 释放URL
+            URL.revokeObjectURL(url);
+            
+            alert(`地图已导出为文件！\n文件名: ${a.download}\n尺寸: ${w}x${h}\n图层数: ${layers.length}`);
+        }
+        
+        function importMap() {
+            try {
+                const json = document.getElementById('data').value;
+                if (!json.trim()) {
+                    alert('请先粘贴JSON数据到文本框中');
+                    return;
+                }
+                
+                const data = JSON.parse(json);
+                
+                // 验证数据格式
+                if (!data.width || !data.height || !data.layers) {
+                    alert('无效的地图数据格式');
+                    return;
+                }
+                
+                // 导入数据
+                w = data.width;
+                h = data.height;
+                SIZE = data.tileSize || 48;
+                layers = data.layers;
+                currentLayer = 0;
+                
+                // 更新UI
+                document.getElementById('w').value = w;
+                document.getElementById('h').value = h;
+                document.getElementById('tileSize').value = SIZE;
+                
+                // 如果有瓦片集路径，尝试加载
+                if (data.tileset) {
+                    path = data.tileset;
+                    const select = document.getElementById('tileset');
+                    for (let i = 0; i < select.options.length; i++) {
+                        if (select.options[i].value === path) {
+                            select.selectedIndex = i;
+                            break;
+                        }
+                    }
+                    loadTileset();
+                }
+                
+                mc.width = w * SIZE;
+                mc.height = h * SIZE;
+                updateLayerList();
+                draw();
+                
+                alert('地图导入成功！');
+            } catch (e) {
+                alert('导入失败：' + e.message);
+            }
+        }
+        
+        function test() {
+            localStorage.setItem('testMap', JSON.stringify(buildMapPayload()));
+            window.open('/editor-runtime/map-test', '_blank');
+        }
+
+        function getAuthToken() {
+            return document.getElementById('authToken').value.trim();
+        }
+
+        function getApiUrl() {
+            const input = document.getElementById('apiUrl').value.trim().replace(/\/$/, '');
+            // 如果为空，使用当前域名（通过Next.js rewrites代理）
+            return input || '';
+        }
+
+        async function saveMapToDatabase() {
+            const token = getAuthToken();
+            const apiUrl = getApiUrl();
+
+            if (!token) {
+                alert('请先填写登录 Token');
+                return;
+            }
+
+            const response = await fetch(`${apiUrl}/api/game/map`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ map: buildMapPayload() })
+            });
+
+            const data = await response.json();
+            if (!response.ok) {
+                alert(`保存失败: ${data.error || '未知错误'}`);
+                return;
+            }
+
+            alert('地图已保存到数据库！登录后的用户会读取这张地图。');
+        }
+
+        async function loadMapFromDatabase() {
+            const token = getAuthToken();
+            const apiUrl = getApiUrl();
+
+            if (!token) {
+                alert('请先填写登录 Token');
+                return;
+            }
+
+            const response = await fetch(`${apiUrl}/api/game/map`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            const data = await response.json();
+            if (!response.ok) {
+                alert(`加载失败: ${data.error || '未知错误'}`);
+                return;
+            }
+
+            if (!data.map) {
+                alert('数据库里还没有保存地图');
+                return;
+            }
+
+            document.getElementById('data').value = JSON.stringify(data.map, null, 2);
+            importMap();
+        }
+        
+        function updateCollisionMode() {
+            collisionMode = document.getElementById('collisionMode').checked;
+        }
+        
+        document.onkeydown = (e) => {
+            if (e.key === 'b' || e.key === 'B') { tool = 'brush'; updateTool(); }
+            if (e.key === 'e' || e.key === 'E') { tool = 'eraser'; updateTool(); }
+            if (e.key === 'r' || e.key === 'R') { rotate(90); }
+            if (e.key === 'h' || e.key === 'H') { flipH = !flipH; updateTransform(); }
+            if (e.key === 'v' || e.key === 'V') { flipV = !flipV; updateTransform(); }
+        };
+        
+        loadTileset();
+        init();
+        try {
+            const storedToken = localStorage.getItem('sales-simulator-token');
+            if (storedToken) {
+                document.getElementById('authToken').value = storedToken;
+            }
+        } catch (e) {}
+    </script>
+</body>
+</html>

@@ -1,0 +1,15 @@
+node_modules/
+dist/
+.env
+.env.local
+.env.production
+*.log
+.DS_Store
+resource/
+tileset-editor.html
+map-test.html
+character-editor.html
+character-customizer.html
+character-creator.html
+test-character-assets.html
+test-assets.html

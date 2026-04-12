@@ -1,0 +1,163 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* 导入像素风格字体 */
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+:root {
+  --background: #120a1f;
+  --foreground: #f7edd0;
+  --pixel-ink: #2b163d;
+  --pixel-panel: #1a102c;
+  --pixel-panel-soft: #f6ebc2;
+  --pixel-accent: #73e5ff;
+  --pixel-warm: #ffcb71;
+  --pixel-success: #63d58a;
+  --pixel-danger: #ff928a;
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: "Trebuchet MS", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+/* 游戏画布样式 */
+#game-container {
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+}
+
+/* 像素风格图片渲染 */
+.pixel-art {
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+}
+
+/* 像素风格按钮动画 */
+@keyframes pixel-pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+.pixel-button-hover:hover {
+  animation: pixel-pulse 0.3s ease-in-out;
+}
+
+@layer components {
+  .font-pixel {
+    font-family: "Press Start 2P", "Courier New", monospace;
+  }
+
+  .pixel-auth-bg {
+    background:
+      radial-gradient(circle at top, rgba(115, 229, 255, 0.12), transparent 28%),
+      linear-gradient(180deg, #2f1b4c 0%, #150d25 45%, #090610 100%);
+  }
+
+  .pixel-frame {
+    border: 6px solid var(--pixel-ink);
+    box-shadow:
+      0 0 0 4px rgba(255, 255, 255, 0.06),
+      12px 12px 0 rgba(8, 5, 15, 0.4);
+    background: rgba(16, 10, 29, 0.94);
+  }
+
+  .pixel-subframe {
+    border: 4px solid var(--pixel-ink);
+    box-shadow: 6px 6px 0 rgba(26, 16, 44, 0.14);
+  }
+
+  .pixel-stage {
+    border: 4px solid rgba(255, 255, 255, 0.12);
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.04), transparent),
+      #120a22;
+  }
+
+  .pixel-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    border: 3px solid var(--pixel-ink);
+    background: rgba(20, 11, 36, 0.8);
+    padding: 0.55rem 0.9rem;
+    font-family: "Press Start 2P", "Courier New", monospace;
+    font-size: 0.6rem;
+    line-height: 1.4;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+
+  .pixel-button {
+    border: 4px solid var(--pixel-ink);
+    background: linear-gradient(180deg, #ffd67e 0%, #ffae4c 100%);
+    box-shadow: 0 6px 0 rgba(43, 22, 61, 0.28);
+    transition:
+      transform 120ms ease,
+      box-shadow 120ms ease,
+      filter 120ms ease;
+  }
+
+  .pixel-button:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 0 9px 0 rgba(43, 22, 61, 0.28);
+    filter: brightness(1.03);
+  }
+
+  .pixel-button:active {
+    transform: translate(0, 2px);
+    box-shadow: 0 4px 0 rgba(43, 22, 61, 0.28);
+  }
+
+  .pixel-secondary-button {
+    border: 4px solid var(--pixel-ink);
+    background: linear-gradient(180deg, #fff7de 0%, #ead8aa 100%);
+    box-shadow: 0 5px 0 rgba(43, 22, 61, 0.16);
+    transition:
+      transform 120ms ease,
+      box-shadow 120ms ease;
+  }
+
+  .pixel-secondary-button:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 0 8px 0 rgba(43, 22, 61, 0.16);
+  }
+
+  .pixel-warning {
+    border: 4px solid rgba(255, 203, 113, 0.48);
+    background: rgba(255, 203, 113, 0.12);
+    padding: 1rem;
+    color: #fff0bf;
+    line-height: 1.8;
+  }
+
+  .pixel-scanlines::after {
+    content: "";
+    pointer-events: none;
+    position: absolute;
+    inset: 0;
+    background-image: linear-gradient(
+      to bottom,
+      rgba(255, 255, 255, 0.05) 0,
+      rgba(255, 255, 255, 0.05) 1px,
+      transparent 1px,
+      transparent 6px
+    );
+    opacity: 0.22;
+    mix-blend-mode: screen;
+  }
+}

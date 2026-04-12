@@ -1,0 +1,9 @@
+{
+  "/_not-found/page": "/_not-found",
+  "/auth/login/page": "/auth/login",
+  "/character-creator/page": "/character-creator",
+  "/page": "/",
+  "/game/page": "/game",
+  "/auth/callback/page": "/auth/callback",
+  "/editor/page": "/editor"
+}

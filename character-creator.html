@@ -1,0 +1,1053 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>角色创建 - Character Creator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=ZCOOL+QingKe+HuangYou&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --bg: #1a1230;
+      --bg-deep: #100a20;
+      --panel: #f8f1df;
+      --panel-soft: #eadfc4;
+      --panel-dark: #35274f;
+      --ink: #2f213f;
+      --muted: #6c5c77;
+      --line: #2c213d;
+      --accent: #ffb636;
+      --accent-dark: #d66f12;
+      --accent-red: #db4c40;
+      --accent-green: #4da65b;
+      --accent-blue: #4f72d8;
+      --highlight: #fff1a1;
+      --shadow: 0 8px 0 rgba(44, 33, 61, 0.95);
+      --pixel-border: 4px solid var(--line);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'ZCOOL QingKe HuangYou', 'Microsoft YaHei', sans-serif;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.05), transparent 28%),
+        linear-gradient(0deg, rgba(0, 0, 0, 0.14), rgba(0, 0, 0, 0.14)),
+        linear-gradient(135deg, #26184b 0%, #1b1436 45%, #43245b 100%);
+      color: var(--panel);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    body::before,
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    body::before {
+      background:
+        linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+        linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+      background-size: 24px 24px;
+      opacity: 0.28;
+    }
+
+    body::after {
+      background:
+        radial-gradient(circle at 12% 18%, rgba(255, 182, 54, 0.22), transparent 18%),
+        radial-gradient(circle at 82% 15%, rgba(79, 114, 216, 0.26), transparent 20%),
+        radial-gradient(circle at 70% 82%, rgba(219, 76, 64, 0.18), transparent 18%);
+      image-rendering: pixelated;
+    }
+
+    .container {
+      max-width: 1440px;
+      width: 100%;
+      background: linear-gradient(180deg, #f8f1df 0%, #f0e6ce 100%);
+      border: var(--pixel-border);
+      box-shadow:
+        0 0 0 6px rgba(255, 241, 161, 0.14),
+        0 18px 0 rgba(16, 10, 32, 0.85);
+      overflow: hidden;
+      color: var(--ink);
+      position: relative;
+    }
+
+    .container::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(90deg, rgba(53, 39, 79, 0.04) 50%, transparent 50%),
+        linear-gradient(rgba(53, 39, 79, 0.04) 50%, transparent 50%);
+      background-size: 8px 8px;
+      opacity: 0.4;
+      pointer-events: none;
+    }
+
+    .header {
+      background:
+        linear-gradient(180deg, rgba(255, 241, 161, 0.18), transparent 70%),
+        linear-gradient(135deg, #5d3a8f 0%, #3f2b6b 55%, #2c213d 100%);
+      padding: 10px 20px 8px;
+      color: #fff9df;
+      border-bottom: var(--pixel-border);
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .header-left {
+      flex: 0 0 auto;
+    }
+
+    .header-center {
+      flex: 1;
+      text-align: center;
+    }
+
+    .header-right {
+      flex: 0 0 auto;
+      width: 200px;
+    }
+
+    .header h1 {
+      font-size: clamp(18px, 3vw, 24px);
+      line-height: 1.1;
+      margin: 0;
+      letter-spacing: 0.5px;
+      text-shadow: 2px 2px 0 #2c213d;
+      text-align: left;
+    }
+
+    .header p {
+      opacity: 1;
+      font-size: 12px;
+      color: #f9e7b5;
+      margin: 2px 0 0 0;
+    }
+
+    .header-subtitle {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 7px;
+      letter-spacing: 1px;
+      color: #ffd36e;
+      text-shadow: 1px 1px 0 #2c213d;
+      margin-top: 4px;
+    }
+
+    .content {
+      display: grid;
+      grid-template-columns: 280px minmax(0, 1fr) 280px;
+      gap: 0;
+      position: relative;
+      z-index: 1;
+      height: calc(100vh - 80px);
+      max-height: 850px;
+    }
+
+    .sidebar {
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.5), transparent 20%),
+        linear-gradient(180deg, #efe4c7 0%, #e5d7b6 100%);
+      padding: 16px 14px 20px;
+      border-right: var(--pixel-border);
+      max-height: 760px;
+      overflow-y: auto;
+    }
+
+    .sidebar.right {
+      border-right: none;
+      border-left: var(--pixel-border);
+    }
+
+    .preview-area {
+      padding: 16px 28px 28px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      background:
+        radial-gradient(circle at top, rgba(255, 241, 161, 0.32), transparent 22%),
+        linear-gradient(180deg, #f8f1df 0%, #f4e8cb 100%);
+      min-height: 760px;
+    }
+
+    .layer-section {
+      margin-bottom: 24px;
+      background: rgba(255, 249, 233, 0.72);
+      border: 3px solid rgba(44, 33, 61, 0.22);
+      box-shadow: inset 0 0 0 3px rgba(255, 255, 255, 0.45);
+      padding: 14px;
+    }
+
+    .layer-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 24px;
+      color: var(--panel-dark);
+      margin-bottom: 14px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .layer-title i {
+      font-size: 18px;
+      width: 22px;
+      color: var(--accent-dark);
+    }
+
+    .layer-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+
+    .layer-item {
+      aspect-ratio: 1;
+      border: 3px solid #7a6c91;
+      cursor: pointer;
+      transition: transform 0.12s steps(2), box-shadow 0.12s steps(2), border-color 0.12s steps(2);
+      background:
+        linear-gradient(180deg, #fffaf0 0%, #efe4c7 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 4px 0 rgba(44, 33, 61, 0.35);
+    }
+
+    .layer-item:hover {
+      border-color: var(--accent);
+      transform: translate(-2px, -2px);
+      box-shadow: 2px 6px 0 rgba(44, 33, 61, 0.4);
+    }
+
+    .layer-item.active {
+      border-color: var(--accent-dark);
+      background:
+        linear-gradient(180deg, #ffe89d 0%, #ffc44e 100%);
+      box-shadow:
+        inset 0 0 0 3px rgba(255, 255, 255, 0.32),
+        0 4px 0 rgba(44, 33, 61, 0.45);
+    }
+
+    .layer-item canvas {
+      width: 100%;
+      height: 100%;
+      image-rendering: pixelated;
+    }
+
+    .layer-item.none {
+      font-size: 20px;
+      color: var(--muted);
+    }
+
+    .static-preview-section {
+      margin-bottom: 12px;
+      padding: 12px;
+      background: var(--panel-soft);
+      border: var(--pixel-border);
+      box-shadow: 0 8px 0 rgba(44, 33, 61, 0.25);
+    }
+
+    .static-preview-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+
+    .static-preview-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      padding: 10px;
+      background: linear-gradient(180deg, #fff 0%, #f5f5f5 100%);
+      border: var(--pixel-border);
+      box-shadow: 0 4px 0 rgba(44, 33, 61, 0.25);
+    }
+
+    .static-preview-item canvas {
+      image-rendering: pixelated;
+      width: 64px;
+      height: 64px;
+    }
+
+    .static-preview-item span {
+      font-size: 14px;
+      color: var(--ink);
+      font-weight: 600;
+    }
+
+    .interactive-preview-section {
+      position: relative;
+    }
+
+    .preview-label {
+      position: absolute;
+      top: 8px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(44, 33, 61, 0.9);
+      color: #ffd36e;
+      padding: 4px 12px;
+      border: 2px solid var(--accent);
+      font-size: 11px;
+      font-weight: 600;
+      z-index: 10;
+      box-shadow: 0 4px 0 rgba(0, 0, 0, 0.5);
+    }
+
+    .preview-canvas {
+      border: 6px solid var(--line);
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.28), transparent 60%),
+        linear-gradient(90deg, rgba(79, 114, 216, 0.12) 1px, transparent 1px),
+        linear-gradient(rgba(79, 114, 216, 0.12) 1px, transparent 1px),
+        linear-gradient(180deg, #b6d7ff 0%, #8ab7ff 38%, #6d97ef 38%, #7aa7fb 100%);
+      background-size: auto, 24px 24px, 24px 24px, auto;
+      image-rendering: pixelated;
+      box-shadow:
+        inset 0 0 0 4px rgba(255, 255, 255, 0.22),
+        0 10px 0 rgba(44, 33, 61, 0.85);
+      width: 100%;
+      height: auto;
+    }
+
+    .direction-tab {
+      flex: 1;
+      padding: 12px 10px;
+      border: 3px solid transparent;
+      background: #f8f1df;
+      cursor: pointer;
+      transition: transform 0.12s steps(2), background 0.12s steps(2), color 0.12s steps(2);
+      font-size: 24px;
+      color: var(--muted);
+      font-family: inherit;
+      box-shadow: inset 0 -3px 0 rgba(44, 33, 61, 0.12);
+    }
+
+    .direction-tab:hover {
+      background: #fff7d6;
+      color: var(--panel-dark);
+    }
+
+    .direction-tab.active {
+      background: linear-gradient(180deg, #7364d8 0%, #5943b8 100%);
+      color: #fff9df;
+      border-color: var(--line);
+      box-shadow:
+        inset 0 0 0 2px rgba(255, 255, 255, 0.16),
+        0 4px 0 rgba(44, 33, 61, 0.45);
+    }
+
+    .action-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .btn {
+      padding: 10px 14px;
+      border: var(--pixel-border);
+      font-size: 16px;
+      cursor: pointer;
+      transition: transform 0.12s steps(2), box-shadow 0.12s steps(2), filter 0.12s steps(2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      font-family: inherit;
+      box-shadow: var(--shadow);
+      text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.2);
+      position: relative;
+    }
+
+    .btn:hover {
+      transform: translate(-2px, -2px);
+      filter: brightness(1.03);
+    }
+
+    .btn:active {
+      transform: translate(0, 4px);
+      box-shadow: 0 4px 0 rgba(44, 33, 61, 0.95);
+    }
+
+    .btn-primary {
+      background: linear-gradient(180deg, #67cb74 0%, #3d9e52 100%);
+      color: #fff7d6;
+    }
+
+    .btn-secondary {
+      background: linear-gradient(180deg, #fff7dd 0%, #efdfb0 100%);
+      color: var(--panel-dark);
+    }
+
+    .btn-secondary:hover {
+      background: linear-gradient(180deg, #fff4c8 0%, #e9d48a 100%);
+    }
+
+    .info-box {
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.52), rgba(255, 255, 255, 0.2)),
+        linear-gradient(180deg, #efe4c7 0%, #e6d7b0 100%);
+      padding: 12px 10px;
+      border: var(--pixel-border);
+      font-size: 13px;
+      line-height: 1.4;
+      color: var(--ink);
+      margin-top: 14px;
+      box-shadow: 0 8px 0 rgba(44, 33, 61, 0.24);
+    }
+
+    .random-btn {
+      background: linear-gradient(180deg, #ff8d7f 0%, #db4c40 100%);
+      color: #fff7d6;
+    }
+
+    ::-webkit-scrollbar {
+      width: 14px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #d7c8a6;
+      border-left: 3px solid rgba(44, 33, 61, 0.18);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: linear-gradient(180deg, #6d59d3 0%, #473583 100%);
+      border: 3px solid #d7c8a6;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: linear-gradient(180deg, #7d68ec 0%, #524094 100%);
+    }
+
+    @media (max-width: 1180px) {
+      .content {
+        grid-template-columns: 280px minmax(0, 1fr);
+      }
+
+      .sidebar.right {
+        grid-column: 1 / -1;
+        border-left: none;
+        border-top: var(--pixel-border);
+      }
+    }
+
+    @media (max-width: 860px) {
+      body {
+        padding: 14px;
+      }
+
+      .content {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar,
+      .sidebar.right {
+        max-height: none;
+        border-left: none;
+        border-right: none;
+      }
+
+      .sidebar {
+        border-bottom: var(--pixel-border);
+      }
+
+      .preview-area {
+        min-height: auto;
+      }
+
+      .direction-tabs {
+        flex-wrap: wrap;
+      }
+
+      .direction-tab {
+        min-width: calc(50% - 5px);
+      }
+    }
+
+    @media (max-width: 560px) {
+      .header {
+        padding: 24px 18px 22px;
+      }
+
+      .header p {
+        font-size: 18px;
+      }
+
+      .sidebar,
+      .preview-area {
+        padding: 18px 14px;
+      }
+
+      .layer-title,
+      .direction-tab,
+      .info-box,
+      .btn {
+        font-size: 20px;
+      }
+
+      .layer-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="header-left">
+        <h1>创建你的角色</h1>
+      </div>
+      <div class="header-center">
+        <p>选择不同的外观组合，打造独一无二的角色形象</p>
+        <div class="header-subtitle">PIXEL AVATAR STATION</div>
+      </div>
+      <div class="header-right"></div>
+    </div>
+    
+    <div class="content">
+      <!-- 左侧：图层选择 -->
+      <div class="sidebar">
+        <div class="layer-section">
+          <div class="layer-title">
+            <i class="fas fa-head-side"></i>
+            <span>头发</span>
+          </div>
+          <div class="layer-grid" id="hairOptions"></div>
+        </div>
+
+        <div class="layer-section">
+          <div class="layer-title">
+            <i class="fas fa-eye"></i>
+            <span>眼睛</span>
+          </div>
+          <div class="layer-grid" id="eyesOptions"></div>
+        </div>
+
+        <div class="layer-section">
+          <div class="layer-title">
+            <i class="fas fa-user"></i>
+            <span>身体</span>
+          </div>
+          <div class="layer-grid" id="characterOptions"></div>
+        </div>
+
+        <div class="layer-section">
+          <div class="layer-title">
+            <i class="fas fa-shirt"></i>
+            <span>上衣</span>
+          </div>
+          <div class="layer-grid" id="topsOptions"></div>
+        </div>
+
+        <div class="layer-section">
+          <div class="layer-title">
+            <i class="fas fa-person"></i>
+            <span>裤子</span>
+          </div>
+          <div class="layer-grid" id="bottomsOptions"></div>
+        </div>
+
+        <div class="layer-section">
+          <div class="layer-title">
+            <i class="fas fa-shoe-prints"></i>
+            <span>鞋子</span>
+          </div>
+          <div class="layer-grid" id="shoesOptions"></div>
+        </div>
+      </div>
+
+      <!-- 中间：预览 -->
+      <div class="preview-area">
+        <!-- 上部：四个方向静态预览 -->
+        <div class="static-preview-section">
+          <div class="static-preview-grid">
+            <div class="static-preview-item">
+              <canvas id="staticFront" width="64" height="64"></canvas>
+              <span>前</span>
+            </div>
+            <div class="static-preview-item">
+              <canvas id="staticBack" width="64" height="64"></canvas>
+              <span>后</span>
+            </div>
+            <div class="static-preview-item">
+              <canvas id="staticLeft" width="64" height="64"></canvas>
+              <span>左</span>
+            </div>
+            <div class="static-preview-item">
+              <canvas id="staticRight" width="64" height="64"></canvas>
+              <span>右</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 下部：WASD自由活动区 -->
+        <div class="interactive-preview-section">
+          <div class="preview-label">自由活动区 (WASD控制)</div>
+          <canvas id="previewCanvas" class="preview-canvas" width="640" height="480"></canvas>
+        </div>
+      </div>
+
+      <!-- 右侧：操作 -->
+      <div class="sidebar right">
+        <div class="action-buttons">
+          <button class="btn random-btn" onclick="randomizeAppearance()">
+            <i class="fas fa-dice"></i>
+            随机生成
+          </button>
+          
+          <button class="btn btn-primary" onclick="saveAndContinue()">
+            <i class="fas fa-check"></i>
+            保存并继续
+          </button>
+          
+          <button class="btn btn-secondary" onclick="resetToDefault()">
+            <i class="fas fa-undo"></i>
+            重置
+          </button>
+        </div>
+
+        <div class="info-box" style="margin-top: 30px;">
+          <strong>提示：</strong><br>
+          • 点击图层选项进行选择<br>
+          • 使用WASD键控制角色移动<br>
+          • 使用随机生成快速创建<br>
+          • 保存后可随时修改
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const basePath = '/resource/32x32%20Customizable%20Character%20Pack/Walk';
+    
+    let currentLayers = {
+      character: 0,
+      tops: 0,
+      bottoms: 0,
+      shoes: 0,
+      hair: 0,
+      eyes: 0
+    };
+
+    let currentDirection = 'Front';
+    let characterX = 296; // 角色X位置 (640/2 - 24)
+    let characterY = 216; // 角色Y位置 (480/2 - 24)
+    let currentFrame = 0; // 当前动画帧
+    let isMoving = false; // 是否正在移动
+    let animationTimer = null;
+    let imageCache = {}; // 图片缓存
+
+    const layerVariants = {
+      character: 5,
+      tops: 29,
+      bottoms: 14,
+      shoes: 10,
+      hair: 25,
+      eyes: 4
+    };
+
+    const layerFiles = {
+      character: 'Character_Walk',
+      tops: 'Clothing_Tops_Walk',
+      bottoms: 'Clothing_Bottoms_Walk',
+      shoes: 'Clothing_Shoes_Walk',
+      hair: 'Hair_Walk',
+      eyes: 'Eyes_Walk'
+    };
+
+    function getLayerFolder(layer) {
+      const folders = {
+        character: 'Character',
+        tops: 'Clothing',
+        bottoms: 'Clothing',
+        shoes: 'Clothing',
+        hair: 'Hair',
+        eyes: 'Eyes'
+      };
+      return folders[layer];
+    }
+
+    function init() {
+      loadLayerOptions();
+      setupKeyboardControls();
+      updateStaticPreviews();
+      
+      // 尝试加载已保存的外观
+      loadSavedAppearance();
+      
+      // 启动动画循环
+      startAnimationLoop();
+    }
+
+    // 更新静态预览（四个方向）
+    async function updateStaticPreviews() {
+      const directions = ['Front', 'Back', 'Left', 'Right'];
+      
+      for (const dir of directions) {
+        const canvas = document.getElementById(`static${dir}`);
+        const ctx = canvas.getContext('2d');
+        ctx.imageSmoothingEnabled = false;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        const layers = ['character', 'shoes', 'bottoms', 'tops', 'hair', 'eyes'];
+        
+        for (const layer of layers) {
+          // 眼睛在背面方向不显示
+          if (layer === 'eyes' && dir === 'Back') continue;
+          
+          const fileName = layerFiles[layer];
+          const folder = getLayerFolder(layer);
+          const direction = (layer === 'eyes' && dir === 'Back') ? 'Front' : dir;
+          const imgPath = `${basePath}/${folder}/${fileName}_${direction}-Sheet.png`;
+          const variantIndex = currentLayers[layer];
+          
+          await drawStaticLayer(ctx, imgPath, variantIndex);
+        }
+      }
+    }
+
+    function drawStaticLayer(ctx, imgPath, variantIndex) {
+      return new Promise((resolve) => {
+        if (imageCache[imgPath]) {
+          const img = imageCache[imgPath];
+          ctx.drawImage(
+            img,
+            0, variantIndex * 32, 32, 32,
+            8, 8, 48, 48
+          );
+          resolve();
+        } else {
+          const img = new Image();
+          img.onload = () => {
+            imageCache[imgPath] = img;
+            ctx.drawImage(
+              img,
+              0, variantIndex * 32, 32, 32,
+              8, 8, 48, 48
+            );
+            resolve();
+          };
+          img.onerror = () => resolve();
+          img.src = imgPath;
+        }
+      });
+    }
+
+    function loadLayerOptions() {
+      const layers = ['hair', 'eyes', 'character', 'tops', 'bottoms', 'shoes'];
+      
+      layers.forEach(layer => {
+        const container = document.getElementById(`${layer}Options`);
+        const variantCount = layerVariants[layer];
+        
+        for (let i = 0; i < variantCount; i++) {
+          const option = document.createElement('div');
+          option.className = 'layer-item';
+          option.onclick = () => selectLayer(layer, i);
+          if (currentLayers[layer] === i) option.classList.add('active');
+          
+          const preview = document.createElement('canvas');
+          preview.width = 32;
+          preview.height = 32;
+          const ctx = preview.getContext('2d');
+          ctx.imageSmoothingEnabled = false;
+          
+          const img = new Image();
+          img.onload = () => {
+            // 不同图层需要不同的偏移量
+            let offsetY = 0;
+            if (layer === 'shoes') offsetY = -8;
+            else if (layer === 'bottoms') offsetY = -4;
+            else if (layer === 'tops') offsetY = -2;
+            
+            ctx.drawImage(img, 0, i * 32, 32, 32, 0, offsetY, 32, 32);
+          };
+          img.onerror = () => {
+            ctx.fillStyle = '#f0f0f0';
+            ctx.fillRect(0, 0, 32, 32);
+          };
+          
+          const fileName = layerFiles[layer];
+          const folder = getLayerFolder(layer);
+          // Eyes没有Back方向，使用Front代替
+          const direction = (layer === 'eyes' && currentDirection === 'Back') ? 'Front' : currentDirection;
+          img.src = `${basePath}/${folder}/${fileName}_${direction}-Sheet.png`;
+          
+          option.appendChild(preview);
+          container.appendChild(option);
+        }
+      });
+    }
+
+    function selectLayer(layer, index) {
+      currentLayers[layer] = index;
+      
+      const container = document.getElementById(`${layer}Options`);
+      const options = container.querySelectorAll('.layer-item');
+      options.forEach((opt, i) => {
+        opt.classList.toggle('active', i === index);
+      });
+      
+      updateStaticPreviews();
+    }
+
+    function setupDirectionTabs() {
+      const tabs = document.querySelectorAll('.direction-tab');
+      tabs.forEach(tab => {
+        tab.onclick = () => {
+          tabs.forEach(t => t.classList.remove('active'));
+          tab.classList.add('active');
+          currentDirection = tab.dataset.direction;
+          updatePreview();
+        };
+      });
+    }
+
+    async function updatePreview() {
+      const canvas = document.getElementById('previewCanvas');
+      const ctx = canvas.getContext('2d');
+      ctx.imageSmoothingEnabled = false;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // 绘制背景网格
+      ctx.fillStyle = '#d4e8ff';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      
+      ctx.strokeStyle = '#b8d4f0';
+      ctx.lineWidth = 1;
+      for (let x = 0; x < canvas.width; x += 32) {
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, canvas.height);
+        ctx.stroke();
+      }
+      for (let y = 0; y < canvas.height; y += 32) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(canvas.width, y);
+        ctx.stroke();
+      }
+
+      const layers = ['character', 'shoes', 'bottoms', 'tops', 'hair', 'eyes'];
+      
+      for (const layer of layers) {
+        // 眼睛在背面方向不显示
+        if (layer === 'eyes' && currentDirection === 'Back') continue;
+        
+        const fileName = layerFiles[layer];
+        const folder = getLayerFolder(layer);
+        // Eyes没有Back方向，使用Front代替
+        const direction = (layer === 'eyes' && currentDirection === 'Back') ? 'Front' : currentDirection;
+        const imgPath = `${basePath}/${folder}/${fileName}_${direction}-Sheet.png`;
+        const variantIndex = currentLayers[layer];
+        
+        await drawLayerFrame(ctx, imgPath, variantIndex);
+      }
+    }
+
+    function drawLayerFrame(ctx, imgPath, variantIndex) {
+      return new Promise((resolve) => {
+        // 使用缓存
+        if (imageCache[imgPath]) {
+          const img = imageCache[imgPath];
+          ctx.drawImage(
+            img,
+            currentFrame * 32, variantIndex * 32, 32, 32,
+            characterX, characterY, 48, 48
+          );
+          resolve();
+        } else {
+          const img = new Image();
+          img.onload = () => {
+            imageCache[imgPath] = img;
+            ctx.drawImage(
+              img,
+              currentFrame * 32, variantIndex * 32, 32, 32,
+              characterX, characterY, 48, 48
+            );
+            resolve();
+          };
+          img.onerror = () => resolve();
+          img.src = imgPath;
+        }
+      });
+    }
+
+    // 设置键盘控制
+    function setupKeyboardControls() {
+      const keys = {};
+      
+      window.addEventListener('keydown', (e) => {
+        const key = e.key.toLowerCase();
+        
+        // 只处理WASD键
+        if (!['w', 'a', 's', 'd'].includes(key)) return;
+        
+        e.preventDefault(); // 防止页面滚动
+        keys[key] = true;
+        
+        // 检测移动
+        if (keys['w'] || keys['a'] || keys['s'] || keys['d']) {
+          isMoving = true;
+          
+          // 更新方向
+          if (keys['w']) currentDirection = 'Back';
+          else if (keys['s']) currentDirection = 'Front';
+          else if (keys['a']) currentDirection = 'Left';
+          else if (keys['d']) currentDirection = 'Right';
+        }
+      });
+      
+      window.addEventListener('keyup', (e) => {
+        const key = e.key.toLowerCase();
+        keys[key] = false;
+        
+        // 检查是否还有移动键按下
+        if (!keys['w'] && !keys['a'] && !keys['s'] && !keys['d']) {
+          isMoving = false;
+          currentFrame = 0; // 停止时回到第一帧
+        }
+      });
+      
+      // 持续更新角色位置
+      function updateMovement() {
+        if (isMoving) {
+          const speed = 3;
+          
+          if (keys['w'] && characterY > 0) {
+            characterY -= speed;
+            currentDirection = 'Back';
+          }
+          if (keys['s'] && characterY < 432) {
+            characterY += speed;
+            currentDirection = 'Front';
+          }
+          if (keys['a'] && characterX > 0) {
+            characterX -= speed;
+            currentDirection = 'Left';
+          }
+          if (keys['d'] && characterX < 592) {
+            characterX += speed;
+            currentDirection = 'Right';
+          }
+        }
+        
+        requestAnimationFrame(updateMovement);
+      }
+      
+      updateMovement();
+    }
+
+    // 动画循环
+    function startAnimationLoop() {
+      let frameCounter = 0;
+      
+      function animate() {
+        frameCounter++;
+        
+        // 每6帧更新一次动画帧
+        if (isMoving && frameCounter % 6 === 0) {
+          currentFrame = (currentFrame + 1) % 4;
+        }
+        
+        updatePreview();
+        requestAnimationFrame(animate);
+      }
+      
+      animate();
+    }
+
+    function randomizeAppearance() {
+      Object.keys(layerVariants).forEach(layer => {
+        const randomIndex = Math.floor(Math.random() * layerVariants[layer]);
+        selectLayer(layer, randomIndex);
+      });
+    }
+
+    function resetToDefault() {
+      Object.keys(currentLayers).forEach(layer => {
+        selectLayer(layer, 0);
+      });
+    }
+
+    async function saveAndContinue() {
+      const token = localStorage.getItem('sales-simulator-token');
+      if (!token) {
+        alert('请先登录！');
+        window.location.href = '/';
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/game/character-appearance', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ appearance: currentLayers })
+        });
+
+        if (response.ok) {
+          alert('角色外观已保存！');
+          window.location.href = '/game';
+        } else {
+          alert('保存失败，请重试');
+        }
+      } catch (error) {
+        console.error('保存失败:', error);
+        alert('保存失败，请重试');
+      }
+    }
+
+    async function loadSavedAppearance() {
+      const token = localStorage.getItem('sales-simulator-token');
+      if (!token) return;
+
+      try {
+        const response = await fetch('/api/game/character-appearance', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          if (data.appearance) {
+            currentLayers = data.appearance;
+            Object.keys(currentLayers).forEach(layer => {
+              selectLayer(layer, currentLayers[layer]);
+            });
+          }
+        }
+      } catch (error) {
+        console.error('加载外观失败:', error);
+      }
+    }
+
+    init();
+  </script>
+</body>
+</html>

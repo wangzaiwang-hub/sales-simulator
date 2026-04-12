@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>测试素材加载</title>
+  <style>
+    body {
+      font-family: monospace;
+      padding: 20px;
+      background: #1a1a1a;
+      color: #fff;
+    }
+    img {
+      border: 2px solid #fff;
+      margin: 10px;
+      image-rendering: pixelated;
+    }
+    .test-item {
+      margin: 20px 0;
+      padding: 10px;
+      background: #2a2a2a;
+      border-radius: 8px;
+    }
+  </style>
+</head>
+<body>
+  <h1>🧪 素材加载测试</h1>
+  
+  <div class="test-item">
+    <h2>测试1: Character</h2>
+    <img src="/resource/32x32 Customizable Character Pack/Walk/Character/Character_Walk_Front-Sheet.png" width="96" height="32">
+    <p>路径: /resource/32x32 Customizable Character Pack/Walk/Character/Character_Walk_Front-Sheet.png</p>
+  </div>
+
+  <div class="test-item">
+    <h2>测试2: Clothing</h2>
+    <img src="/resource/32x32 Customizable Character Pack/Walk/Clothing/Clothing_Tops_Walk_Front-Sheet.png" width="96" height="32">
+    <p>路径: /resource/32x32 Customizable Character Pack/Walk/Clothing/Clothing_Tops_Walk_Front-Sheet.png</p>
+  </div>
+
+  <div class="test-item">
+    <h2>测试3: Hair</h2>
+    <img src="/resource/32x32 Customizable Character Pack/Walk/Hair/Hair_Walk_Front-Sheet.png" width="96" height="32">
+    <p>路径: /resource/32x32 Customizable Character Pack/Walk/Hair/Hair_Walk_Front-Sheet.png</p>
+  </div>
+
+  <div class="test-item">
+    <h2>测试4: Eyes</h2>
+    <img src="/resource/32x32 Customizable Character Pack/Walk/Eyes/Eyes_Walk_Front-Sheet.png" width="96" height="32">
+    <p>路径: /resource/32x32 Customizable Character Pack/Walk/Eyes/Eyes_Walk_Front-Sheet.png</p>
+  </div>
+
+  <script>
+    // 监听图片加载
+    document.querySelectorAll('img').forEach((img, index) => {
+      img.onload = () => {
+        console.log(`✅ 图片${index + 1}加载成功:`, img.src);
+      };
+      img.onerror = () => {
+        console.error(`❌ 图片${index + 1}加载失败:`, img.src);
+        img.style.border = '2px solid red';
+      };
+    });
+  </script>
+</body>
+</html>

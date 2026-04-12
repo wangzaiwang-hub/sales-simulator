@@ -1,0 +1,883 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <base href="/">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>地图测试</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+        canvas {
+            border: 2px solid #333;
+            background: #000;
+            image-rendering: pixelated;
+        }
+        .controls {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px;
+            border-radius: 4px;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+            z-index: 100;
+        }
+        .controls label {
+            cursor: pointer;
+            user-select: none;
+        }
+        /* 对话框 */
+        #dialogBox {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.9);
+            border: 4px solid #4CAF50;
+            border-radius: 12px;
+            padding: 30px;
+            min-width: 400px;
+            max-width: 600px;
+            z-index: 1000;
+            box-shadow: 0 0 30px rgba(76, 175, 80, 0.5);
+        }
+        #dialogBox h2 {
+            color: #4CAF50;
+            margin: 0 0 15px 0;
+            font-size: 24px;
+        }
+        #dialogBox p {
+            color: #fff;
+            font-size: 16px;
+            line-height: 1.6;
+            margin: 0 0 20px 0;
+            white-space: pre-line;
+        }
+        #dialogBox button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+        }
+        #dialogBox button:hover {
+            background: #45a049;
+        }
+    </style>
+</head>
+<body>
+
+    
+    <div class="controls">
+        <label>
+            <input type="checkbox" id="showCollisionToggle" onchange="toggleCollisionDisplay()"> 
+            碰撞区域
+        </label>
+    </div>
+    
+    <canvas id="gameCanvas"></canvas>
+    
+    <!-- 对话框 -->
+    <div id="dialogBox">
+        <h2 id="npcName">NPC名字</h2>
+        <p id="npcMessage">对话内容</p>
+        <button onclick="closeDialog()">关闭 (空格)</button>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // 从localStorage加载地图
+        let mapConfig;
+        try {
+            mapConfig = JSON.parse(localStorage.getItem('testMap'));
+            if (!mapConfig) {
+                alert('没有找到地图数据！请先在编辑器中创建地图。');
+                window.close();
+            }
+        } catch (e) {
+            alert('加载地图失败：' + e.message);
+            window.close();
+        }
+        
+        const TILE_SIZE = mapConfig.tileSize || 48;
+        const mapWidth = mapConfig.width;
+        const mapHeight = mapConfig.height;
+        const layers = mapConfig.layers || [];
+        
+        canvas.width = mapWidth * TILE_SIZE;
+        canvas.height = mapHeight * TILE_SIZE;
+        
+        // 加载所有图层的瓦片集图片
+        const tilesetImages = {};
+        let loadedCount = 0;
+        let totalToLoad = 0;
+        
+        // 统计需要加载的瓦片集
+        const uniqueTilesets = new Set();
+        layers.forEach(layer => {
+            if (layer.tileset) {
+                uniqueTilesets.add(layer.tileset);
+            }
+        });
+        totalToLoad = uniqueTilesets.size;
+        
+        // 加载所有瓦片集
+        uniqueTilesets.forEach(tilesetPath => {
+            const img = new Image();
+            img.onload = () => {
+                loadedCount++;
+                console.log(`瓦片集已加载 (${loadedCount}/${totalToLoad}):`, tilesetPath);
+            };
+            img.onerror = () => {
+                console.error('瓦片集加载失败:', tilesetPath);
+                loadedCount++;
+            };
+            img.src = tilesetPath;
+            tilesetImages[tilesetPath] = img;
+        });
+        
+        // 游戏状态
+        const game = {
+            player: {
+                x: TILE_SIZE * 2,
+                y: TILE_SIZE * 2,
+                width: 48,
+                height: 48,
+                // 碰撞箱（只检测脚部）
+                collisionWidth: 24,
+                collisionHeight: 16,
+                collisionOffsetX: 12,  // 碰撞箱相对于角色的偏移
+                collisionOffsetY: 32,
+                speed: 3,
+                direction: 'Front',
+                currentFrame: 0,
+                frameCount: 0,
+                animationSpeed: 6,
+                isMoving: false
+            },
+            keys: {},
+            npcs: [],
+            showDialog: false,
+            currentNPC: null
+        };
+        
+        // 加载角色精灵图（玩家使用CGS角色）
+        const playerSprite = new Image();
+        playerSprite.src = 'resource/CGS_RU_HouseFree/img/characters/CGS_Char_1.png';
+        
+        // 旧的32x32可定制角色包（备用）
+        const sprites = {
+            body: {},
+            tops: {},
+            bottoms: {},
+            hair: {},
+            eyes: {}
+        };
+        
+        ['Front', 'Back', 'Left', 'Right'].forEach(dir => {
+            sprites.body[`walk${dir}`] = new Image();
+            sprites.body[`walk${dir}`].src = `resource/32x32 Customizable Character Pack/Walk/Character/Character_Walk_${dir}-Sheet.png`;
+            
+            sprites.tops[`walk${dir}`] = new Image();
+            sprites.tops[`walk${dir}`].src = `resource/32x32 Customizable Character Pack/Walk/Clothing/Clothing_Tops_Walk_${dir}-Sheet.png`;
+            
+            sprites.bottoms[`walk${dir}`] = new Image();
+            sprites.bottoms[`walk${dir}`].src = `resource/32x32 Customizable Character Pack/Walk/Clothing/Clothing_Bottoms_Walk_${dir}-Sheet.png`;
+            
+            sprites.hair[`walk${dir}`] = new Image();
+            sprites.hair[`walk${dir}`].src = `resource/32x32 Customizable Character Pack/Walk/Hair/Hair_Walk_${dir}-Sheet.png`;
+            
+            if (dir !== 'Back') {
+                sprites.eyes[`walk${dir}`] = new Image();
+                sprites.eyes[`walk${dir}`].src = `resource/32x32 Customizable Character Pack/Walk/Eyes/Eyes_Walk_${dir}-Sheet.png`;
+            }
+        });
+        
+        sprites.body.idleFront = new Image();
+        sprites.body.idleFront.src = 'resource/32x32 Customizable Character Pack/Idle/Character/Character_Idle_Front-Sheet.png';
+        sprites.tops.idleFront = new Image();
+        sprites.tops.idleFront.src = 'resource/32x32 Customizable Character Pack/Idle/Clothing/Clothing_Tops_Idle_Front-Sheet.png';
+        sprites.bottoms.idleFront = new Image();
+        sprites.bottoms.idleFront.src = 'resource/32x32 Customizable Character Pack/Idle/Clothing/Clothing_Bottoms_Idle_Front-Sheet.png';
+        sprites.hair.idleFront = new Image();
+        sprites.hair.idleFront.src = 'resource/32x32 Customizable Character Pack/Idle/Hair/Hair_Idle_Front-Sheet.png';
+        sprites.eyes.idleFront = new Image();
+        sprites.eyes.idleFront.src = 'resource/32x32 Customizable Character Pack/Idle/Eyes/Eyes_Idle_Front-Sheet.png';
+        
+        // 加载CGS角色精灵图（用于NPC）
+        const cgsChar1 = new Image();
+        cgsChar1.src = 'resource/CGS_RU_HouseFree/img/characters/CGS_Char_1.png';
+        
+        const cgsHouse1 = new Image();
+        cgsHouse1.src = 'resource/CGS_RU_HouseFree/img/characters/!CGS_House_1.png';
+        
+        // 为NPC创建不同的角色组合
+        const npcSprites = {
+            set1: { // NPC1 - 使用CGS_Char_1的第1个角色
+                sprite: cgsChar1,
+                frameWidth: 32,
+                frameHeight: 48,
+                type: 'cgs',
+                characterRow: 0  // 第1个角色（行0-3）
+            },
+            set2: { // NPC2 - 使用CGS_Char_1的第2个角色
+                sprite: cgsChar1,
+                frameWidth: 32,
+                frameHeight: 48,
+                type: 'cgs',
+                characterRow: 4  // 第2个角色（行4-7）
+            },
+            set3: { // NPC3 - 使用32x32 Customizable Pack的Sword角色
+                body: {},
+                tops: {},
+                bottoms: {},
+                shoes: {},
+                hair: {},
+                eyes: {},
+                type: 'customizable'
+            }
+        };
+        
+        // 加载NPC3的精灵图（使用Sword动作）
+        ['Front', 'Back', 'Left', 'Right'].forEach(dir => {
+            npcSprites.set3.body[`walk${dir}`] = new Image();
+            npcSprites.set3.body[`walk${dir}`].src = `resource/32x32 Customizable Character Pack/Sword/Character/Character_Sword_${dir}-Sheet.png`;
+            
+            npcSprites.set3.tops[`walk${dir}`] = new Image();
+            npcSprites.set3.tops[`walk${dir}`].src = `resource/32x32 Customizable Character Pack/Sword/Clothing/Clothing_Tops_Sword_${dir}-Sheet.png`;
+            
+            npcSprites.set3.bottoms[`walk${dir}`] = new Image();
+            npcSprites.set3.bottoms[`walk${dir}`].src = `resource/32x32 Customizable Character Pack/Sword/Clothing/Clothing_Bottoms_Sword_${dir}-Sheet.png`;
+            
+            npcSprites.set3.shoes[`walk${dir}`] = new Image();
+            npcSprites.set3.shoes[`walk${dir}`].src = `resource/32x32 Customizable Character Pack/Sword/Clothing/Clothing_Shoes_Sword_${dir}-Sheet.png`;
+            
+            npcSprites.set3.hair[`walk${dir}`] = new Image();
+            npcSprites.set3.hair[`walk${dir}`].src = `resource/32x32 Customizable Character Pack/Sword/Hair/Hair_Sword_${dir}-Sheet.png`;
+            
+            if (dir !== 'Back') {
+                npcSprites.set3.eyes[`walk${dir}`] = new Image();
+                npcSprites.set3.eyes[`walk${dir}`].src = `resource/32x32 Customizable Character Pack/Sword/Eyes/Eyes_Sword_${dir}-Sheet.png`;
+            }
+        });
+        
+        npcSprites.set3.body.idleFront = npcSprites.set3.body.walkFront;
+        npcSprites.set3.tops.idleFront = npcSprites.set3.tops.walkFront;
+        npcSprites.set3.bottoms.idleFront = npcSprites.set3.bottoms.walkFront;
+        npcSprites.set3.shoes.idleFront = npcSprites.set3.shoes.walkFront;
+        npcSprites.set3.hair.idleFront = npcSprites.set3.hair.walkFront;
+        npcSprites.set3.eyes.idleFront = npcSprites.set3.eyes.walkFront;
+        
+        // 初始化NPC
+        function initNPCs() {
+            game.npcs = [
+                {
+                    x: TILE_SIZE * 5,
+                    y: TILE_SIZE * 5,
+                    width: 48,
+                    height: 48,
+                    // 碰撞箱（只检测脚部）
+                    collisionWidth: 24,
+                    collisionHeight: 16,
+                    collisionOffsetX: 12,
+                    collisionOffsetY: 32,
+                    direction: 'Front',
+                    currentFrame: 0,
+                    frameCount: 0,
+                    animationSpeed: 6,
+                    isMoving: false,
+                    name: '村民小明',
+                    message: '你好！欢迎来到我们的村庄！\n这里有很多有趣的地方可以探索。',
+                    speed: 1.5,
+                    moveTimer: 0,
+                    moveInterval: 120,
+                    idleChance: 0.3,
+                    spriteSet: 1
+                },
+                {
+                    x: TILE_SIZE * 7,
+                    y: TILE_SIZE * 7,
+                    width: 48,
+                    height: 48,
+                    collisionWidth: 24,
+                    collisionHeight: 16,
+                    collisionOffsetX: 12,
+                    collisionOffsetY: 32,
+                    direction: 'Left',
+                    currentFrame: 0,
+                    frameCount: 0,
+                    animationSpeed: 6,
+                    isMoving: false,
+                    name: '商人老王',
+                    message: '嘿，年轻人！\n需要买点什么吗？我这里有最好的货物！',
+                    speed: 1.2,
+                    moveTimer: 0,
+                    moveInterval: 150,
+                    idleChance: 0.4,
+                    spriteSet: 2
+                },
+                {
+                    x: TILE_SIZE * 15,
+                    y: TILE_SIZE * 3,
+                    width: 48,
+                    height: 48,
+                    collisionWidth: 24,
+                    collisionHeight: 16,
+                    collisionOffsetX: 12,
+                    collisionOffsetY: 32,
+                    direction: 'Back',
+                    currentFrame: 0,
+                    frameCount: 0,
+                    animationSpeed: 6,
+                    isMoving: false,
+                    name: '守卫小李',
+                    message: '站住！前方是禁区。\n没有通行证不能通过！',
+                    speed: 1.8,
+                    moveTimer: 0,
+                    moveInterval: 100,
+                    idleChance: 0.2,
+                    spriteSet: 3
+                }
+            ];
+        }
+        
+        // 等待精灵图加载后初始化NPC
+        setTimeout(() => {
+            initNPCs();
+            console.log('CGS Char1 loaded:', cgsChar1.complete, 'size:', cgsChar1.width, 'x', cgsChar1.height);
+            console.log('NPC sprites:', npcSprites);
+        }, 500);
+        
+        // 切换碰撞显示
+        window.showCollision = false;
+        function toggleCollisionDisplay() {
+            window.showCollision = document.getElementById('showCollisionToggle').checked;
+        }
+        
+        // 检测与NPC的碰撞（使用碰撞箱）
+        function checkNPCCollision(x, y, width, height) {
+            for (let npc of game.npcs) {
+                // 计算NPC的碰撞箱位置
+                const npcCollisionX = npc.x + npc.collisionOffsetX;
+                const npcCollisionY = npc.y + npc.collisionOffsetY;
+                
+                // 矩形碰撞检测
+                if (x < npcCollisionX + npc.collisionWidth &&
+                    x + width > npcCollisionX &&
+                    y < npcCollisionY + npc.collisionHeight &&
+                    y + height > npcCollisionY) {
+                    return npc;
+                }
+            }
+            return null;
+        }
+        
+        // 显示对话框
+        function showDialog(npc) {
+            game.showDialog = true;
+            game.currentNPC = npc;
+            
+            const dialog = document.getElementById('dialogBox');
+            const npcName = document.getElementById('npcName');
+            const npcMessage = document.getElementById('npcMessage');
+            
+            npcName.textContent = npc.name;
+            npcMessage.textContent = npc.message;
+            dialog.style.display = 'block';
+        }
+        
+        // 关闭对话框
+        function closeDialog() {
+            game.showDialog = false;
+            game.currentNPC = null;
+            document.getElementById('dialogBox').style.display = 'none';
+        }
+        
+        // 键盘事件
+        window.addEventListener('keydown', (e) => {
+            game.keys[e.key.toLowerCase()] = true;
+            
+            // 空格键与NPC对话
+            if (e.key === ' ' && game.showDialog) {
+                closeDialog();
+            }
+        });
+        
+        window.addEventListener('keyup', (e) => {
+            game.keys[e.key.toLowerCase()] = false;
+        });
+        
+        // 碰撞检测
+        function checkCollision(x, y, width, height) {
+            // 边界检测
+            if (x < 0 || y < 0 || x + width > canvas.width || y + height > canvas.height) {
+                return true;
+            }
+            
+            // 检测与碰撞瓦片的碰撞
+            const tileX1 = Math.floor(x / TILE_SIZE);
+            const tileY1 = Math.floor(y / TILE_SIZE);
+            const tileX2 = Math.floor((x + width - 1) / TILE_SIZE);
+            const tileY2 = Math.floor((y + height - 1) / TILE_SIZE);
+            
+            // 检查角色占据的所有瓦片位置
+            for (let ty = tileY1; ty <= tileY2; ty++) {
+                for (let tx = tileX1; tx <= tileX2; tx++) {
+                    // 检查所有图层
+                    for (let layer of layers) {
+                        if (!layer.visible) continue;
+                        if (layer.data[ty] && layer.data[ty][tx]) {
+                            const tile = layer.data[ty][tx];
+                            if (tile.collision && tile.x >= 0 && tile.y >= 0) {
+                                return true; // 碰到了碰撞瓦片
+                            }
+                        }
+                    }
+                }
+            }
+            
+            return false;
+        }
+        
+        // 更新NPC AI
+        function updateNPCs() {
+            game.npcs.forEach(npc => {
+                npc.moveTimer++;
+                
+                // 到达移动间隔，改变方向
+                if (npc.moveTimer >= npc.moveInterval) {
+                    npc.moveTimer = 0;
+                    
+                    // 随机决定是否停下来
+                    if (Math.random() < npc.idleChance) {
+                        npc.isMoving = false;
+                    } else {
+                        npc.isMoving = true;
+                        // 随机选择方向
+                        const directions = ['Front', 'Back', 'Left', 'Right'];
+                        npc.direction = directions[Math.floor(Math.random() * directions.length)];
+                    }
+                }
+                
+                // 如果正在移动
+                if (npc.isMoving) {
+                    let newX = npc.x;
+                    let newY = npc.y;
+                    
+                    // 根据方向移动
+                    if (npc.direction === 'Back') newY -= npc.speed;
+                    if (npc.direction === 'Front') newY += npc.speed;
+                    if (npc.direction === 'Left') newX -= npc.speed;
+                    if (npc.direction === 'Right') newX += npc.speed;
+                    
+                    // 检测碰撞
+                    const npcCollisionX = newX + npc.collisionOffsetX;
+                    const npcCollisionY = newY + npc.collisionOffsetY;
+                    
+                    let canMoveX = !checkCollision(npcCollisionX, npc.y + npc.collisionOffsetY, npc.collisionWidth, npc.collisionHeight);
+                    let canMoveY = !checkCollision(npc.x + npc.collisionOffsetX, npcCollisionY, npc.collisionWidth, npc.collisionHeight);
+                    
+                    // 检查是否会碰到其他NPC
+                    if (canMoveX) {
+                        for (let otherNpc of game.npcs) {
+                            if (otherNpc === npc) continue;
+                            const otherCollisionX = otherNpc.x + otherNpc.collisionOffsetX;
+                            const otherCollisionY = otherNpc.y + otherNpc.collisionOffsetY;
+                            
+                            if (npcCollisionX < otherCollisionX + otherNpc.collisionWidth &&
+                                npcCollisionX + npc.collisionWidth > otherCollisionX &&
+                                npc.y + npc.collisionOffsetY < otherCollisionY + otherNpc.collisionHeight &&
+                                npc.y + npc.collisionOffsetY + npc.collisionHeight > otherCollisionY) {
+                                canMoveX = false;
+                                break;
+                            }
+                        }
+                    }
+                    
+                    if (canMoveY) {
+                        for (let otherNpc of game.npcs) {
+                            if (otherNpc === npc) continue;
+                            const otherCollisionX = otherNpc.x + otherNpc.collisionOffsetX;
+                            const otherCollisionY = otherNpc.y + otherNpc.collisionOffsetY;
+                            
+                            if (npc.x + npc.collisionOffsetX < otherCollisionX + otherNpc.collisionWidth &&
+                                npc.x + npc.collisionOffsetX + npc.collisionWidth > otherCollisionX &&
+                                npcCollisionY < otherCollisionY + otherNpc.collisionHeight &&
+                                npcCollisionY + npc.collisionHeight > otherCollisionY) {
+                                canMoveY = false;
+                                break;
+                            }
+                        }
+                    }
+                    
+                    // 如果碰到障碍物，改变方向
+                    if (!canMoveX && (npc.direction === 'Left' || npc.direction === 'Right')) {
+                        const newDirections = ['Front', 'Back'];
+                        npc.direction = newDirections[Math.floor(Math.random() * newDirections.length)];
+                        npc.moveTimer = npc.moveInterval - 10; // 很快再次改变方向
+                    } else if (!canMoveY && (npc.direction === 'Front' || npc.direction === 'Back')) {
+                        const newDirections = ['Left', 'Right'];
+                        npc.direction = newDirections[Math.floor(Math.random() * newDirections.length)];
+                        npc.moveTimer = npc.moveInterval - 10;
+                    } else {
+                        // 可以移动
+                        if (canMoveX && (npc.direction === 'Left' || npc.direction === 'Right')) {
+                            npc.x = newX;
+                        }
+                        if (canMoveY && (npc.direction === 'Front' || npc.direction === 'Back')) {
+                            npc.y = newY;
+                        }
+                    }
+                    
+                    // 更新动画
+                    npc.frameCount++;
+                    if (npc.frameCount >= npc.animationSpeed) {
+                        npc.currentFrame = (npc.currentFrame + 1) % 4;
+                        npc.frameCount = 0;
+                    }
+                } else {
+                    npc.currentFrame = 0;
+                    npc.frameCount = 0;
+                }
+            });
+        }
+        
+        // 更新玩家
+        function updatePlayer() {
+            game.player.isMoving = false;
+            let newX = game.player.x;
+            let newY = game.player.y;
+            
+            if (game.keys['w']) {
+                newY -= game.player.speed;
+                game.player.direction = 'Back';
+                game.player.isMoving = true;
+            }
+            if (game.keys['s']) {
+                newY += game.player.speed;
+                game.player.direction = 'Front';
+                game.player.isMoving = true;
+            }
+            if (game.keys['a']) {
+                newX -= game.player.speed;
+                game.player.direction = 'Left';
+                game.player.isMoving = true;
+            }
+            if (game.keys['d']) {
+                newX += game.player.speed;
+                game.player.direction = 'Right';
+                game.player.isMoving = true;
+            }
+            
+            // 碰撞检测（使用碰撞箱）
+            const playerCollisionX = newX + game.player.collisionOffsetX;
+            const playerCollisionY = game.player.y + game.player.collisionOffsetY;
+            
+            if (!checkCollision(playerCollisionX, playerCollisionY, game.player.collisionWidth, game.player.collisionHeight)) {
+                // 检查是否碰到NPC
+                const npcHit = checkNPCCollision(playerCollisionX, playerCollisionY, game.player.collisionWidth, game.player.collisionHeight);
+                if (npcHit) {
+                    // 碰到NPC，显示对话
+                    if (!game.showDialog) {
+                        showDialog(npcHit);
+                    }
+                } else {
+                    game.player.x = newX;
+                }
+            }
+            
+            const playerCollisionX2 = game.player.x + game.player.collisionOffsetX;
+            const playerCollisionY2 = newY + game.player.collisionOffsetY;
+            
+            if (!checkCollision(playerCollisionX2, playerCollisionY2, game.player.collisionWidth, game.player.collisionHeight)) {
+                // 检查是否碰到NPC
+                const npcHit = checkNPCCollision(playerCollisionX2, playerCollisionY2, game.player.collisionWidth, game.player.collisionHeight);
+                if (npcHit) {
+                    // 碰到NPC，显示对话
+                    if (!game.showDialog) {
+                        showDialog(npcHit);
+                    }
+                } else {
+                    game.player.y = newY;
+                }
+            }
+            
+            // 更新动画（CGS角色只有3帧）
+            if (game.player.isMoving) {
+                game.player.frameCount++;
+                if (game.player.frameCount >= game.player.animationSpeed) {
+                    game.player.currentFrame = (game.player.currentFrame + 1) % 4; // 只循环4帧
+                    game.player.frameCount = 0;
+                }
+            } else {
+                game.player.currentFrame = 0;
+                game.player.frameCount = 0;
+            }
+        }
+        
+        // 更新NPC动画帧数
+        function updateNPCFrames() {
+            game.npcs.forEach(npc => {
+                if (npc.isMoving) {
+                    // CGS角色只有3帧
+                    const maxFrames = npcSprites[`set${npc.spriteSet}`].type === 'cgs' ? 3 : 4;
+                    if (npc.currentFrame >= maxFrames) {
+                        npc.currentFrame = 0;
+                    }
+                }
+            });
+        }
+        
+        // 绘制地图（支持多图层，每个图层可以有不同的瓦片集）
+        function drawMap() {
+            if (loadedCount < totalToLoad) {
+                // 瓦片集未全部加载，显示占位符
+                ctx.fillStyle = '#333';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = '#fff';
+                ctx.font = '20px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(`加载瓦片集中... (${loadedCount}/${totalToLoad})`, canvas.width / 2, canvas.height / 2);
+                return;
+            }
+            
+            // 绘制所有可见图层
+            layers.forEach(layer => {
+                if (!layer.visible || !layer.tileset) return;
+                
+                const layerImg = tilesetImages[layer.tileset];
+                if (!layerImg || !layerImg.complete) return;
+                
+                const layerTileSize = layer.tileSize || TILE_SIZE;
+                
+                for (let y = 0; y < mapHeight; y++) {
+                    for (let x = 0; x < mapWidth; x++) {
+                        const tile = layer.data[y][x];
+                        if (tile.x >= 0 && tile.y >= 0) {
+                            const px = x * TILE_SIZE;
+                            const py = y * TILE_SIZE;
+                            
+                            ctx.save();
+                            ctx.translate(px + TILE_SIZE / 2, py + TILE_SIZE / 2);
+                            ctx.rotate(tile.r * Math.PI / 180);
+                            ctx.scale(tile.fh ? -1 : 1, tile.fv ? -1 : 1);
+                            
+                            try {
+                                ctx.drawImage(
+                                    layerImg,
+                                    tile.x * layerTileSize, tile.y * layerTileSize, layerTileSize, layerTileSize,
+                                    -TILE_SIZE / 2, -TILE_SIZE / 2, TILE_SIZE, TILE_SIZE
+                                );
+                            } catch (e) {
+                                console.error('绘制瓦片失败:', e);
+                            }
+                            
+                            ctx.restore();
+                            
+                            // 如果是碰撞瓦片，绘制半透明红色覆盖层（调试用）
+                            if (tile.collision && window.showCollision) {
+                                ctx.fillStyle = 'rgba(255, 0, 0, 0.3)';
+                                ctx.fillRect(px, py, TILE_SIZE, TILE_SIZE);
+                                ctx.strokeStyle = 'rgba(255, 0, 0, 0.6)';
+                                ctx.lineWidth = 2;
+                                ctx.strokeRect(px + 1, py + 1, TILE_SIZE - 2, TILE_SIZE - 2);
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // 绘制玩家（使用CGS角色）
+        function drawPlayer() {
+            // 阴影
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+            ctx.beginPath();
+            ctx.ellipse(
+                game.player.x + game.player.width / 2,
+                game.player.y + game.player.height - 2,
+                16, 6, 0, 0, Math.PI * 2
+            );
+            ctx.fill();
+            
+            // 绘制CGS角色
+            if (playerSprite.complete) {
+                const directionMap = {
+                    'Front': 0,
+                    'Left': 1,
+                    'Right': 2,
+                    'Back': 3
+                };
+                
+                // 使用CGS_Char_1的第2个角色的第2列（列3-5）
+                const characterStartRow = 4;  // 第2个角色
+                const directionOffset = directionMap[game.player.direction] || 0;
+                const row = characterStartRow + directionOffset;
+                const frame = game.player.isMoving ? (game.player.currentFrame % 3) : 1;
+                
+                // 使用列偏移来获取不同的外观
+                const colOffset = 3;  // 使用第2列（列3-5）
+                const srcX = (colOffset + frame) * 32;
+                const srcY = row * 48;
+                
+                ctx.drawImage(
+                    playerSprite,
+                    srcX, srcY,
+                    32, 48,
+                    game.player.x, game.player.y,
+                    game.player.width, game.player.height
+                );
+            }
+            
+            // 调试：绘制碰撞箱（可选）
+            if (window.showCollision) {
+                ctx.strokeStyle = 'rgba(0, 255, 0, 0.8)';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(
+                    game.player.x + game.player.collisionOffsetX,
+                    game.player.y + game.player.collisionOffsetY,
+                    game.player.collisionWidth,
+                    game.player.collisionHeight
+                );
+            }
+        }
+        
+        // 绘制NPC
+        function drawNPCs() {
+            game.npcs.forEach(npc => {
+                // 阴影
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+                ctx.beginPath();
+                ctx.ellipse(
+                    npc.x + npc.width / 2,
+                    npc.y + npc.height - 2,
+                    16, 6, 0, 0, Math.PI * 2
+                );
+                ctx.fill();
+                
+                const spriteSet = npcSprites[`set${npc.spriteSet}`];
+                
+                if (spriteSet.type === 'cgs') {
+                    // 绘制CGS角色（32x48）
+                    if (spriteSet.sprite && spriteSet.sprite.complete) {
+                        // RPG Maker格式：每个角色3帧，4个方向（下左右上）
+                        const directionMap = {
+                            'Front': 0,  // 下
+                            'Left': 1,   // 左
+                            'Right': 2,  // 右
+                            'Back': 3    // 上
+                        };
+                        
+                        const directionOffset = directionMap[npc.direction] || 0;
+                        const row = spriteSet.characterRow + directionOffset;
+                        const frame = npc.isMoving ? (npc.currentFrame % 3) : 1; // 0=左脚,1=站立,2=右脚
+                        
+                        const srcX = frame * 32;
+                        const srcY = row * 48;
+                        
+                        ctx.drawImage(
+                            spriteSet.sprite,
+                            srcX, srcY,
+                            32, 48,
+                            npc.x, npc.y,
+                            npc.width, npc.height
+                        );
+                    } else {
+                        // 图片未加载，绘制占位符
+                        ctx.fillStyle = npc.spriteSet === 1 ? '#00f' : npc.spriteSet === 2 ? '#f0f' : '#0ff';
+                        ctx.fillRect(npc.x, npc.y, npc.width, npc.height);
+                    }
+                } else if (spriteSet.type === 'customizable') {
+                    // 绘制可定制角色（32x32）
+                    const suffix = npc.isMoving ? `walk${npc.direction}` : 'idleFront';
+                    const layers = [
+                        spriteSet.body[suffix],
+                        spriteSet.bottoms[suffix],
+                        spriteSet.tops[suffix],
+                        spriteSet.shoes[suffix],
+                        spriteSet.hair[suffix],
+                        npc.direction !== 'Back' ? spriteSet.eyes[suffix] : null
+                    ];
+                    
+                    layers.forEach(layer => {
+                        if (layer && layer.complete) {
+                            const frameX = npc.isMoving ? npc.currentFrame * 32 : 0;
+                            ctx.drawImage(
+                                layer,
+                                frameX, 0, 32, 32,
+                                npc.x, npc.y,
+                                npc.width, npc.height
+                            );
+                        }
+                    });
+                }
+                
+                // 绘制NPC名字
+                ctx.fillStyle = '#fff';
+                ctx.strokeStyle = '#000';
+                ctx.lineWidth = 3;
+                ctx.font = 'bold 12px Arial';
+                ctx.textAlign = 'center';
+                const textX = npc.x + npc.width / 2;
+                const textY = npc.y - 5;
+                ctx.strokeText(npc.name, textX, textY);
+                ctx.fillText(npc.name, textX, textY);
+                
+                // 调试：绘制碰撞箱（可选）
+                if (window.showCollision) {
+                    ctx.strokeStyle = 'rgba(255, 0, 255, 0.8)';
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(
+                        npc.x + npc.collisionOffsetX,
+                        npc.y + npc.collisionOffsetY,
+                        npc.collisionWidth,
+                        npc.collisionHeight
+                    );
+                }
+            });
+        }
+        
+        // 更新统计（简化版，不显示）
+        function updateStats() {
+            // 不再显示统计信息
+        }
+        
+        // 游戏循环
+        function gameLoop() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            drawMap();
+            updateNPCs();
+            updateNPCFrames();
+            drawNPCs();
+            updatePlayer();
+            drawPlayer();
+            updateStats();
+            
+            requestAnimationFrame(gameLoop);
+        }
+        
+        // 启动游戏
+        setTimeout(() => {
+            gameLoop();
+        }, 500);
+    </script>
+</body>
+</html>
