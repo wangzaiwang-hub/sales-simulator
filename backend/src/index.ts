@@ -96,9 +96,9 @@ app.get('/api/character-assets', (req, res) => {
     res.status(500).json({ error: error?.message || 'Unknown error' });
   }
 // 直接提供资源文件的API端点（用于Railway部署）
-app.get("/api/resource/*", (req, res) => {
+app.get("/api/resource/:path(*)", (req, res) => {
   const fs = require("fs");
-  const resourcePath = (req.params as any)[0] as string;
+  const resourcePath = req.params.path as string;
   const filePath = path.join(resourceDir, resourcePath);
   
   console.log("Resource request:", resourcePath);
