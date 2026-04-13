@@ -2,7 +2,12 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
+import {
+  AssetButton,
+  AssetLinkButton,
+  AssetWindow,
+} from "@/components/game/mobile-casual-ui";
+import { RpgChip } from "@/components/game/rpg-ui";
 
 const apiUrl = "";
 const tokenKey = "sales-simulator-token";
@@ -428,8 +433,11 @@ export default function CharacterCreatorPage() {
           {/* Center - Preview */}
           <div className="p-4 flex flex-col items-center justify-start bg-gradient-to-b from-[#f8f1df] to-[#f4e8cb] min-h-[760px]">
             {/* Static Previews */}
-            <div className="mb-3 p-3 bg-[#eadfc4] border-4 border-[#2c213d] shadow-lg w-full">
-              <div className="grid grid-cols-4 gap-3">
+            <AssetWindow className="mb-3 w-full" contentClassName="bg-[rgba(255,255,255,0.4)]">
+              <div className="font-game-display text-sm tracking-wider text-[#2c213d] font-bold bg-gradient-to-r from-[#4a90e2] to-[#357abd] text-white px-4 py-2 -mx-8 -mt-7 mb-4 border-b-4 border-[#2c213d]">
+                四向预览
+              </div>
+              <div className="mt-4 grid grid-cols-4 gap-3">
                 {[
                   { ref: staticCanvasRefs.front, label: "前" },
                   { ref: staticCanvasRefs.back, label: "后" },
@@ -445,12 +453,14 @@ export default function CharacterCreatorPage() {
                   </div>
                 ))}
               </div>
-            </div>
+            </AssetWindow>
 
             {/* Interactive Preview */}
             <div className="relative">
-              <div className="absolute top-2 left-1/2 -translate-x-1/2 bg-[#2c213d]/90 text-[#ffd36e] px-3 py-1 border-2 border-[#ffb636] text-[11px] font-semibold z-10 shadow-md">
-                自由活动区 (WASD控制)
+              <div className="absolute left-1/2 top-4 z-10 -translate-x-1/2 bg-gradient-to-r from-[#4a90e2] to-[#357abd] px-6 py-2.5 border-3 border-white/30 shadow-lg">
+                <div className="text-white font-game-ui text-sm font-semibold tracking-wide">
+                  自由活动区 (WASD 控制)
+                </div>
               </div>
               <canvas
                 ref={previewCanvasRef}
@@ -464,51 +474,40 @@ export default function CharacterCreatorPage() {
 
           {/* Right Sidebar - Actions */}
           <div className="bg-gradient-to-b from-[#efe4c7] to-[#e5d7b6] p-3.5 border-l-4 border-[#2c213d]">
-            <div className="flex flex-col gap-2.5">
-              <button
-                onClick={randomizeAppearance}
-                className="px-3.5 py-2.5 border-4 border-[#2c213d] text-base cursor-pointer flex items-center justify-center gap-1.5 shadow-lg bg-gradient-to-b from-[#ff8d7f] to-[#db4c40] text-[#fff7d6] hover:translate-x-[-2px] hover:translate-y-[-2px] active:translate-x-0 active:translate-y-1"
-              >
-                <i className="fas fa-dice"></i>
+            <div className="flex flex-col gap-2.5 items-center">
+              <AssetButton onClick={randomizeAppearance} className="text-base">
                 随机生成
-              </button>
+              </AssetButton>
 
-              <button
+              <AssetButton
                 onClick={saveAndContinue}
                 disabled={loading}
-                className="px-3.5 py-2.5 border-4 border-[#2c213d] text-base cursor-pointer flex items-center justify-center gap-1.5 shadow-lg bg-gradient-to-b from-[#67cb74] to-[#3d9e52] text-[#fff7d6] hover:translate-x-[-2px] hover:translate-y-[-2px] active:translate-x-0 active:translate-y-1 disabled:opacity-50"
+                skin="blue"
+                className="text-base"
               >
-                <i className="fas fa-check"></i>
                 {loading ? "保存中..." : "保存并继续"}
-              </button>
+              </AssetButton>
 
-              <button
-                onClick={resetToDefault}
-                className="px-3.5 py-2.5 border-4 border-[#2c213d] text-base cursor-pointer flex items-center justify-center gap-1.5 shadow-lg bg-gradient-to-b from-[#fff7dd] to-[#efdfb0] text-[#35274f] hover:translate-x-[-2px] hover:translate-y-[-2px] active:translate-x-0 active:translate-y-1"
-              >
-                <i className="fas fa-undo"></i>
+              <AssetButton onClick={resetToDefault} className="text-base">
                 重置
-              </button>
+              </AssetButton>
 
-              <Link
-                href="/game"
-                className="px-3.5 py-2.5 border-4 border-[#2c213d] text-base cursor-pointer flex items-center justify-center gap-1.5 shadow-lg bg-gradient-to-b from-[#fff7dd] to-[#efdfb0] text-[#35274f] hover:translate-x-[-2px] hover:translate-y-[-2px] active:translate-x-0 active:translate-y-1 no-underline"
-              >
-                <i className="fas fa-arrow-left"></i>
+              <AssetLinkButton href="/game" className="text-base">
                 返回游戏
-              </Link>
+              </AssetLinkButton>
             </div>
 
-            <div className="bg-gradient-to-b from-[#efe4c7] to-[#e6d7b0] p-3 border-4 border-[#2c213d] text-xs leading-relaxed text-[#2f213f] mt-7 shadow-lg">
-              <strong>提示：</strong>
-              <br />
-              • 点击图层选项进行选择
-              <br />
-              • 使用WASD键控制角色移动
-              <br />
-              • 使用随机生成快速创建
-              <br />• 保存后可随时修改
-            </div>
+            <AssetWindow className="mt-7" contentClassName="bg-[rgba(255,255,255,0.35)]">
+              <div className="font-pixel text-[10px] uppercase tracking-[0.24em] text-[#6f492a]">小提示</div>
+              <div className="mt-4 font-game-ui text-xs leading-7 text-[#6a4529]">
+                • 点击图层选项进行选择
+                <br />
+                • 使用 WASD 键控制角色移动
+                <br />
+                • 使用随机生成快速创建
+                <br />• 保存后可随时修改
+              </div>
+            </AssetWindow>
           </div>
         </div>
       </div>
@@ -633,8 +632,8 @@ function LayerOption({
       onClick={onClick}
       className={`aspect-square border-[3px] cursor-pointer transition-all flex items-center justify-center relative overflow-hidden shadow-md ${
         isActive
-          ? "border-[#d66f12] bg-gradient-to-b from-[#ffe89d] to-[#ffc44e] shadow-lg"
-          : "border-[#7a6c91] bg-gradient-to-b from-[#fffaf0] to-[#efe4c7] hover:border-[#ffb636] hover:-translate-x-0.5 hover:-translate-y-0.5"
+          ? "border-[#4a90e2] bg-gradient-to-b from-[#a8d5ff] to-[#6eb3ff] shadow-lg"
+          : "border-[#7a6c91] bg-gradient-to-b from-[#fffaf0] to-[#efe4c7] hover:border-[#6eb3ff] hover:-translate-x-0.5 hover:-translate-y-0.5"
       }`}
     >
       <canvas ref={canvasRef} width="32" height="32" className="w-full h-full" style={{ imageRendering: "pixelated" }} />

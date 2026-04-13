@@ -15,8 +15,10 @@ const PORT = process.env.PORT || 3001;
 const corsOrigin = process.env.CORS_ORIGIN || process.env.FRONTEND_URL || 'https://sales-simulator-zeta-tau.vercel.app';
 
 const resourceDir = path.resolve(__dirname, '../resource');
+const toolsDir = path.resolve(__dirname, '../');
 
 console.log('Resource directory:', resourceDir);
+console.log('Tools directory:', toolsDir);
 
 app.use(cors({
   origin: corsOrigin,
@@ -31,6 +33,27 @@ try {
 } catch (e) {
   console.log('Resource directory not found, skipping static middleware');
 }
+
+// 提供工具页面（HTML文件）
+app.get('/tools/tileset-editor', (req, res) => {
+  res.sendFile(path.join(toolsDir, 'tileset-editor.html'));
+});
+
+app.get('/tools/map-test', (req, res) => {
+  res.sendFile(path.join(toolsDir, 'map-test.html'));
+});
+
+app.get('/tools/character-creator', (req, res) => {
+  res.sendFile(path.join(toolsDir, 'character-creator.html'));
+});
+
+app.get('/tools/character-customizer', (req, res) => {
+  res.sendFile(path.join(toolsDir, 'character-customizer.html'));
+});
+
+app.get('/tools/character-editor', (req, res) => {
+  res.sendFile(path.join(toolsDir, 'character-editor.html'));
+});
 
 app.use('/api/auth', authRoutes);
 app.use('/api/game', gameRoutes);

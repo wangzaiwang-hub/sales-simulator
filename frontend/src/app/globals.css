@@ -5,6 +5,12 @@
 /* 导入像素风格字体 */
 @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 
+@font-face {
+  font-family: "HanYi Pixel UI";
+  src: url("/HanYiXiangSu-11px-U/HYPixel11pxU-2.ttf") format("truetype");
+  font-display: swap;
+}
+
 :root {
   --background: #120a1f;
   --foreground: #f7edd0;
@@ -15,12 +21,18 @@
   --pixel-warm: #ffcb71;
   --pixel-success: #63d58a;
   --pixel-danger: #ff928a;
+  --font-body: "Trebuchet MS", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  --font-game-ui: "HanYi Pixel UI", "Microsoft YaHei", sans-serif;
+  --font-game-display: "HanYi Pixel UI", "Press Start 2P", "Microsoft YaHei", monospace;
 }
 
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: "Trebuchet MS", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  font-family: var(--font-game-ui);
+  image-rendering: pixelated;
+  -webkit-font-smoothing: none;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 @layer utilities {
@@ -60,6 +72,27 @@ body {
 @layer components {
   .font-pixel {
     font-family: "Press Start 2P", "Courier New", monospace;
+  }
+
+  .font-game-body {
+    font-family: var(--font-body);
+  }
+
+  .font-game-ui {
+    font-family: var(--font-game-ui);
+    letter-spacing: 0.08em;
+  }
+
+  .font-game-display {
+    font-family: var(--font-game-display);
+    letter-spacing: 0.1em;
+    text-shadow: 0 2px 0 rgba(17, 10, 30, 0.4);
+  }
+
+  .font-game-display-tight {
+    font-family: var(--font-game-display);
+    letter-spacing: 0.04em;
+    text-shadow: 0 2px 0 rgba(17, 10, 30, 0.32);
   }
 
   .pixel-auth-bg {

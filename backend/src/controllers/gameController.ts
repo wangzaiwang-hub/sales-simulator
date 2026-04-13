@@ -614,7 +614,7 @@ export const gameController = {
         const newFamiliarity = Math.max(0, Math.min(100, relationship!.familiarity + familiarityChange));
         const newRelationshipType = determineRelationshipType(newAffinity, newFamiliarity);
 
-        // 更新关系
+        // 更新关系（访问者→NPC）
         await updateRows<Row>(
           'Relationship',
           { ...eq('id', relationship!.id) },
@@ -626,6 +626,48 @@ export const gameController = {
             lastInteractionAt: new Date().toISOString(),
           }
         );
+
+        // 更新反向关系（NPC→访问者）- 熟悉度是相互的
+        const reverseRelationship = await selectOne<Row>('Relationship', {
+          select: '*',
+          ...eq('userId', ownerUserId),
+          ...eq('targetUserId', visitorUserId),
+        });
+
+        if (reverseRelationship) {
+          // 反向关系已存在，更新熟悉度（熟悉度相互增长）
+          const reverseFamiliarity = Math.max(0, Math.min(100, reverseRelationship.familiarity + familiarityChange));
+          // 好感度可能不同（NPC对玩家的好感度由AI单独评估）
+          const reverseRelationshipType = determineRelationshipType(reverseRelationship.affinity, reverseFamiliarity);
+          
+          await updateRows<Row>(
+            'Relationship',
+            { ...eq('id', reverseRelationship.id) },
+            {
+              familiarity: reverseFamiliarity,
+              relationshipType: reverseRelationshipType,
+              interactionCount: reverseRelationship.interactionCount + 1,
+              lastInteractionAt: new Date().toISOString(),
+            }
+          );
+        } else {
+          // 反向关系不存在，创建它
+          const reverseAffinityChange = evaluation.affinityChange; // 使用相同的好感度变化
+          const reverseAffinity = Math.max(-100, Math.min(100, 0 + reverseAffinityChange));
+          const reverseFamiliarity = Math.max(0, Math.min(100, 0 + familiarityChange));
+          const reverseRelationshipType = determineRelationshipType(reverseAffinity, reverseFamiliarity);
+          
+          await insertRows<Row>('Relationship', {
+            id: crypto.randomUUID(),
+            userId: ownerUserId,
+            targetUserId: visitorUserId,
+            affinity: reverseAffinity,
+            familiarity: reverseFamiliarity,
+            relationshipType: reverseRelationshipType,
+            interactionCount: 1,
+            lastInteractionAt: new Date().toISOString(),
+          });
+        }
 
         // 更新NPC的心情和状态
         await updateRows<Row>(
