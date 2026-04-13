@@ -38,6 +38,60 @@ function resolveSecondMeId(profile: any) {
 }
 
 export const authController = {
+  async secondmeCallback(req: Request, res: Response) {
+    try {
+      const { code, state } = req.query;
+      
+      if (!code || typeof code !== 'string') {
+        return res.redirect(`${process.env.FRONTEND_URL}/auth/login?error=no_code`);
+      }
+
+      const redirectUri = 'https://capable-energy-production-bf2e.up.railway.app/auth/callback';
+      
+      const tokenParams = new URLSearchParams({
+        client_id: process.env.SECONDME_CLIENT_ID || '',
+        client_secret: process.env.SECONDME_CLIENT_SECRET || '',
+        code,
+        grant_type: 'authorization_code',
+        redirect_uri: redirectUri,
+      });
+
+      const tokenResponse = await secondMeJsonRequest<{
+        code?: number;
+        message?: string;
+        data?: {
+          accessToken?: string;
+          expiresIn?: number | string;
+          expires_in?: number | string;
+          scope?: string;
+        };
+      }>({
+        url: 'https://api.mindverse.com/gate/lab/api/oauth/token/code',
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: tokenParams.toString(),
+        timeoutMs: 30000,
+      });
+
+      const accessToken = tokenResponse.data?.data?.accessToken;
+      
+      if (!tokenResponse.ok || !accessToken) {
+        console.error('Token exchange failed:', tokenResponse.data);
+        return res.redirect(`${process.env.FRONTEND_URL}/auth/login?error=token_failed`);
+      }
+
+      // 跳转到前端并带上token
+      const frontendUrl = process.env.FRONTEND_URL || 'https://sales-simulator-zeta-iota.vercel.app';
+      return res.redirect(`${frontendUrl}/auth/callback?token=${accessToken}`);
+    } catch (error) {
+      console.error('OAuth callback error:', error);
+      const frontendUrl = process.env.FRONTEND_URL || 'https://sales-simulator-zeta-iota.vercel.app';
+      return res.redirect(`${frontendUrl}/auth/login?error=callback_failed`);
+    }
+  },
+
   async secondmeLogin(req: Request, res: Response) {
     try {
       const { code, redirectUri: requestRedirectUri } = req.body;

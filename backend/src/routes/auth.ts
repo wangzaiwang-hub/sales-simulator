@@ -7,6 +7,9 @@ const router = express.Router();
 // SecondMe OAuth登录
 router.post('/secondme', authController.secondmeLogin);
 
+// SecondMe OAuth回调 - GET路由
+router.get('/callback', authController.secondmeCallback);
+
 // 刷新token
 router.post('/refresh', authController.refreshToken);
 
