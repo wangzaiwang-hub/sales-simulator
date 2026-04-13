@@ -64,8 +64,30 @@ app.use('/api/shop', shopRoutes);
 app.use('/api/products', productRoutes);
 
 // 健康检查
-app.get('/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+app.get("/health", (req, res) => {
+  res.json({ status: "ok", timestamp: new Date().toISOString() });
+});
+
+// 调试端点：检查resource目录
+app.get("/debug/resource-check", (req, res) => {
+  const fs = require("fs");
+  try {
+    const exists = fs.existsSync(resourceDir);
+    let contents = [];
+    if (exists) {
+      contents = fs.readdirSync(resourceDir);
+    }
+    res.json({
+      resourceDir,
+      exists,
+      contents,
+      cwd: process.cwd(),
+      dirname: __dirname,
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 });
 
 // 获取角色素材列表
