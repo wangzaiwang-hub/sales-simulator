@@ -6,13 +6,20 @@ import authRoutes from './routes/auth';
 import gameRoutes from './routes/game';
 import shopRoutes from './routes/shop';
 import productRoutes from './routes/product';
-import { resourceDir, resolveToolFile } from './lib/runtimePaths';
 
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3001;
-const corsOrigin = process.env.CORS_ORIGIN || process.env.FRONTEND_URL || 'http://localhost:3000';
+
+const corsOrigin = process.env.CORS_ORIGIN || process.env.FRONTEND_URL || 'https://sales-simulator-zeta-tau.vercel.app';
+
+// 资源目录 - 本地开发时使用 ../resource，生产使用 /app/resource
+const resourceDir = process.env.NODE_ENV === 'production' 
+  ? path.resolve('/app/resource')
+  : path.resolve(__dirname, '../../resource');
+
+console.log('Resource directory:', resourceDir);
 
 // 中间件
 app.use(cors({
@@ -21,7 +28,14 @@ app.use(cors({
 }));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
-app.use('/resource', express.static(resourceDir));
+
+// 静态资源
+try {
+  app.use('/resource', express.static(resourceDir));
+  console.log('Resource static middleware enabled');
+} catch (e) {
+  console.log('Resource directory not found, skipping static middleware');
+}
 app.get('/tools/tileset-editor', (req, res) => {
   res.sendFile(resolveToolFile('tileset-editor.html'));
 });

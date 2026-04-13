@@ -13,10 +13,6 @@ const nextConfig = {
         destination: `${backendUrl}/api/:path*`,
       },
       {
-        source: "/resource/:path*",
-        destination: `${backendUrl}/resource/:path*`,
-      },
-      {
         source: "/editor-runtime/tileset-editor",
         destination: `${backendUrl}/tools/tileset-editor`,
       },

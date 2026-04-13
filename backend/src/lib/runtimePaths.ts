@@ -7,18 +7,24 @@ const existingPath = (candidates: string[]) => {
       return candidate;
     }
   }
-
+  console.log('Warning: None of the paths exist:', candidates);
   return candidates[0];
 };
 
+const cwd = process.cwd();
 export const resourceDir = existingPath([
-  path.resolve(process.cwd(), 'resource'),
-  path.resolve(process.cwd(), '../resource'),
+  path.join(cwd, 'resource'),
+  path.join(cwd, '../resource'),
+  path.join(__dirname, '../../resource'),
+  path.resolve('/home/railway/app/resource'),
+  path.resolve('/app/resource'),
 ]);
 
 export const resolveToolFile = (fileName: string) => {
   return existingPath([
-    path.resolve(process.cwd(), fileName),
-    path.resolve(process.cwd(), `../${fileName}`),
+    path.join(cwd, fileName),
+    path.join(cwd, `../${fileName}`),
+    path.resolve(`/home/railway/app/${fileName}`),
+    path.resolve(`/app/${fileName}`),
   ]);
 };
