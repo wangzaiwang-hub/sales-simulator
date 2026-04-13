@@ -9,7 +9,7 @@ import { getRelationshipText, getAffinityText, getAffinityColor, getFamiliarityT
 
 const apiUrl = "";
 const tokenKey = "sales-simulator-token";
-const CGS_CHARACTER_SPRITE = "resource/CGS_RU_HouseFree/img/characters/CGS_Char_1.png";
+const CGS_CHARACTER_SPRITE = "CGS_RU_HouseFree/img/characters/CGS_Char_1.png";
 const PLAYER_SPRITE_COLUMN_OFFSET = 0;
 const PLAYER_CHARACTER_ROW = 4;
 
