@@ -95,6 +95,49 @@ app.get('/api/character-assets', (req, res) => {
   } catch (error: any) {
     res.status(500).json({ error: error?.message || 'Unknown error' });
   }
+// 直接提供资源文件的API端点（用于Railway部署）
+app.get("/api/resource/*", (req, res) => {
+  const fs = require("fs");
+  const resourcePath = (req.params as any)[0] as string;
+  const filePath = path.join(resourceDir, resourcePath);
+  
+  console.log("Resource request:", resourcePath);
+  console.log("Full path:", filePath);
+  
+  const normalizedPath = path.normalize(filePath);
+  const normalizedResourceDir = path.normalize(resourceDir);
+  
+  if (!normalizedPath.startsWith(normalizedResourceDir)) {
+    return res.status(403).json({ error: "Access denied" });
+  }
+  
+  if (!fs.existsSync(filePath)) {
+    console.log("File not found:", filePath);
+    return res.status(404).json({ error: "File not found" });
+  }
+  
+  const stats = fs.statSync(filePath);
+  if (!stats.isFile()) {
+    return res.status(404).json({ error: "Not a file" });
+  }
+  
+  const ext = path.extname(filePath).toLowerCase();
+  const contentTypes: Record<string, string> = {
+    ".png": "image/png",
+    ".jpg": "image/jpeg",
+    ".jpeg": "image/jpeg",
+    ".gif": "image/gif",
+    ".svg": "image/svg+xml",
+    ".json": "application/json",
+  };
+  
+  const contentType = contentTypes[ext] || "application/octet-stream";
+  res.setHeader("Content-Type", contentType);
+  res.setHeader("Cache-Control", "public, max-age=31536000");
+  
+  res.sendFile(filePath);
+});
+
 });
 
 // 错误处理
