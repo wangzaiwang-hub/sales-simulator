@@ -36,27 +36,28 @@ try {
 } catch (e) {
   console.log('Resource directory not found, skipping static middleware');
 }
-app.get('/tools/tileset-editor', (req, res) => {
-  res.sendFile(resolveToolFile('tileset-editor.html'));
-});
-app.get('/tools/map-test', (req, res) => {
-  res.sendFile(resolveToolFile('map-test.html'));
-});
-app.get('/tools/character-editor', (req, res) => {
-  res.sendFile(resolveToolFile('character-editor.html'));
-});
-app.get('/tools/character-customizer', (req, res) => {
-  res.sendFile(resolveToolFile('character-customizer.html'));
-});
-app.get('/tools/character-creator', (req, res) => {
-  res.sendFile(resolveToolFile('character-creator.html'));
-});
-app.get('/tools/test-character-assets', (req, res) => {
-  res.sendFile(resolveToolFile('test-character-assets.html'));
-});
-app.get('/tools/test-assets', (req, res) => {
-  res.sendFile(resolveToolFile('test-assets.html'));
-});
+// 工具页面路由暂时禁用
+// app.get('/tools/tileset-editor', (req, res) => {
+//   res.sendFile(resolveToolFile('tileset-editor.html'));
+// });
+// app.get('/tools/map-test', (req, res) => {
+//   res.sendFile(resolveToolFile('map-test.html'));
+// });
+// app.get('/tools/character-editor', (req, res) => {
+//   res.sendFile(resolveToolFile('character-editor.html'));
+// });
+// app.get('/tools/character-customizer', (req, res) => {
+//   res.sendFile(resolveToolFile('character-customizer.html'));
+// });
+// app.get('/tools/character-creator', (req, res) => {
+//   res.sendFile(resolveToolFile('character-creator.html'));
+// });
+// app.get('/tools/test-character-assets', (req, res) => {
+//   res.sendFile(resolveToolFile('test-character-assets.html'));
+// });
+// app.get('/tools/test-assets', (req, res) => {
+//   res.sendFile(resolveToolFile('test-assets.html'));
+// });
 
 // 路由
 app.use('/api/auth', authRoutes);
