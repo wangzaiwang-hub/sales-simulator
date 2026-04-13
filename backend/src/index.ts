@@ -14,10 +14,8 @@ const PORT = process.env.PORT || 3001;
 
 const corsOrigin = process.env.CORS_ORIGIN || process.env.FRONTEND_URL || 'https://sales-simulator-zeta-tau.vercel.app';
 
-// 资源目录 - Railway部署时Root Directory设置为/，所以resource在项目根目录
-const resourceDir = process.env.NODE_ENV === 'production'
-  ? path.resolve(process.cwd(), 'resource')
-  : path.resolve(__dirname, '../../resource');
+// 资源目录 - resource在backend目录下
+const resourceDir = path.resolve(__dirname, '../resource');
 
 console.log('Resource directory:', resourceDir);
 
