@@ -5,7 +5,6 @@ dist/
 .env.production
 *.log
 .DS_Store
-resource/
 tileset-editor.html
 map-test.html
 character-editor.html
