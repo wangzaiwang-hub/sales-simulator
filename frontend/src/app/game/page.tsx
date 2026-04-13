@@ -141,12 +141,8 @@ function toAssetUrl(path?: string) {
   if (!path) return "";
   if (/^https?:\/\//.test(path)) return path;
   
-  // 如果路径以resource/开头，使用API端点
-  if (path.startsWith('resource/')) {
-    return `${apiUrl}/api/${path}`;
-  }
-  
-  return `${apiUrl}/${path.replace(/^\//, "")}`;
+  // 直接使用前端public目录的相对路径
+  return `/${path.replace(/^\//, "")}`;
 }
 
 function createPlayer(x: number, y: number): ActorState {
