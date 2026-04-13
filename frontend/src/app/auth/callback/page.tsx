@@ -153,8 +153,10 @@ function AuthCallbackContent() {
             : null;
           const existingAppearance = normalizeAppearance(existingAppearancePayload?.appearance);
 
-          if (existingAppearance) {
+          if (existingAppearance && existingAppearancePayload?.appearance) {
             setPreviewAppearance(existingAppearance);
+            destination = "/game";
+            nextDestinationLabel = "AI 小镇";
             setMessage("登录成功，正在进入 AI 小镇...");
           } else if (storedAppearance) {
             const saveAppearanceResponse = await fetch(
