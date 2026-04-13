@@ -14,10 +14,8 @@ const PORT = process.env.PORT || 3001;
 
 const corsOrigin = process.env.CORS_ORIGIN || process.env.FRONTEND_URL || 'https://sales-simulator-zeta-tau.vercel.app';
 
-// 资源目录 - 本地开发时使用 ../resource，生产使用 /app/resource
-const resourceDir = process.env.NODE_ENV === 'production' 
-  ? path.resolve('/app/resource')
-  : path.resolve(__dirname, '../../resource');
+// 资源目录 - 使用相对路径，适配Railway部署
+const resourceDir = path.resolve(__dirname, '../../resource');
 
 console.log('Resource directory:', resourceDir);
 
