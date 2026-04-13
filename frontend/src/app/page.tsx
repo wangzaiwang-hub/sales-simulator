@@ -8,7 +8,7 @@ export default function Home() {
 
   useEffect(() => {
     const img = new Image();
-    img.src = "/resource/shouye.gif";
+    img.src = "/shouye.gif";
     img.onload = () => setImageLoaded(true);
   }, []);
 
@@ -18,7 +18,7 @@ export default function Home() {
       <div className="absolute inset-0">
         {imageLoaded ? (
           <img 
-            src="/resource/shouye.gif" 
+            src="/shouye.gif" 
             alt="游戏背景"
             className="w-full h-full object-cover"
             style={{ imageRendering: 'pixelated' }}
