@@ -668,7 +668,7 @@ export default function GamePage() {
       ctx.save();
       ctx.fillStyle = "rgba(0, 0, 0, 0.25)";
       ctx.beginPath();
-      ctx.ellipse(actor.x + actor.width / 2, actor.y + actor.height - 2, 15, 6, 0, 0, Math.PI * 2);
+      ctx.ellipse(actor.x + actor.width / 2, actor.y + actor.height + 2, 15, 6, 0, 0, Math.PI * 2);
       ctx.fill();
       ctx.restore();
 
