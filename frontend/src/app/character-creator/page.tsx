@@ -42,7 +42,7 @@ export default function CharacterCreatorPage() {
   const keysRef = useRef<Record<string, boolean>>({});
   const imageCacheRef = useRef<Record<string, HTMLImageElement>>({});
 
-  const basePath = "/resource/32x32%20Customizable%20Character%20Pack/Walk";
+  const basePath = "/32x32%20Customizable%20Character%20Pack/Walk";
   const layerVariants = {
     character: 5,
     tops: 29,

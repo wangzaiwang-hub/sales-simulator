@@ -707,7 +707,7 @@ export default function GamePage() {
       };
       
       const direction = directionMap[actor.direction];
-      const basePath = '/resource/32x32%20Customizable%20Character%20Pack/Walk';
+      const basePath = '/32x32%20Customizable%20Character%20Pack/Walk';
       
       // 图层绘制顺序（从下到上）
       const layers = [
@@ -925,7 +925,7 @@ export default function GamePage() {
       );
       
       // 添加角色图层精灵图
-      const basePath = '/resource/32x32%20Customizable%20Character%20Pack/Walk';
+      const basePath = '/32x32%20Customizable%20Character%20Pack/Walk';
       const directions = ['Front', 'Back', 'Left', 'Right'];
       const layerFiles = [
         { folder: 'Character', file: 'Character_Walk', hasAllDirections: true },

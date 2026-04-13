@@ -30,7 +30,7 @@ export const CHARACTER_LAYER_ORDER: CharacterAppearanceLayer[] = [
   "eyes",
 ];
 
-export const CHARACTER_BASE_PATH = "/resource/32x32%20Customizable%20Character%20Pack/Walk";
+export const CHARACTER_BASE_PATH = "/32x32%20Customizable%20Character%20Pack/Walk";
 
 export const CHARACTER_LAYER_FILES: Record<CharacterAppearanceLayer, string> = {
   character: "Character_Walk",
