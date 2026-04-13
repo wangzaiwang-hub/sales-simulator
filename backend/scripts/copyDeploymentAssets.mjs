@@ -16,10 +16,18 @@ const copyTargets = [
 ];
 
 for (const [sourceRelativePath, targetRelativePath] of copyTargets) {
-  const sourcePath = path.join(projectRoot, sourceRelativePath);
   const targetPath = path.join(backendRoot, targetRelativePath);
+  
+  // 如果目标已经存在，跳过
+  if (fs.existsSync(targetPath)) {
+    console.log(`Skipping ${targetRelativePath} (already exists)`);
+    continue;
+  }
+  
+  const sourcePath = path.join(projectRoot, sourceRelativePath);
 
   if (!fs.existsSync(sourcePath)) {
+    console.log(`Skipping ${sourceRelativePath} (source not found)`);
     continue;
   }
 
@@ -27,6 +35,8 @@ for (const [sourceRelativePath, targetRelativePath] of copyTargets) {
     force: true,
     recursive: true,
   });
+  
+  console.log(`Copied ${sourceRelativePath} to ${targetRelativePath}`);
 }
 
 console.log('Prepared deployment assets for Railway.');
