@@ -1,10 +1,13 @@
 "use client";
 
-import Link from "next/link";
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 import { PixelAvatarPreview } from "@/components/auth/pixel-avatar-preview";
+import {
+  AssetLinkButton,
+  AssetWindow,
+} from "@/components/game/mobile-casual-ui";
 import {
   CHARACTER_APPEARANCE_STORAGE_KEY,
   CHARACTER_ROLE_STORAGE_KEY,
@@ -17,6 +20,35 @@ type Status = "loading" | "success" | "error";
 type Stage = "validate" | "identity" | "appearance" | "route";
 
 const apiUrl = "";
+
+const stageLabels: Record<Stage, string> = {
+  validate: "校验授权",
+  identity: "同步身份",
+  appearance: "写入外观",
+  route: "准备进入",
+};
+
+function FlowStep({
+  label,
+  active,
+  completed,
+}: {
+  label: string;
+  active: boolean;
+  completed: boolean;
+}) {
+  const statusClass = completed
+    ? "border-[#fff1af] bg-[#fff0ba] text-[#4a2a58]"
+    : active
+      ? "border-[#7ee5ff] bg-[rgba(126,229,255,0.18)] text-[#ebfaff]"
+      : "border-white/15 bg-[rgba(255,255,255,0.04)] text-[#bfc8e6]";
+
+  return (
+    <div className={`border-2 px-3 py-2 font-game-ui text-[12px] tracking-[0.08em] ${statusClass}`}>
+      {label}
+    </div>
+  );
+}
 
 function AuthCallbackContent() {
   const router = useRouter();
@@ -196,8 +228,7 @@ function AuthCallbackContent() {
           router.replace(destination);
         }, 1100);
       } catch (err) {
-        const nextMessage =
-          err instanceof Error ? err.message : "登录失败，请稍后再试。";
+        const nextMessage = err instanceof Error ? err.message : "登录失败，请稍后再试。";
         setStatus("error");
         setMessage(nextMessage);
       }
@@ -207,95 +238,96 @@ function AuthCallbackContent() {
   }, [router, searchParams]);
 
   const steps = [
-    { id: "validate", label: "校验" },
-    { id: "identity", label: "身份" },
-    { id: "appearance", label: "外观" },
-    { id: "route", label: "进入" },
+    { id: "validate", label: "校验授权" },
+    { id: "identity", label: "同步身份" },
+    { id: "appearance", label: "角色外观" },
+    { id: "route", label: "进入地图" },
   ] as const;
 
   const activeStepIndex = steps.findIndex((item) => item.id === stage);
+  const statusLabel =
+    status === "loading" ? "正在登录" : status === "success" ? "登录成功" : "登录失败";
+  const heading =
+    status === "loading" ? "正在穿过入口" : status === "success" ? "传送完成" : "入口中断";
 
   return (
     <main className="pixel-auth-bg relative min-h-screen overflow-hidden text-[#fff6d8]">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(115,229,255,0.18),_transparent_28%),linear-gradient(180deg,_rgba(130,91,255,0.12),_transparent_40%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(115,229,255,0.22),_transparent_24%),linear-gradient(180deg,_rgba(113,87,255,0.12),_transparent_40%)]" />
 
-      <div className="relative mx-auto flex min-h-screen w-full max-w-4xl items-center px-4 py-8 sm:px-6">
+      <div className="relative mx-auto flex min-h-screen w-full max-w-5xl items-center px-4 py-8 sm:px-6">
         <div className="pixel-frame w-full overflow-hidden">
-          <div className="grid gap-px bg-[#2b163d] md:grid-cols-[0.9fr_1.1fr]">
-            <section className="bg-[#201434] p-5 sm:p-6">
-              <div className="pixel-subframe bg-[#120a22] p-4 text-[#fff8dc]">
-                <p className="font-pixel text-[10px] uppercase tracking-[0.28em] text-[#77e4ff]">
-                  Sync
-                </p>
-                <h2 className="mt-3 text-2xl font-semibold">
-                  {roleLabel}
-                </h2>
+          <div className="grid gap-px bg-[#2b163d] lg:grid-cols-[0.84fr_1.16fr]">
+            <section className="bg-[linear-gradient(180deg,_rgba(18,10,34,0.98),_rgba(14,8,26,0.98))] p-5 sm:p-6">
+              <div className="border-4 border-[#40305b] bg-[rgba(13,19,46,0.78)] p-5">
+                <div className="font-pixel text-[10px] uppercase tracking-[0.28em] text-[#77e4ff]">
+                  Sync Preview
+                </div>
+                <h2 className="mt-3 text-2xl font-semibold text-[#fff8df]">{roleLabel}</h2>
                 <PixelAvatarPreview
                   appearance={previewAppearance}
                   accentColor={currentRole?.accent ?? "#73e5ff"}
                   mode={status === "loading" ? "loading" : status}
                   className="mt-4"
                 />
+                <div className="mt-4 border-2 border-white/10 bg-[rgba(255,255,255,0.04)] px-4 py-3 font-game-ui text-[12px] leading-6 text-[#dbe7ff]">
+                  当前阶段：{stageLabels[stage]}
+                </div>
               </div>
             </section>
 
-            <section className="bg-[linear-gradient(180deg,_rgba(248,234,192,0.97),_rgba(233,214,165,0.96))] p-6 text-[#2b163d] sm:p-8">
-              <div className="pixel-chip text-[#2b163d]">
-                {status === "loading" && "正在登录"}
-                {status === "success" && "登录成功"}
-                {status === "error" && "登录失败"}
-              </div>
-
-              <h1 className="mt-5 text-3xl font-semibold leading-tight sm:text-4xl">
-                {status === "loading" && "稍等一下"}
-                {status === "success" && "马上进入"}
-                {status === "error" && "这次没有连上"}
-              </h1>
-
-              <p className="mt-4 max-w-lg text-base leading-8 text-[#4a2e69]">
-                {message}
-              </p>
-
-              <div className="mt-6 flex flex-wrap gap-2">
-                {steps.map((item, index) => {
-                  const completed = status === "success" || index < activeStepIndex;
-                  const active = status !== "success" && index === activeStepIndex;
-
-                  return (
-                    <div
-                      key={item.id}
-                      className={`rounded-none border-4 px-4 py-2 text-sm font-semibold ${
-                        completed
-                          ? "border-[#2a7b53] bg-[#173928] text-[#e6ffef]"
-                          : active
-                            ? "border-[#6cdfff] bg-[#10293d] text-[#dff8ff]"
-                            : "border-[#8f75b2] bg-[#fff7de] text-[#6a4a92]"
-                      }`}
-                    >
-                      {item.label}
+            <section className="bg-[linear-gradient(180deg,_rgba(245,238,255,0.96),_rgba(218,231,255,0.94))] p-6 text-[#112245] sm:p-8">
+              <AssetWindow className="w-full" contentClassName="bg-[rgba(34,77,173,0.14)] text-[#18305a]">
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <div className="font-pixel text-[10px] uppercase tracking-[0.24em] text-[#3562b2]">
+                      Gateway Status
                     </div>
-                  );
-                })}
-              </div>
-
-              <div className="mt-8 rounded-none border-4 border-[#8f75b2] bg-[#fff7de] px-4 py-3 text-sm leading-7 text-[#4a2e69]">
-                下一站：{destinationLabel}
-              </div>
-
-              {status === "error" ? (
-                <div className="mt-6">
-                  <Link
-                    href="/auth/login"
-                    className="pixel-secondary-button inline-flex items-center justify-center px-5 py-4 text-sm font-semibold text-[#2b163d]"
-                  >
-                    返回登录页
-                  </Link>
+                    <h1 className="mt-3 text-3xl font-semibold leading-tight text-[#1e3765] sm:text-4xl">
+                      {heading}
+                    </h1>
+                  </div>
+                  <div className="border-2 border-[#85aaf4] bg-[#eff5ff] px-3 py-1 font-game-ui text-[10px] tracking-[0.08em] text-[#355ea8]">
+                    {statusLabel}
+                  </div>
                 </div>
-              ) : (
-                <p className="mt-6 text-sm leading-7 text-[#6a4a92]">
-                  不用操作，页面会自动继续。
+
+                <p className="mt-5 max-w-2xl font-game-ui text-[14px] leading-8 text-[#2d4572]">
+                  {message}
                 </p>
-              )}
+
+                <div className="mt-6 grid gap-2 sm:grid-cols-2">
+                  {steps.map((item, index) => {
+                    const completed = status === "success" || index < activeStepIndex;
+                    const active = status !== "success" && index === activeStepIndex;
+
+                    return (
+                      <FlowStep
+                        key={item.id}
+                        label={item.label}
+                        completed={completed}
+                        active={active}
+                      />
+                    );
+                  })}
+                </div>
+
+                <div className="mt-7 border-4 border-[#8ba8dd] bg-[rgba(255,255,255,0.58)] px-5 py-4">
+                  <div className="font-pixel text-[10px] uppercase tracking-[0.24em] text-[#5a77af]">下一站</div>
+                  <div className="mt-3 font-game-display-tight text-2xl text-[#213b6d]">
+                    {destinationLabel}
+                  </div>
+                </div>
+
+                {status === "error" ? (
+                  <div className="mt-6">
+                    <AssetLinkButton href="/auth/login">返回登录页</AssetLinkButton>
+                  </div>
+                ) : (
+                  <p className="mt-6 font-game-ui text-[12px] leading-6 text-[#516b98]">
+                    页面会自动继续，不需要再点按钮。
+                  </p>
+                )}
+              </AssetWindow>
             </section>
           </div>
         </div>
@@ -309,8 +341,11 @@ export default function AuthCallbackPage() {
     <Suspense
       fallback={
         <main className="pixel-auth-bg flex min-h-screen items-center justify-center px-4 text-[#fff6d8]">
-          <div className="pixel-frame w-full max-w-xl p-8 text-center">
-            <h1 className="text-3xl font-semibold">正在进入登录回调</h1>
+          <div className="pixel-frame w-full max-w-2xl overflow-hidden border-[#2e1b43] bg-[rgba(15,9,28,0.92)] p-8">
+            <div className="font-pixel text-[10px] uppercase tracking-[0.28em] text-[#77e4ff]">
+              Loading
+            </div>
+            <h1 className="mt-4 text-3xl font-semibold text-[#fff8df]">正在进入登录回调</h1>
           </div>
         </main>
       }

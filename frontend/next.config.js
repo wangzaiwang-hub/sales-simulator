@@ -4,6 +4,11 @@ const nextConfig = {
   images: {
     domains: [],
   },
+  // 优化开发体验
+  onDemandEntries: {
+    maxInactiveAge: 60 * 1000,
+    pagesBufferLength: 5,
+  },
   async rewrites() {
     const backendUrl = process.env.BACKEND_URL || "https://capable-energy-production-bf2e.up.railway.app";
     
@@ -21,12 +26,6 @@ const nextConfig = {
         destination: `${backendUrl}/tools/map-test`,
       },
     ];
-  },
-  webpack: (config) => {
-    config.resolve.alias = {
-      ...config.resolve.alias,
-    };
-    return config;
   },
 };
 

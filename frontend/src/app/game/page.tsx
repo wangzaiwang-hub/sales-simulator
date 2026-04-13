@@ -1,17 +1,19 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { PersonalityTraits, Mood, ActivityStatus } from "@/types/npc-emotions";
 import { getStatusDisplayText, getStatusColor } from "@/types/npc-emotions";
 import { getRelationshipText, getAffinityText, getAffinityColor, getFamiliarityText } from "@/utils/relationship";
+import { AssetButton, AssetCounter, AssetIconButton, AssetWindow } from "@/components/game/mobile-casual-ui";
+import { RpgButton, RpgKeyBadge, RpgLinkButton, RpgPromptPanel } from "@/components/game/rpg-ui";
 
 const apiUrl = "";
 const tokenKey = "sales-simulator-token";
 const CGS_CHARACTER_SPRITE = "CGS_RU_HouseFree/img/characters/CGS_Char_1.png";
 const PLAYER_SPRITE_COLUMN_OFFSET = 0;
 const PLAYER_CHARACTER_ROW = 4;
+const CANVAS_FONT_FAMILY = '"HanYi Pixel UI", "Microsoft YaHei", sans-serif';
 
 type Direction = "Front" | "Back" | "Left" | "Right";
 
@@ -122,6 +124,7 @@ type MapResponse = {
 type ChatMessage = {
   role: "user" | "npc";
   text: string;
+  senderId: string; // ID of the user who sent this message
   relationship?: {
     affinity: number;
     familiarity: number;
@@ -243,6 +246,7 @@ export default function GamePage() {
   const saveTimerRef = useRef<number | null>(null);
   const [status, setStatus] = useState("正在加载游戏...");
   const [username, setUsername] = useState("");
+  const [userId, setUserId] = useState(""); // Current user's ID
   const [userAvatar, setUserAvatar] = useState<string | null>(null);
   const [playerAppearance, setPlayerAppearance] = useState<CharacterAppearance | null>(null);
   const [gold, setGold] = useState<number>(0);
@@ -341,6 +345,7 @@ export default function GamePage() {
         }
 
         setUsername(me.username);
+        setUserId(me.id); // Store user ID
         setUserAvatar(me.avatar || null);
         setGold(me.gameProgress?.gold ?? 0);
         
@@ -448,12 +453,14 @@ export default function GamePage() {
           messages.push({
             role: 'user',
             text: record.message,
+            senderId: record.userId, // Preserve sender ID
           });
           
           // NPC回复
           messages.push({
             role: 'npc',
             text: record.reply,
+            senderId: record.targetUserId, // NPC is the sender of the reply
             relationship: record.affinity !== undefined ? {
               affinity: record.affinity,
               familiarity: record.familiarity || 0,
@@ -616,7 +623,7 @@ export default function GamePage() {
       ctx.fillStyle = "#ffffff";
       ctx.strokeStyle = "rgba(0, 0, 0, 0.7)";
       ctx.lineWidth = 4;
-      ctx.font = "bold 12px sans-serif";
+      ctx.font = `13px ${CANVAS_FONT_FAMILY}`;
       ctx.textAlign = "center";
       ctx.strokeText(text, x, y);
       ctx.fillText(text, x, y);
@@ -624,7 +631,7 @@ export default function GamePage() {
       // 绘制状态（如果有）
       if (statusText) {
         const statusY = y - 16;
-        ctx.font = "10px sans-serif";
+        ctx.font = `11px ${CANVAS_FONT_FAMILY}`;
         
         // 状态背景
         const textWidth = ctx.measureText(statusText).width;
@@ -919,6 +926,13 @@ export default function GamePage() {
     };
 
     const prepare = async () => {
+      if ("fonts" in document) {
+        await Promise.allSettled([
+          document.fonts.load('13px "HanYi Pixel UI"'),
+          document.fonts.load('11px "HanYi Pixel UI"'),
+        ]);
+      }
+
       // 收集所有需要加载的图片
       const sources = Array.from(
         new Set(
@@ -1027,7 +1041,7 @@ export default function GamePage() {
     setChatInput("");
     setChatMessages((prev) => ({
       ...prev,
-      [selectedNpc.id]: [...(prev[selectedNpc.id] || []), { role: "user", text: message }],
+      [selectedNpc.id]: [...(prev[selectedNpc.id] || []), { role: "user", text: message, senderId: userId }],
     }));
 
     try {
@@ -1052,6 +1066,7 @@ export default function GamePage() {
       const npcMessage: ChatMessage = {
         role: "npc",
         text: data.reply || "...",
+        senderId: selectedNpc.id, // NPC is the sender
         relationship: data.relationship,
         aiEvaluation: data.aiEvaluation,
       };
@@ -1065,7 +1080,7 @@ export default function GamePage() {
         ...prev,
         [selectedNpc.id]: [
           ...(prev[selectedNpc.id] || []),
-          { role: "npc", text: error instanceof Error ? error.message : "NPC 暂时没有回应。" },
+          { role: "npc", text: error instanceof Error ? error.message : "NPC 暂时没有回应。", senderId: selectedNpc.id },
         ],
       }));
     } finally {
@@ -1081,7 +1096,7 @@ export default function GamePage() {
   const closestNpc = nearbyNpcs[0] || null;
 
   return (
-    <main className="fixed inset-0 overflow-hidden bg-[#09111f] text-white">
+    <main className="font-game-body fixed inset-0 overflow-hidden bg-[#09111f] text-white">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(34,211,238,0.12),_transparent_35%),linear-gradient(180deg,_rgba(6,10,18,0.08),_rgba(3,8,20,0.52))]" />
 
       {hasMap ? (
@@ -1089,8 +1104,24 @@ export default function GamePage() {
           <canvas ref={canvasRef} className="block max-h-full max-w-full bg-black shadow-[0_30px_80px_rgba(0,0,0,0.45)]" />
         </div>
       ) : (
-        <div className="relative z-10 flex h-full items-center justify-center px-8 text-center text-slate-200">
+        <div className="font-game-display relative z-10 flex h-full items-center justify-center px-8 text-center text-lg leading-8 tracking-[0.08em] text-[#fff2c7]">
           {status}
+        </div>
+      )}
+
+      {hasMap && (
+        <div className="pointer-events-none absolute left-4 top-4 z-20 flex w-[calc(100%-2rem)] items-start justify-between gap-3">
+          <div className="pointer-events-auto flex items-center gap-2">
+            <AssetCounter variant="coin" label="金币" value={gold} />
+            <AssetCounter variant="energy" label="状态" value={selectedNpc ? "交谈中" : "探索中"} className="hidden sm:inline-flex" />
+          </div>
+          <div className="pointer-events-auto">
+            <AssetIconButton
+              variant="menu"
+              label="打开菜单"
+              onClick={() => setImmersiveMode(false)}
+            />
+          </div>
         </div>
       )}
 
@@ -1098,37 +1129,36 @@ export default function GamePage() {
         <>
           {closestNpc && (
             <div className="pointer-events-none absolute bottom-6 left-1/2 z-20 -translate-x-1/2">
-              <div className="rounded-full border border-white/10 bg-black/40 px-5 py-3 text-sm text-slate-100 shadow-[0_16px_48px_rgba(0,0,0,0.35)] backdrop-blur-md">
-                靠近 {closestNpc.name} 后按 C 对话，或直接点击 TA
-              </div>
+              <RpgPromptPanel className="w-[620px] drop-shadow-[0_16px_42px_rgba(0,0,0,0.34)]">
+                <div className="font-game-ui flex w-full flex-wrap items-center justify-center gap-x-3 gap-y-1 text-[13px] leading-7 text-[#4a2a58] md:flex-nowrap">
+                  <span>靠近 {closestNpc.name} 后按</span>
+                  <RpgKeyBadge>C</RpgKeyBadge>
+                  <span>对话，或直接点击 TA</span>
+                </div>
+              </RpgPromptPanel>
             </div>
           )}
         </>
       )}
 
       {!immersiveMode && (
-        <div className="absolute inset-0 z-30 flex items-start justify-center bg-[rgba(3,8,20,0.42)] px-6 pt-10 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-[28px] border border-white/10 bg-[rgba(8,15,30,0.92)] p-5 shadow-[0_24px_80px_rgba(0,0,0,0.45)]">
-            <div className="text-[10px] uppercase tracking-[0.38em] text-cyan-200/70">Paused</div>
-            <h2 className="mt-3 text-2xl font-semibold text-white">退出沉浸模式</h2>
-            <p className="mt-2 text-sm leading-6 text-slate-300">继续沉浸就返回地图，或者去编辑器、首页。</p>
-            <div className="mt-5 flex flex-wrap gap-3">
-              <button
-                type="button"
-                onClick={() => setImmersiveMode(true)}
-                className="rounded-full bg-cyan-300 px-5 py-3 text-sm font-semibold text-slate-950"
-              >
+        <div className="absolute inset-0 z-30 flex items-center justify-center bg-[rgba(6,8,18,0.62)] px-6 backdrop-blur-[3px]">
+          <div className="flex max-w-[760px] flex-col items-center gap-5">
+            <div className="font-game-display-tight text-center text-[28px] text-[#fff4d4] drop-shadow-[0_4px_0_rgba(39,20,63,0.92)]">
+              菜单界面
+            </div>
+            <p className="font-game-ui max-w-[560px] text-center text-[13px] leading-7 text-[#f3dfbf]">
+              暂停后可以继续探索小镇，也可以回到角色工坊或编辑器调整内容。
+            </p>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <RpgButton onClick={() => setImmersiveMode(true)} dark>
                 返回地图
-              </button>
-              <Link href="/character-creator" className="rounded-full border border-white/10 px-5 py-3 text-sm text-slate-100">
+              </RpgButton>
+              <RpgLinkButton href="/character-creator">
                 角色工坊
-              </Link>
-              <Link href="/editor" className="rounded-full border border-white/10 px-5 py-3 text-sm text-slate-100">
-                编辑地图
-              </Link>
-              <Link href="/" className="rounded-full border border-white/10 px-5 py-3 text-sm text-slate-100">
-                返回首页
-              </Link>
+              </RpgLinkButton>
+              <RpgLinkButton href="/editor">编辑地图</RpgLinkButton>
+              <RpgLinkButton href="/">返回首页</RpgLinkButton>
             </div>
           </div>
         </div>
@@ -1136,20 +1166,20 @@ export default function GamePage() {
 
       {selectedNpc && (
         <div className="absolute inset-0 z-40 flex items-center justify-center bg-[rgba(5,10,20,0.35)] px-3 py-4">
-          <div className="w-full max-w-[340px] h-[85vh] max-h-[720px] overflow-hidden rounded-[20px] border border-white/10 bg-[#f5f8ff] text-slate-900 shadow-[0_30px_90px_rgba(0,0,0,0.45)] flex flex-col relative">
+          <AssetWindow
+            translucent
+            className="font-game-body relative flex h-[85vh] max-h-[720px] w-full max-w-[376px] flex-col overflow-hidden drop-shadow-[0_30px_90px_rgba(0,0,0,0.45)]"
+            contentClassName="flex h-full flex-col px-6 py-6"
+          >
             {/* 关闭按钮 - 右上角 */}
-            <button
-              type="button"
+            <AssetIconButton
+              variant="close"
+              label="关闭聊天"
               onClick={() => setSelectedNpcId(null)}
-              className="absolute top-1 right-1 z-50 rounded-full bg-black/20 w-6 h-6 flex items-center justify-center text-white hover:bg-black/40 transition backdrop-blur-sm"
-              aria-label="关闭"
-            >
-              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
+              className="absolute right-3 top-3 z-50"
+            />
             {/* 头部 - 极简布局 */}
-            <div className="bg-[linear-gradient(135deg,_#12d6df,_#77f2c8)] px-3 py-2 text-slate-950">
+            <div className="rounded-[18px] bg-[linear-gradient(135deg,_rgba(18,214,223,0.92),_rgba(119,242,200,0.92))] px-3 py-2 text-slate-950 shadow-[0_10px_24px_rgba(63,103,102,0.18)]">
               {/* 单行布局：NPC头像、进度条、玩家头像 - 居中对齐 */}
               <div className="flex items-center justify-center gap-3">
                 {/* NPC头像 - 左边 */}
@@ -1169,7 +1199,7 @@ export default function GamePage() {
                     />
                   ) : null}
                   <div 
-                    className="w-9 h-9 rounded-full bg-gradient-to-br from-pink-400 to-purple-500 flex items-center justify-center text-white font-bold text-xs shadow-md"
+                    className="font-game-display flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-pink-400 to-purple-500 text-xs text-white shadow-md"
                     style={{ display: selectedNpc.avatar ? 'none' : 'flex' }}
                   >
                     {selectedNpc.name?.[0]?.toUpperCase() || 'N'}
@@ -1187,7 +1217,7 @@ export default function GamePage() {
                           <span className="w-1 h-1 bg-slate-800 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
                           <span className="w-1 h-1 bg-slate-800 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
                         </div>
-                        <span className="text-[9px] text-slate-800 font-medium">输入中...</span>
+                        <span className="font-game-ui text-[9px] text-slate-800 font-medium">输入中...</span>
                       </div>
                     </div>
                   ) : (
@@ -1196,8 +1226,8 @@ export default function GamePage() {
                       {/* 好感度进度条 - 中间为0，左负右正 */}
                       <div className="mb-1">
                         <div className="flex items-center justify-between mb-0.5">
-                          <span className="text-[9px] text-slate-800 font-medium">好感度</span>
-                          <span className="text-[9px] text-slate-800 font-bold">
+                          <span className="font-game-ui text-[9px] text-slate-800 font-medium">好感度</span>
+                          <span className="font-game-ui text-[9px] text-slate-800 font-bold">
                             {(() => {
                               const messages = chatMessages[selectedNpc.id] || [];
                               const lastNpcMessage = [...messages].reverse().find(m => m.role === 'npc' && m.relationship);
@@ -1239,8 +1269,8 @@ export default function GamePage() {
                       {/* 熟悉度进度条 */}
                       <div>
                         <div className="flex items-center justify-between mb-0.5">
-                          <span className="text-[9px] text-slate-800 font-medium">熟悉度</span>
-                          <span className="text-[9px] text-slate-800 font-bold">
+                          <span className="font-game-ui text-[9px] text-slate-800 font-medium">熟悉度</span>
+                          <span className="font-game-ui text-[9px] text-slate-800 font-bold">
                             {(() => {
                               const messages = chatMessages[selectedNpc.id] || [];
                               const lastNpcMessage = [...messages].reverse().find(m => m.role === 'npc' && m.relationship);
@@ -1282,7 +1312,7 @@ export default function GamePage() {
                     />
                   ) : null}
                   <div 
-                    className="w-9 h-9 rounded-full bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center text-white font-bold text-xs shadow-md"
+                    className="font-game-display flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-cyan-400 to-blue-500 text-xs text-white shadow-md"
                     style={{ display: userAvatar ? 'none' : 'flex' }}
                   >
                     {username?.[0]?.toUpperCase() || 'P'}
@@ -1291,18 +1321,18 @@ export default function GamePage() {
               </div>
             </div>
 
-            <div className="flex-1 bg-[linear-gradient(180deg,_#eaf2ff,_#f8fbff)] p-3 overflow-hidden">
-              <div ref={chatScrollRef} className="h-full overflow-auto rounded-[20px] border border-slate-200/80 bg-white/72 px-2.5 py-3 shadow-inner">
+            <div className="mt-3 flex-1 overflow-hidden rounded-[20px] bg-[linear-gradient(180deg,_rgba(234,242,255,0.96),_rgba(248,251,255,0.96))] p-3 shadow-inner">
+              <div ref={chatScrollRef} className="h-full overflow-auto rounded-[18px] border border-slate-200/80 bg-white/72 px-2.5 py-3 shadow-inner">
                 {(chatMessages[selectedNpc.id] || []).length ? (
                   <div className="space-y-3">
                     {(chatMessages[selectedNpc.id] || []).map((item, index) => (
                       <div key={`${selectedNpc.id}-${index}`}>
                         <div
-                          className={`flex ${item.role === "user" ? "justify-end" : "justify-start"}`}
+                          className={`flex ${item.senderId === userId ? "justify-end" : "justify-start"}`}
                         >
                           <div
-                            className={`max-w-[82%] rounded-[18px] px-3 py-2 text-[13px] leading-5 shadow-sm ${
-                              item.role === "user"
+                            className={`font-game-ui max-w-[82%] rounded-[18px] px-3 py-2 text-[13px] leading-6 shadow-sm ${
+                              item.senderId === userId
                                 ? "bg-[#9eea6a] text-slate-900"
                                 : "border border-slate-200 bg-white text-slate-800"
                             }`}
@@ -1311,12 +1341,12 @@ export default function GamePage() {
                           </div>
                         </div>
                         {/* 显示关系变化 */}
-                        {item.role === "npc" && item.relationship && (
+                        {item.senderId !== userId && item.relationship && (
                           <div className="mt-1 flex justify-start">
                             <div className="max-w-[82%] space-y-1 px-2">
                               {/* AI评估反馈 */}
                               {item.aiEvaluation && (
-                                <div className="rounded-lg bg-slate-50 p-1.5 text-[10px]">
+                                <div className="font-game-ui rounded-lg bg-slate-50 p-1.5 text-[10px] leading-5">
                                   {item.aiEvaluation.emotionalResponse && (
                                     <div className="mb-1 text-slate-600">
                                       💭 {item.aiEvaluation.emotionalResponse}
@@ -1330,7 +1360,7 @@ export default function GamePage() {
                                 </div>
                               )}
                               {/* 关系信息 */}
-                              <div className="text-[9px] text-slate-400">
+                              <div className="font-game-ui text-[9px] leading-4 text-slate-400">
                                 {item.relationship.relationshipType && (
                                   <span className="mr-2">
                                     关系: {getRelationshipText(item.relationship.relationshipType as any)}
@@ -1364,15 +1394,15 @@ export default function GamePage() {
                     ))}
                   </div>
                 ) : (
-                  <div className="flex h-full items-center justify-center px-6 text-center text-sm leading-6 text-slate-500">
+                  <div className="font-game-ui flex h-full items-center justify-center px-6 text-center text-sm leading-7 text-slate-500">
                     和 {selectedNpc.name} 打个招呼吧
                   </div>
                 )}
               </div>
             </div>
 
-            <div className="border-t border-slate-200 bg-white px-3 pb-3 pt-2 flex-shrink-0">
-              <div className="mb-1.5 text-[10px] text-slate-400">按 Enter 发送，按 Esc 关闭聊天</div>
+            <div className="mt-3 flex-shrink-0 rounded-[18px] border border-[#ead3b4] bg-white/90 px-3 pb-3 pt-2 shadow-[0_8px_18px_rgba(108,82,46,0.08)]">
+              <div className="font-game-ui mb-1.5 text-[10px] text-slate-400">按 Enter 发送，按 Esc 关闭聊天</div>
               <div className="flex items-end gap-2">
                 <textarea
                   value={chatInput}
@@ -1385,19 +1415,20 @@ export default function GamePage() {
                   }}
                   rows={2}
                   placeholder={`给 ${selectedNpc.name} 发消息...`}
-                  className="min-h-[44px] flex-1 resize-none rounded-[16px] border border-slate-200 bg-slate-50 px-3 py-2 text-[13px] text-slate-800 outline-none placeholder:text-slate-400 focus:border-cyan-400"
+                  className="font-game-ui min-h-[44px] flex-1 resize-none rounded-[16px] border border-slate-200 bg-slate-50 px-3 py-2 text-[13px] leading-6 text-slate-800 outline-none placeholder:text-slate-400 focus:border-cyan-400"
                 />
-                <button
-                  type="button"
+                <AssetButton
                   disabled={chatLoading || !chatInput.trim()}
                   onClick={() => void sendNpcMessage()}
-                  className="rounded-[16px] bg-[#12d6df] px-4 py-2 text-[13px] font-semibold text-slate-950 transition disabled:cursor-not-allowed disabled:bg-slate-300"
+                  skin="play"
+                  className="text-[12px]"
+                  style={{ minWidth: 118, minHeight: 58 }}
                 >
                   {chatLoading ? "发送中" : "发送"}
-                </button>
+                </AssetButton>
               </div>
             </div>
-          </div>
+          </AssetWindow>
         </div>
       )}
     </main>

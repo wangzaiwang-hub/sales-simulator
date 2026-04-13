@@ -1,9 +1,13 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
 import { PixelAvatarPreview } from "@/components/auth/pixel-avatar-preview";
+import {
+  AssetAnchorButton,
+  AssetLinkButton,
+  AssetWindow,
+} from "@/components/game/mobile-casual-ui";
 import {
   CHARACTER_APPEARANCE_STORAGE_KEY,
   CHARACTER_ROLE_STORAGE_KEY,
@@ -13,6 +17,56 @@ import {
 } from "@/lib/character-appearance";
 
 const clientId = process.env.NEXT_PUBLIC_SECONDME_CLIENT_ID;
+
+const townSignals = [
+  {
+    image: "/UI/角色卡片/剑士-未选.png",
+    label: "广场动线",
+    title: "先看谁刚停下来",
+    description: "人流会动，机会也会动。停留、转身和驻足比盲聊更有价值。",
+  },
+  {
+    image: "/UI/角色卡片/医师-未选.png",
+    label: "情绪线索",
+    title: "谁更愿意回应你",
+    description: "居民都有自己的情绪和节奏，别把每个数字分身都当成同一种客户。",
+  },
+  {
+    image: "/UI/角色卡片/魔法师-未选.png",
+    label: "成交时机",
+    title: "谁现在最有需求",
+    description: "时机对了，短对话也能成单。时机不对，再多话术也只会打扰。",
+  },
+] as const;
+
+function SignalCard({
+  image,
+  label,
+  title,
+  description,
+}: (typeof townSignals)[number]) {
+  const imageSrc = encodeURI(image);
+
+  return (
+    <div className="overflow-hidden border-4 border-[#3a2553] bg-[rgba(20,12,35,0.92)] shadow-[8px_8px_0_rgba(12,7,23,0.34)]">
+      <div className="relative">
+        <img
+          src={imageSrc}
+          alt=""
+          aria-hidden="true"
+          className="block h-[176px] w-full object-cover object-top pixel-art"
+        />
+        <div className="absolute left-3 top-3 bg-[rgba(29,18,47,0.86)] px-2 py-1 font-game-ui text-[10px] tracking-[0.08em] text-[#ffe39a]">
+          {label}
+        </div>
+      </div>
+      <div className="border-t-4 border-[#3a2553] px-4 py-3">
+        <div className="font-game-display-tight text-[16px] text-[#fff8df]">{title}</div>
+        <p className="mt-2 font-game-ui text-[12px] leading-6 text-[#d6c8ef]">{description}</p>
+      </div>
+    </div>
+  );
+}
 
 export default function LoginPage() {
   const defaultRole = STARTER_CHARACTER_ROLES[0];
@@ -26,7 +80,6 @@ export default function LoginPage() {
   );
 
   useEffect(() => {
-    // 从环境变量读取回调地址，如果没有则使用当前域名
     const redirectUri = process.env.NEXT_PUBLIC_SECONDME_REDIRECT_URI || `${window.location.origin}/auth/callback`;
 
     try {
@@ -91,18 +144,12 @@ export default function LoginPage() {
 
   return (
     <main className="pixel-auth-bg relative min-h-screen overflow-hidden text-[#fff6d8]">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(115,229,255,0.18),_transparent_28%),linear-gradient(180deg,_rgba(255,152,103,0.12),_transparent_40%)]" />
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-[linear-gradient(180deg,_transparent,_rgba(12,7,23,0.98)_80%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(115,229,255,0.16),_transparent_24%),linear-gradient(180deg,_rgba(255,158,90,0.08),_transparent_32%)]" />
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-52 bg-[linear-gradient(180deg,_transparent,_rgba(10,6,19,0.96)_85%)]" />
 
-      <div className="relative mx-auto flex min-h-screen w-full max-w-5xl flex-col justify-center px-4 py-6 sm:px-6">
-        <div className="mb-4">
-          <Link href="/" className="pixel-chip w-fit text-[#fdf0ca] transition hover:text-white">
-            返回首页
-          </Link>
-        </div>
-
+      <div className="relative mx-auto flex min-h-screen w-full max-w-6xl flex-col justify-center px-4 py-6 sm:px-6">
         <div className="pixel-frame overflow-hidden">
-          <div className="grid gap-px bg-[#2b163d] lg:grid-cols-[1.1fr_0.9fr]">
+          <div className="grid gap-px bg-[#2b163d] lg:grid-cols-[1.12fr_0.88fr]">
             <section className="bg-[linear-gradient(180deg,_rgba(24,15,41,0.98),_rgba(16,10,29,0.98))] p-6 sm:p-8">
               <p className="font-pixel text-[10px] uppercase tracking-[0.32em] text-[#73e5ff]">
                 SecondMe Login
@@ -114,45 +161,39 @@ export default function LoginPage() {
                 </span>
               </h1>
 
-              <div className="mt-5 max-w-xl rounded-none border-4 border-[#ffcb71] bg-[linear-gradient(180deg,_rgba(255,203,113,0.2),_rgba(255,203,113,0.08))] px-4 py-4 text-[#fff7de] shadow-[0_0_0_4px_rgba(42,21,62,0.35)]">
-                <p className="font-pixel text-[10px] uppercase tracking-[0.22em] text-[#ffe08f]">
-                  小提示
-                </p>
-                <p className="mt-3 text-base leading-8 text-[#f5e9ff] sm:text-lg">
+              <div className="mt-5 max-w-xl border-4 border-[#3c2556] bg-[rgba(255,241,200,0.92)] px-5 py-4 text-[#4d2c5e] shadow-[10px_10px_0_rgba(17,10,28,0.28)]">
+                <div className="font-pixel text-[10px] uppercase tracking-[0.26em] text-[#7c4d23]">小提示</div>
+                <p className="mt-3 text-base leading-8 sm:text-lg">
                   镇上的居民是真实人类的数字分身，他们不会排队等你推销。先观察谁正在生活、谁刚好有需求，再决定先和谁开口。
                 </p>
               </div>
 
-              <div className="mt-6 grid gap-3 text-sm leading-7 text-[#e7dbff] sm:grid-cols-3">
-                <div className="rounded-none border-4 border-white/10 bg-white/5 px-4 py-3">
-                  <p className="font-pixel text-[9px] uppercase tracking-[0.18em] text-[#8de6ff]">
-                    数字分身
-                  </p>
-                  <p className="mt-2 text-[#fff7de]">每个客户都像住在镇里的真人，有自己的性格、节奏和偏好。</p>
-                </div>
-                <div className="rounded-none border-4 border-white/10 bg-white/5 px-4 py-3">
-                  <p className="font-pixel text-[9px] uppercase tracking-[0.18em] text-[#8de6ff]">
-                    镇中寻找
-                  </p>
-                  <p className="mt-2 text-[#fff7de]">他们不会排队等你推销，你得在街道、广场和日常生活里找到机会。</p>
-                </div>
-                <div className="rounded-none border-4 border-white/10 bg-white/5 px-4 py-3">
-                  <p className="font-pixel text-[9px] uppercase tracking-[0.18em] text-[#8de6ff]">
-                    销售判断
-                  </p>
-                  <p className="mt-2 text-[#fff7de]">先读人，再开口。时机、话术和目标人选，都会影响你能不能卖出去。</p>
-                </div>
+              <div className="mt-6 grid gap-4 sm:grid-cols-3">
+                {townSignals.map((signal) => (
+                  <SignalCard key={signal.label} {...signal} />
+                ))}
               </div>
 
-              <div className="mt-8 max-w-xl space-y-3">
+              <div className="mt-8 max-w-xl">
                 {authorizeUrl ? (
-                  <a
-                    href={authorizeUrl}
-                    onClick={handleAuthorize}
-                    className="pixel-button inline-flex w-full items-center justify-center px-6 py-5 text-center font-pixel text-[11px] uppercase tracking-[0.24em] text-[#1a1127]"
-                  >
-                    使用 SecondMe 登录
-                  </a>
+                  <div className="grid gap-4 sm:grid-cols-[170px_minmax(0,1fr)]">
+                    <AssetLinkButton
+                      href="/"
+                      className="w-full text-[14px]"
+                      style={{ minWidth: "100%", minHeight: 72 }}
+                    >
+                      返回首页
+                    </AssetLinkButton>
+                    <AssetAnchorButton
+                      href={authorizeUrl}
+                      onClick={handleAuthorize}
+                      skin="play"
+                      className="w-full text-[15px]"
+                      style={{ minWidth: "100%", minHeight: 74 }}
+                    >
+                     SecondMe登录
+                    </AssetAnchorButton>
+                  </div>
                 ) : (
                   <div className="pixel-warning">
                     缺少 SecondMe 前端环境变量，请检查
@@ -162,43 +203,50 @@ export default function LoginPage() {
                   </div>
                 )}
 
-                <p className="text-sm leading-7 text-[#cabce3]">
-                  登录后会直接进入小镇。角色外观只是辅助信息，重点是尽快进场找人、聊人、卖出第一单。
+                <p className="mt-4 text-sm leading-7 text-[#cabce3]">
+                  登录后会直接进入小镇。这里不是捏脸入口，而是开场大厅，你会从这里直接进入居民正在生活的地图。
                 </p>
               </div>
             </section>
 
-            <section className="bg-[linear-gradient(180deg,_rgba(248,234,192,0.97),_rgba(233,214,165,0.96))] p-5 text-[#2b163d] sm:p-6">
-              <div className="pixel-subframe bg-[#211435] p-4 text-[#fff7de]">
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <p className="font-pixel text-[10px] uppercase tracking-[0.28em] text-[#77e4ff]">
-                      Game Preview
+            <section className="bg-[linear-gradient(180deg,_rgba(247,233,196,0.98),_rgba(234,214,173,0.96))] p-5 sm:p-6">
+              <AssetWindow
+                className="h-full"
+                translucent
+                contentClassName="h-full bg-[rgba(13,19,46,0.76)] text-[#eff4ff]"
+              >
+                <div className="flex h-full flex-col">
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <p className="font-pixel text-[10px] uppercase tracking-[0.28em] text-[#77e4ff]">
+                        Scene Preview
+                      </p>
+                      <h2 className="mt-3 text-2xl font-semibold text-white">
+                        像素小镇现场
+                      </h2>
+                    </div>
+                    <div className="rounded-full border-2 border-[#dff4ff] bg-[rgba(217,242,255,0.18)] px-3 py-1 font-game-ui text-[10px] tracking-[0.08em] text-[#e7fbff]">
+                      登录后直达
+                    </div>
+                  </div>
+
+                  <PixelAvatarPreview
+                    appearance={appearance}
+                    accentColor={selectedRole?.accent ?? "#73e5ff"}
+                    className="mt-4"
+                  />
+
+                  <div className="mt-4 space-y-3 text-sm leading-7 text-[#e3ebff]">
+                    <p>
+                      这里不是站柜台等客的商店，而是一个持续运转的 AI 小镇。每次进入，都是从居民的日常里找与你产品相交的那一刻。
                     </p>
-                    <h2 className="mt-3 text-2xl font-semibold">
-                      像素小镇现场
-                    </h2>
-                  </div>
-                  <div className="pixel-chip text-[#bff2ff]">实机预览</div>
-                </div>
-
-                <PixelAvatarPreview
-                  appearance={appearance}
-                  accentColor={selectedRole?.accent ?? "#73e5ff"}
-                  className="mt-4"
-                />
-
-                <div className="mt-4 space-y-3 text-sm leading-7 text-[#e3d8f5]">
-                  <p>
-                    进入小镇后，你要主动靠近那些正在生活中的数字分身。有人在闲逛，有人在忙事，也有人刚好正需要你卖的东西。
-                  </p>
-                  <div className="grid gap-2 sm:grid-cols-3">
-                    <div className="rounded-none border-2 border-white/10 bg-white/5 px-3 py-2">真实数字分身</div>
-                    <div className="rounded-none border-2 border-white/10 bg-white/5 px-3 py-2">在镇中找客户</div>
-                    <div className="rounded-none border-2 border-white/10 bg-white/5 px-3 py-2">观察后再成交</div>
+                    <div className="grid gap-2 sm:grid-cols-2">
+                      <div className="border-2 border-white/20 bg-[rgba(255,255,255,0.06)] px-3 py-2">真实数字分身</div>
+                      <div className="border-2 border-white/20 bg-[rgba(255,255,255,0.06)] px-3 py-2">先观察再开口</div>
+                    </div>
                   </div>
                 </div>
-              </div>
+              </AssetWindow>
             </section>
           </div>
         </div>
