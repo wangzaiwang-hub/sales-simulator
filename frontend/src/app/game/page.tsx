@@ -1120,6 +1120,9 @@ export default function GamePage() {
               >
                 返回地图
               </button>
+              <Link href="/character-creator" className="rounded-full border border-white/10 px-5 py-3 text-sm text-slate-100">
+                角色工坊
+              </Link>
               <Link href="/editor" className="rounded-full border border-white/10 px-5 py-3 text-sm text-slate-100">
                 编辑地图
               </Link>
