@@ -26,8 +26,8 @@ export default function LoginPage() {
   );
 
   useEffect(() => {
-    // 使用固定的后端回调地址
-    const redirectUri = 'https://capable-energy-production-bf2e.up.railway.app/api/auth/callback';
+    // 从环境变量读取回调地址，如果没有则使用当前域名
+    const redirectUri = process.env.NEXT_PUBLIC_SECONDME_REDIRECT_URI || `${window.location.origin}/auth/callback`;
 
     try {
       const storedRoleId = window.sessionStorage.getItem(CHARACTER_ROLE_STORAGE_KEY);
