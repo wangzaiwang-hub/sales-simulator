@@ -141,8 +141,11 @@ function toAssetUrl(path?: string) {
   if (!path) return "";
   if (/^https?:\/\//.test(path)) return path;
   
+  // 移除resource/前缀（如果存在）
+  const cleanPath = path.replace(/^resource\//, '');
+  
   // 直接使用前端public目录的相对路径
-  return `/${path.replace(/^\//, "")}`;
+  return `/${cleanPath.replace(/^\//, "")}`;
 }
 
 function createPlayer(x: number, y: number): ActorState {
