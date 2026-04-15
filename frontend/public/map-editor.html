@@ -3194,23 +3194,15 @@
                     collisionAreas: collisionAreas
                 };
                 
-                // 发送到后端API - 使用游戏路由的保存端点
-                // 从localStorage获取token
-                const token = localStorage.getItem('sales-simulator-token');
-                const headers = {
-                    'Content-Type': 'application/json',
-                };
-                if (token) {
-                    headers['Authorization'] = `Bearer ${token}`;
-                }
-                
-                const response = await fetch(`${API_URL}/api/game/save-map`, {
+                // 发送到后端API - 使用临时端点
+                const response = await fetch(`${API_URL}/api/game/save-map-temp`, {
                     method: 'POST',
-                    headers: headers,
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
                     body: JSON.stringify({
                         map: mapData,
                         mapName: mapName,
-                        mapId: currentMapId // 如果有ID，则更新现有地图
                     })
                 });
                 

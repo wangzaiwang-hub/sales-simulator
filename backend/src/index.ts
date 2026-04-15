@@ -58,6 +58,35 @@ app.use('/api/shop', shopRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/map-editor', mapEditorRoutes);
 
+// 临时地图保存端点 - 直接在这里处理
+app.post('/api/game/save-map-temp', async (req, res) => {
+  try {
+    const { map, mapName } = req.body;
+    
+    if (!map || !mapName) {
+      return res.status(400).json({ error: 'Map and mapName are required' });
+    }
+    
+    // 简单保存到SharedMap表
+    const { insertRows } = await import('./lib/supabase');
+    const mapJson = JSON.stringify(map);
+    
+    const [created] = await insertRows('SharedMap', {
+      name: mapName,
+      mapData: mapJson,
+    });
+    
+    res.json({
+      message: 'Map saved successfully',
+      mapId: created?.id,
+      mapName: created?.name,
+    });
+  } catch (error) {
+    console.error('Save map error:', error);
+    res.status(500).json({ error: error instanceof Error ? error.message : 'Failed to save map' });
+  }
+});
+
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
