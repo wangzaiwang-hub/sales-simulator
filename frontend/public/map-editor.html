@@ -1657,11 +1657,11 @@
                 });
                 
                 // 添加角色（使用脚部碰撞框的底部）
-                // 角色脚部碰撞框：宽度缩小到一半，居中显示，位于角色下半部分
-                const footWidth = testCharacter.width / 2;
+                // 角色脚部碰撞框：调整为更合理的大小
+                const footWidth = testCharacter.width * 0.6;
                 const footX = testCharacter.x + (testCharacter.width - footWidth) / 2;
-                const footY = testCharacter.y + testCharacter.height / 2; // 脚部开始位置
-                const footHeight = testCharacter.height / 2; // 脚部高度
+                const footY = testCharacter.y + testCharacter.height * 0.5;
+                const footHeight = testCharacter.height * 0.45;
                 const characterSortY = footY + footHeight; // 脚部碰撞框的底部
                 
                 allRenderables.push({
@@ -1904,11 +1904,11 @@
         }
         
         function checkCollision(x, y) {
-            // 角色脚部的碰撞框（底部一半高度，宽度缩小到一半并居中）
-            const footWidth = testCharacter.width / 2;
+            // 角色脚部的碰撞框（调整为更合理的大小）
+            const footWidth = testCharacter.width * 0.6;  // 60%宽度
             const footX = x + (testCharacter.width - footWidth) / 2;
-            const footY = y + testCharacter.height / 2;
-            const footHeight = testCharacter.height / 2;
+            const footY = y + testCharacter.height * 0.5;  // 从50%位置开始
+            const footHeight = testCharacter.height * 0.45; // 45%高度
             
             // 检查与独立碰撞区域的碰撞
             for (const area of collisionAreas) {
