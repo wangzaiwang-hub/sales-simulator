@@ -147,12 +147,8 @@ function toAssetUrl(path?: string) {
   // 移除resource/前缀（如果存在）
   const cleanPath = path.replace(/^resource\//, '').replace(/^\//, '');
   
-  // 在生产环境中，从后端API加载资源
-  if (apiUrl) {
-    return `${apiUrl}/resource/${cleanPath}`;
-  }
-  
-  // 开发环境：使用前端public目录的相对路径
+  // 直接使用前端 public 目录的相对路径
+  // Vercel 会自动处理 public 目录的静态资源
   return `/${cleanPath}`;
 }
 
