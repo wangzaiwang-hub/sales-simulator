@@ -22,22 +22,44 @@ function parseStoredMap(currentMap: unknown) {
     
     // 验证地图数据的基本结构
     if (!parsed || typeof parsed !== 'object') {
+      console.log('地图数据无效：不是对象');
+      return null;
+    }
+    
+    // 如果是空对象，返回 null 使用默认地图
+    if (Object.keys(parsed).length === 0) {
+      console.log('地图数据为空对象，使用默认地图');
       return null;
     }
     
     // 如果是新格式的地图（对象格式），返回 null 让它使用默认地图
     if (parsed.objects && Array.isArray(parsed.objects)) {
-      console.log('检测到新格式地图，使用默认地图');
+      console.log('检测到新格式地图（对象格式），使用默认地图');
       return null;
     }
     
     // 验证旧格式地图的必需字段
     if (!parsed.layers || !Array.isArray(parsed.layers)) {
+      console.log('地图数据无效：缺少layers数组');
       return null;
     }
     
+    // 检查是否包含无效的tileset路径
+    for (const layer of parsed.layers) {
+      if (layer.tileset && (
+        layer.tileset.includes('/tools/') || 
+        layer.tileset.includes('tileset-editor') ||
+        layer.tileset.startsWith('http://localhost')
+      )) {
+        console.log(`地图数据包含无效的tileset路径: ${layer.tileset}，使用默认地图`);
+        return null;
+      }
+    }
+    
+    console.log('成功解析旧格式地图');
     return parsed;
-  } catch {
+  } catch (error) {
+    console.log('解析地图数据失败:', error);
     return null;
   }
 }
