@@ -3194,9 +3194,9 @@
                     collisionAreas: collisionAreas
                 };
                 
-                // 发送到后端API
-                const response = await fetch(`${API_URL}/api/map-editor/map`, {
-                    method: 'POST',
+                // 发送到后端API - 使用游戏路由的公开端点
+                const response = await fetch(`${API_URL}/api/game/map-public`, {
+                    method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
                     },
