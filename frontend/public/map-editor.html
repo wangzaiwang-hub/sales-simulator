@@ -3207,12 +3207,25 @@
                     })
                 });
                 
+                console.log('Response status:', response.status);
+                console.log('Response ok:', response.ok);
+                
                 if (!response.ok) {
-                    const error = await response.json();
-                    throw new Error(error.error || '保存失败');
+                    const errorText = await response.text();
+                    console.error('Error response:', errorText);
+                    let errorMessage = '保存失败';
+                    try {
+                        const error = JSON.parse(errorText);
+                        errorMessage = error.error || errorMessage;
+                    } catch (e) {
+                        errorMessage = errorText || errorMessage;
+                    }
+                    throw new Error(errorMessage);
                 }
                 
-                const result = await response.json();
+                const resultText = await response.text();
+                console.log('Success response:', resultText);
+                const result = JSON.parse(resultText);
                 console.log('地图保存成功:', result);
                 
                 // 保存地图ID，下次保存时更新而不是创建新地图
