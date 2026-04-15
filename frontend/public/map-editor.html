@@ -3195,11 +3195,18 @@
                 };
                 
                 // 发送到后端API - 使用游戏路由的公开端点
+                // 从localStorage获取token
+                const token = localStorage.getItem('sales-simulator-token');
+                const headers = {
+                    'Content-Type': 'application/json',
+                };
+                if (token) {
+                    headers['Authorization'] = `Bearer ${token}`;
+                }
+                
                 const response = await fetch(`${API_URL}/api/game/map-public`, {
                     method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
+                    headers: headers,
                     body: JSON.stringify({
                         map: mapData,
                         mapName: mapName,
