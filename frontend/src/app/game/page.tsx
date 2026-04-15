@@ -8,7 +8,7 @@ import { getRelationshipText, getAffinityText, getAffinityColor, getFamiliarityT
 import { AssetCounter, AssetIconButton } from "@/components/game/mobile-casual-ui";
 import { RpgButton, RpgKeyBadge, RpgLinkButton, RpgPromptPanel } from "@/components/game/rpg-ui";
 
-const apiUrl = "";
+const apiUrl = process.env.NEXT_PUBLIC_API_URL || "";
 const tokenKey = "sales-simulator-token";
 const CGS_CHARACTER_SPRITE = "CGS_RU_HouseFree/img/characters/CGS_Char_1.png";
 const PLAYER_SPRITE_COLUMN_OFFSET = 0;
@@ -147,7 +147,12 @@ function toAssetUrl(path?: string) {
   // 移除resource/前缀（如果存在）
   const cleanPath = path.replace(/^resource\//, '');
   
-  // 直接使用前端public目录的相对路径
+  // 在生产环境中，从后端API加载资源
+  if (apiUrl) {
+    return `${apiUrl}/resource/${cleanPath.replace(/^\//, "")}`;
+  }
+  
+  // 开发环境：使用前端public目录的相对路径
   return `/${cleanPath.replace(/^\//, "")}`;
 }
 
