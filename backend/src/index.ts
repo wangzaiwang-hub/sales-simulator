@@ -13,11 +13,12 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-const corsOrigin = process.env.CORS_ORIGIN || process.env.FRONTEND_URL || 'https://sales-simulator-zeta-tau.vercel.app';
+const corsOrigin = process.env.CORS_ORIGIN || process.env.FRONTEND_URL || 'https://sales-simulator-zeta.vercel.app';
 
 const toolsDir = path.resolve(__dirname, '../');
 
 console.log('Tools directory:', toolsDir);
+console.log('CORS origin:', corsOrigin);
 
 app.use(cors({
   origin: corsOrigin,
