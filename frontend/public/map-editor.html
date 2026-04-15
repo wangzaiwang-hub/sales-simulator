@@ -297,8 +297,8 @@
         let testCharacter = {
             x: 100,
             y: 100,
-            width: 40,  // 缩小角色尺寸
-            height: 40, // 缩小角色尺寸
+            width: 32,  // 进一步缩小角色尺寸
+            height: 32, // 进一步缩小角色尺寸
             speed: 3,
             appearance: {
                 character: 1,
@@ -1777,7 +1777,7 @@
                     const directionLayers = testCharacter.images.walk[testCharacter.direction];
                     const frameWidth = 32;
                     const frameHeight = 32;
-                    const scale = 2;
+                    const scale = 1;  // 使用原始大小，不放大
                     const frameX = testCharacter.frame * frameWidth;
                     
                     let hasImage = false;
