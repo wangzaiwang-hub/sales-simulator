@@ -18,7 +18,25 @@ function parseStoredMap(currentMap: unknown) {
   }
 
   try {
-    return JSON.parse(trimmed);
+    const parsed = JSON.parse(trimmed);
+    
+    // 验证地图数据的基本结构
+    if (!parsed || typeof parsed !== 'object') {
+      return null;
+    }
+    
+    // 如果是新格式的地图（对象格式），返回 null 让它使用默认地图
+    if (parsed.objects && Array.isArray(parsed.objects)) {
+      console.log('检测到新格式地图，使用默认地图');
+      return null;
+    }
+    
+    // 验证旧格式地图的必需字段
+    if (!parsed.layers || !Array.isArray(parsed.layers)) {
+      return null;
+    }
+    
+    return parsed;
   } catch {
     return null;
   }
