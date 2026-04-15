@@ -252,6 +252,11 @@ export const gameController = {
       const userId = (req as any).userId; // 可能为 undefined（公开路由）
       const { map, saveAsShared = false, mapName } = req.body;
 
+      console.log('=== saveMap controller ===');
+      console.log('userId:', userId);
+      console.log('saveAsShared:', saveAsShared);
+      console.log('mapName:', mapName);
+
       if (!map || typeof map !== 'object') {
         return res.status(400).json({ error: 'Map payload is required' });
       }

@@ -4,6 +4,14 @@ import { authMiddleware } from '../middleware/auth';
 
 const router = express.Router();
 
+// 地图编辑器公开路由（不需要认证） - 必须放在最前面
+router.post('/save-map', (req, res, next) => {
+  console.log('=== /save-map route hit ===');
+  console.log('Body:', JSON.stringify(req.body).substring(0, 200));
+  console.log('saveAsShared:', req.body.saveAsShared);
+  next();
+}, gameController.saveMap);
+
 // 获取所有NPC的当前状态（不需要认证，供内部调用）
 router.get('/npc-states-public', gameController.getNpcStates);
 
@@ -13,7 +21,6 @@ router.post('/update-npc-states-public', gameController.updateNpcStates);
 // 地图编辑器公开路由（不需要认证）
 router.get('/map-public', gameController.getMap);
 router.put('/map-public', gameController.saveMap);
-router.post('/save-map', gameController.saveMap); // 新增POST方法支持
 
 // 所有游戏路由都需要认证
 router.use(authMiddleware);
