@@ -6,8 +6,9 @@ const backendRoot = process.cwd();
 
 const copyTargets = [
   ['resource', 'resource'],
-  ['tileset-editor.html', 'tileset-editor.html'],
-  ['map-test.html', 'map-test.html'],
+  ['backend/tileset-editor.html', 'tileset-editor.html'],
+  ['backend/map-editor.html', 'map-editor.html'],
+  ['backend/map-test.html', 'map-test.html'],
   ['character-editor.html', 'character-editor.html'],
   ['character-customizer.html', 'character-customizer.html'],
   ['character-creator.html', 'character-creator.html'],
