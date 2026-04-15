@@ -941,6 +941,14 @@ export default function GamePage() {
     const drawMap = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+      // 检查地图是否存在
+      if (!map || typeof map !== 'object') {
+        // 没有地图，绘制空白背景
+        ctx.fillStyle = '#2d5016'; // 草地绿色
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        return;
+      }
+
       // 检查是否是新格式的地图（使用objects而不是layers的瓦片数据）
       const isNewFormat = (map as any).objects && Array.isArray((map as any).objects);
       
@@ -1018,7 +1026,7 @@ export default function GamePage() {
         };
         
         sortedObjects.forEach(obj => drawObject(obj));
-      } else {
+      } else if (map.layers && Array.isArray(map.layers)) {
         // 旧格式：渲染瓦片
         for (const layer of map.layers) {
           if (!layer.visible || !layer.tileset) continue;
@@ -1082,37 +1090,40 @@ export default function GamePage() {
       // 收集所有需要加载的图片
       const sources: string[] = [];
       
-      // 检查是否是新格式的地图
-      const isNewFormat = (map as any).objects && Array.isArray((map as any).objects);
-      
-      if (isNewFormat) {
-        // 新格式：收集对象的图片
-        const objects = (map as any).objects as Array<{
-          spriteData?: { spriteImageSrc?: string };
-          imageData?: string;
-          isBackground?: boolean;
-          isGroup?: boolean;
-          children?: any[];
-        }>;
+      // 检查地图是否存在
+      if (map && typeof map === 'object') {
+        // 检查是否是新格式的地图
+        const isNewFormat = (map as any).objects && Array.isArray((map as any).objects);
         
-        const collectImages = (obj: any) => {
-          if (obj.isBackground && obj.imageData) {
-            sources.push(obj.imageData);
-          } else if (obj.spriteData && obj.spriteData.spriteImageSrc) {
-            sources.push(toAssetUrl(obj.spriteData.spriteImageSrc));
-          }
+        if (isNewFormat) {
+          // 新格式：收集对象的图片
+          const objects = (map as any).objects as Array<{
+            spriteData?: { spriteImageSrc?: string };
+            imageData?: string;
+            isBackground?: boolean;
+            isGroup?: boolean;
+            children?: any[];
+          }>;
           
-          if (obj.isGroup && obj.children) {
-            obj.children.forEach((child: any) => collectImages(child));
-          }
-        };
-        
-        objects.forEach(obj => collectImages(obj));
-      } else {
-        // 旧格式：收集图层的瓦片集
-        sources.push(
-          ...map.layers.map((layer) => layer.tileset).filter(Boolean).map((path) => toAssetUrl(path!))
-        );
+          const collectImages = (obj: any) => {
+            if (obj.isBackground && obj.imageData) {
+              sources.push(obj.imageData);
+            } else if (obj.spriteData && obj.spriteData.spriteImageSrc) {
+              sources.push(toAssetUrl(obj.spriteData.spriteImageSrc));
+            }
+            
+            if (obj.isGroup && obj.children) {
+              obj.children.forEach((child: any) => collectImages(child));
+            }
+          };
+          
+          objects.forEach(obj => collectImages(obj));
+        } else if (map.layers && Array.isArray(map.layers)) {
+          // 旧格式：收集图层的瓦片集
+          sources.push(
+            ...map.layers.map((layer) => layer.tileset).filter(Boolean).map((path) => toAssetUrl(path!))
+          );
+        }
       }
       
       // 添加角色精灵图
