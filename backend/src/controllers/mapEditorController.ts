@@ -101,15 +101,15 @@ export const mapEditorController = {
           { ...eq('id', mapId) },
           {
             mapData: mapJson,
+            name: mapName, // 也更新名称
             updatedAt: new Date().toISOString(),
           }
         );
         savedMap = updated;
       } else {
-        // 创建新地图
+        // 创建新地图 - 让数据库自动生成UUID
         console.log('Creating new map:', mapName);
         const [created] = await insertRows<Row>('SharedMap', {
-          id: crypto.randomUUID(),
           name: mapName,
           mapData: mapJson,
           isActive: false, // 新地图默认不激活
