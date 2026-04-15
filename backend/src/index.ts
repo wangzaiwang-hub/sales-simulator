@@ -27,6 +27,39 @@ app.use(cors({
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
+// 临时地图保存端点 - 放在路由注册之前，不需要认证
+app.post('/api/game/save-map-temp', async (req, res) => {
+  try {
+    const { map, mapName } = req.body;
+    
+    console.log('Received save map request:', { mapName, hasMap: !!map });
+    
+    if (!map || !mapName) {
+      return res.status(400).json({ error: 'Map and mapName are required' });
+    }
+    
+    // 简单保存到SharedMap表
+    const { insertRows } = await import('./lib/supabase');
+    const mapJson = JSON.stringify(map);
+    
+    console.log('Saving map to database...');
+    const [created] = await insertRows('SharedMap', {
+      name: mapName,
+      mapData: mapJson,
+    });
+    
+    console.log('Map saved successfully:', created?.id);
+    res.json({
+      message: 'Map saved successfully',
+      mapId: created?.id,
+      mapName: created?.name,
+    });
+  } catch (error) {
+    console.error('Save map error:', error);
+    res.status(500).json({ error: error instanceof Error ? error.message : 'Failed to save map' });
+  }
+});
+
 // 提供工具页面（HTML文件）
 app.get('/tools/tileset-editor', (req, res) => {
   res.sendFile(path.join(toolsDir, 'tileset-editor.html'));
@@ -57,35 +90,6 @@ app.use('/api/game', gameRoutes);
 app.use('/api/shop', shopRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/map-editor', mapEditorRoutes);
-
-// 临时地图保存端点 - 直接在这里处理
-app.post('/api/game/save-map-temp', async (req, res) => {
-  try {
-    const { map, mapName } = req.body;
-    
-    if (!map || !mapName) {
-      return res.status(400).json({ error: 'Map and mapName are required' });
-    }
-    
-    // 简单保存到SharedMap表
-    const { insertRows } = await import('./lib/supabase');
-    const mapJson = JSON.stringify(map);
-    
-    const [created] = await insertRows('SharedMap', {
-      name: mapName,
-      mapData: mapJson,
-    });
-    
-    res.json({
-      message: 'Map saved successfully',
-      mapId: created?.id,
-      mapName: created?.name,
-    });
-  } catch (error) {
-    console.error('Save map error:', error);
-    res.status(500).json({ error: error instanceof Error ? error.message : 'Failed to save map' });
-  }
-});
 
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
