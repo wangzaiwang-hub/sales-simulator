@@ -292,8 +292,8 @@
         let testCharacter = {
             x: 100,
             y: 100,
-            width: 64,  // 2格宽（32像素放大2倍）
-            height: 64, // 2格高（32像素放大2倍）
+            width: 40,  // 缩小角色尺寸
+            height: 40, // 缩小角色尺寸
             speed: 3,
             appearance: {
                 character: 1,
@@ -1808,45 +1808,16 @@
                         ctx.fill();
                     }
                     
-                    // 绘制角色脚部碰撞框（调试用）
-                    ctx.strokeStyle = 'rgba(0, 255, 0, 0.8)';
-                    ctx.lineWidth = 2;
-                    const footWidth = testCharacter.width / 2;
-                    const footX = testCharacter.x + (testCharacter.width - footWidth) / 2;
-                    const footY = testCharacter.y + testCharacter.height / 2;
-                    const footHeight = testCharacter.height / 2;
-                    ctx.strokeRect(footX, footY, footWidth, footHeight);
+                    // 碰撞框已隐藏
                 }
                 
-                // 显示提示文字（始终在最上层）
-                ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-                ctx.fillRect(10, 10, 400, 110);
+                // 简化提示文字
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+                ctx.fillRect(10, 10, 240, 60);
                 ctx.fillStyle = '#fff';
                 ctx.font = '14px Arial';
                 ctx.fillText('方向键/WASD: 移动角色', 20, 30);
                 ctx.fillText('H键/ESC: 退出预览', 20, 50);
-                ctx.fillStyle = '#0f0';
-                ctx.fillText('绿框: 角色脚部碰撞区域', 20, 70);
-                ctx.fillStyle = '#ff0';
-                const charFootBottom = testCharacter.y + testCharacter.height;
-                ctx.fillText(`角色脚部底部Y: ${Math.round(charFootBottom)}`, 20, 90);
-                
-                // 显示最近的树的碰撞框底部Y坐标（调试用）
-                let nearestTree = null;
-                let minDist = Infinity;
-                sorted.forEach(obj => {
-                    if (obj.collision && obj.layer > 0) {
-                        const dist = Math.abs(obj.x - testCharacter.x) + Math.abs(obj.y - testCharacter.y);
-                        if (dist < minDist) {
-                            minDist = dist;
-                            nearestTree = obj;
-                        }
-                    }
-                });
-                if (nearestTree) {
-                    const treeSortY = nearestTree.collision.y + 3;
-                    ctx.fillText(`最近树的排序Y(顶部+3): ${Math.round(treeSortY)}`, 20, 110);
-                }
                 
                 ctx.restore();
             }
