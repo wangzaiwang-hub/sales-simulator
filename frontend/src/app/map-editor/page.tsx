@@ -5,18 +5,12 @@ import { useEffect, useState } from "react";
 
 export default function MapEditorPage() {
   const router = useRouter();
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem("sales-simulator-token");
-    if (!token) {
-      router.replace("/auth/login");
-      return;
-    }
-    setIsAuthenticated(true);
+    // 简单检查，不强制登录
     setIsLoading(false);
-  }, [router]);
+  }, []);
 
   if (isLoading) {
     return (
@@ -24,10 +18,6 @@ export default function MapEditorPage() {
         <div className="text-white">加载中...</div>
       </div>
     );
-  }
-
-  if (!isAuthenticated) {
-    return null;
   }
 
   return (
