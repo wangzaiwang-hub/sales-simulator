@@ -1,0 +1,3 @@
+2026-04-15-v2
+Map editor endpoints added in index.ts
+All public endpoints defined before route registration
