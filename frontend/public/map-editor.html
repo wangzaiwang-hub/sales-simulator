@@ -182,6 +182,10 @@
                 <button class="tool-btn" id="tool-delete" onclick="setTool('delete')">🗑️ 橡皮 (E)</button>
                 <button class="tool-btn" id="tool-fill" onclick="setTool('fill')">🪣 填充 (F)</button>
                 <button class="tool-btn" id="tool-collision" onclick="setTool('collision')">⬜ 碰撞 (P)</button>
+                <label style="display: inline-flex; align-items: center; margin-left: 15px; cursor: pointer;">
+                    <input type="checkbox" id="showCollisionCheckbox" onchange="toggleCollisionBoxes()" style="width: auto; margin-right: 5px; cursor: pointer;">
+                    <span style="font-size: 12px;">显示碰撞框</span>
+                </label>
             </div>
             <canvas id="mapCanvas" width="960" height="720"></canvas>
             <div class="info" style="margin-top: 8px; font-size: 10px;">
@@ -454,11 +458,6 @@
                 togglePreviewMode();
             }
             
-            // 预览模式下按C键切换碰撞框显示
-            if (isPreviewMode && e.key.toLowerCase() === 'c') {
-                showCollisionBoxes = !showCollisionBoxes;
-            }
-            
             switch(e.key.toLowerCase()) {
                 case 'b':
                     setTool('select');
@@ -547,12 +546,17 @@
                     elem.msRequestFullscreen();
                 }
                 
-                // 隐藏所有UI元素
+                // 隐藏所有UI元素（但保留碰撞框复选框）
                 document.querySelectorAll('.panel').forEach(el => el.style.display = 'none');
                 document.querySelector('h1').style.display = 'none';
                 document.querySelectorAll('p').forEach(el => el.style.display = 'none');
                 document.querySelectorAll('.info').forEach(el => el.style.display = 'none');
                 document.querySelectorAll('.tool-btn').forEach(el => el.style.display = 'none');
+                // 保持碰撞框复选框可见
+                const collisionCheckbox = document.getElementById('showCollisionCheckbox');
+                if (collisionCheckbox && collisionCheckbox.parentElement) {
+                    collisionCheckbox.parentElement.style.display = 'inline-flex';
+                }
                 
                 // 画布容器全屏样式
                 const container = document.querySelector('.canvas-container');
@@ -1369,8 +1373,8 @@
                         ctx.restore();
                     });
                     
-                    // 绘制组合对象的碰撞框（如果有）- 预览模式下不显示
-                    if (!isPreviewMode && obj.collision) {
+                    // 绘制组合对象的碰撞框（如果有）- 根据复选框决定是否显示
+                    if (showCollisionBoxes && obj.collision) {
                         ctx.strokeStyle = 'rgba(255, 0, 0, 0.6)';
                         ctx.lineWidth = 2;
                         ctx.strokeRect(obj.collision.x, obj.collision.y, obj.collision.width, obj.collision.height);
@@ -1509,8 +1513,8 @@
                 
                 ctx.restore();
                 
-                // 绘制碰撞框（如果有）- 预览模式下不显示
-                if (!isPreviewMode && obj.collision) {
+                // 绘制碰撞框（如果有）- 根据复选框决定是否显示
+                if (showCollisionBoxes && obj.collision) {
                     ctx.strokeStyle = 'rgba(255, 0, 0, 0.6)';
                     ctx.lineWidth = 2;
                     ctx.strokeRect(obj.collision.x, obj.collision.y, obj.collision.width, obj.collision.height);
@@ -1545,8 +1549,8 @@
                 }
             });
             
-            // 绘制独立碰撞区域（空气墙）- 预览模式下不显示
-            if (!isPreviewMode) {
+            // 绘制独立碰撞区域（空气墙）- 根据复选框决定是否显示
+            if (showCollisionBoxes) {
                 collisionAreas.forEach(area => {
                     const layer = layers.find(l => l.id === area.layer);
                     if (!layer || !layer.visible) return;
@@ -1854,12 +1858,11 @@
                 
                 // 简化提示文字
                 ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
-                ctx.fillRect(10, 10, 240, 80);
+                ctx.fillRect(10, 10, 240, 60);
                 ctx.fillStyle = '#fff';
                 ctx.font = '14px Arial';
                 ctx.fillText('方向键/WASD: 移动角色', 20, 30);
                 ctx.fillText('H键/ESC: 退出预览', 20, 50);
-                ctx.fillText('C键: 切换碰撞框显示', 20, 70);
                 
                 ctx.restore();
             }
@@ -3510,6 +3513,11 @@
         
         function toggleGrid() {
             showGrid = document.getElementById('showGrid').checked;
+            render();
+        }
+        
+        function toggleCollisionBoxes() {
+            showCollisionBoxes = document.getElementById('showCollisionCheckbox').checked;
             render();
         }
         
