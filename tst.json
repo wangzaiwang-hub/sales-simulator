@@ -35,7 +35,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 0,
@@ -55,7 +55,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 48,
@@ -75,7 +75,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 96,
@@ -95,7 +95,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 144,
@@ -115,7 +115,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 192,
@@ -135,7 +135,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 240,
@@ -155,7 +155,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 288,
@@ -175,7 +175,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 336,
@@ -195,7 +195,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 384,
@@ -215,7 +215,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 432,
@@ -235,7 +235,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 480,
@@ -255,7 +255,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 528,
@@ -275,7 +275,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 576,
@@ -295,7 +295,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 624,
@@ -315,7 +315,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 672,
@@ -335,7 +335,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 720,
@@ -355,7 +355,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 768,
@@ -375,7 +375,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 816,
@@ -395,7 +395,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 864,
@@ -415,7 +415,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 912,
@@ -435,7 +435,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 0,
@@ -455,7 +455,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 48,
@@ -475,7 +475,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 96,
@@ -495,7 +495,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 144,
@@ -515,7 +515,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 192,
@@ -535,7 +535,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 240,
@@ -555,7 +555,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 288,
@@ -575,7 +575,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 336,
@@ -595,7 +595,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 384,
@@ -615,7 +615,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 432,
@@ -635,7 +635,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 480,
@@ -655,7 +655,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 528,
@@ -675,7 +675,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 576,
@@ -695,7 +695,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 624,
@@ -715,7 +715,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 672,
@@ -735,7 +735,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 720,
@@ -755,7 +755,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 768,
@@ -775,7 +775,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 816,
@@ -795,7 +795,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 864,
@@ -815,7 +815,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 912,
@@ -835,7 +835,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 0,
@@ -855,7 +855,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 48,
@@ -875,7 +875,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 96,
@@ -895,7 +895,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 144,
@@ -915,7 +915,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 192,
@@ -935,7 +935,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 240,
@@ -955,7 +955,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 288,
@@ -975,7 +975,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 336,
@@ -995,7 +995,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 384,
@@ -1015,7 +1015,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 432,
@@ -1035,7 +1035,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 480,
@@ -1055,7 +1055,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 528,
@@ -1075,7 +1075,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 576,
@@ -1095,7 +1095,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 624,
@@ -1115,7 +1115,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 672,
@@ -1135,7 +1135,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 720,
@@ -1155,7 +1155,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 768,
@@ -1175,7 +1175,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 816,
@@ -1195,7 +1195,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 864,
@@ -1215,7 +1215,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 912,
@@ -1235,7 +1235,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 0,
@@ -1255,7 +1255,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 48,
@@ -1275,7 +1275,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 96,
@@ -1295,7 +1295,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 144,
@@ -1315,7 +1315,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 192,
@@ -1335,7 +1335,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 240,
@@ -1355,7 +1355,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 288,
@@ -1375,7 +1375,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 336,
@@ -1395,7 +1395,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 384,
@@ -1415,7 +1415,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 432,
@@ -1435,7 +1435,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 480,
@@ -1455,7 +1455,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 528,
@@ -1475,7 +1475,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 576,
@@ -1495,7 +1495,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 624,
@@ -1515,7 +1515,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 672,
@@ -1535,7 +1535,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 720,
@@ -1555,7 +1555,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 768,
@@ -1575,7 +1575,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 816,
@@ -1595,7 +1595,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 864,
@@ -1615,7 +1615,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 912,
@@ -1635,7 +1635,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 0,
@@ -1655,7 +1655,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 48,
@@ -1675,7 +1675,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 96,
@@ -1695,7 +1695,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 144,
@@ -1715,7 +1715,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 192,
@@ -1735,7 +1735,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 240,
@@ -1755,7 +1755,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 288,
@@ -1775,7 +1775,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 336,
@@ -1795,7 +1795,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 384,
@@ -1815,7 +1815,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 432,
@@ -1835,7 +1835,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 480,
@@ -1855,7 +1855,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 528,
@@ -1875,7 +1875,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 576,
@@ -1895,7 +1895,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 624,
@@ -1915,7 +1915,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 672,
@@ -1935,7 +1935,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 720,
@@ -1955,7 +1955,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 768,
@@ -1975,7 +1975,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 816,
@@ -1995,7 +1995,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 864,
@@ -2015,7 +2015,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 912,
@@ -2035,7 +2035,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 0,
@@ -2055,7 +2055,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 48,
@@ -2075,7 +2075,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 96,
@@ -2095,7 +2095,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 144,
@@ -2115,7 +2115,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 192,
@@ -2135,7 +2135,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 240,
@@ -2155,7 +2155,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 288,
@@ -2175,7 +2175,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 336,
@@ -2195,7 +2195,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 384,
@@ -2215,7 +2215,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 432,
@@ -2235,7 +2235,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 480,
@@ -2255,7 +2255,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 528,
@@ -2275,7 +2275,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 576,
@@ -2295,7 +2295,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 624,
@@ -2315,7 +2315,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 672,
@@ -2335,7 +2335,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 720,
@@ -2355,7 +2355,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 768,
@@ -2375,7 +2375,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 816,
@@ -2395,7 +2395,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 864,
@@ -2415,7 +2415,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 912,
@@ -2435,7 +2435,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 0,
@@ -2455,7 +2455,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 48,
@@ -2475,7 +2475,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 96,
@@ -2495,7 +2495,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 144,
@@ -2515,7 +2515,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 192,
@@ -2535,7 +2535,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 240,
@@ -2555,7 +2555,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 288,
@@ -2575,7 +2575,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 336,
@@ -2595,7 +2595,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 384,
@@ -2615,7 +2615,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 432,
@@ -2635,7 +2635,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 480,
@@ -2655,7 +2655,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 528,
@@ -2675,7 +2675,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 576,
@@ -2695,7 +2695,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 624,
@@ -2715,7 +2715,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 672,
@@ -2735,7 +2735,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 720,
@@ -2755,7 +2755,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 768,
@@ -2775,7 +2775,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 816,
@@ -2795,7 +2795,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 864,
@@ -2815,7 +2815,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 912,
@@ -2835,7 +2835,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 0,
@@ -2855,7 +2855,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 48,
@@ -2875,7 +2875,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 96,
@@ -2895,7 +2895,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 144,
@@ -2915,7 +2915,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 192,
@@ -2935,7 +2935,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 240,
@@ -2955,7 +2955,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 288,
@@ -2975,7 +2975,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 336,
@@ -2995,7 +2995,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 384,
@@ -3015,7 +3015,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 432,
@@ -3035,7 +3035,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 480,
@@ -3055,7 +3055,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 528,
@@ -3075,7 +3075,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 576,
@@ -3095,7 +3095,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 624,
@@ -3115,7 +3115,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 672,
@@ -3135,7 +3135,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 720,
@@ -3155,7 +3155,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 768,
@@ -3175,7 +3175,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 816,
@@ -3195,7 +3195,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 864,
@@ -3215,7 +3215,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 912,
@@ -3235,7 +3235,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 0,
@@ -3255,7 +3255,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 48,
@@ -3275,7 +3275,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 96,
@@ -3295,7 +3295,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 144,
@@ -3315,7 +3315,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 192,
@@ -3335,7 +3335,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 240,
@@ -3355,7 +3355,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 288,
@@ -3375,7 +3375,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 336,
@@ -3395,7 +3395,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 384,
@@ -3415,7 +3415,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 432,
@@ -3435,7 +3435,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 480,
@@ -3455,7 +3455,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 528,
@@ -3475,7 +3475,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 576,
@@ -3495,7 +3495,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 624,
@@ -3515,7 +3515,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 672,
@@ -3535,7 +3535,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 720,
@@ -3555,7 +3555,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 768,
@@ -3575,7 +3575,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 816,
@@ -3595,7 +3595,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 864,
@@ -3615,7 +3615,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 912,
@@ -3635,7 +3635,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 0,
@@ -3655,7 +3655,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 48,
@@ -3675,7 +3675,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 96,
@@ -3695,7 +3695,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 144,
@@ -3715,7 +3715,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 192,
@@ -3735,7 +3735,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 240,
@@ -3755,7 +3755,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 288,
@@ -3775,7 +3775,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 336,
@@ -3795,7 +3795,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 384,
@@ -3815,7 +3815,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 432,
@@ -3835,7 +3835,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 480,
@@ -3855,7 +3855,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 528,
@@ -3875,7 +3875,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 576,
@@ -3895,7 +3895,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 624,
@@ -3915,7 +3915,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 672,
@@ -3935,7 +3935,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 720,
@@ -3955,7 +3955,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 768,
@@ -3975,7 +3975,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 816,
@@ -3995,7 +3995,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 864,
@@ -4015,7 +4015,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 912,
@@ -4035,7 +4035,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 0,
@@ -4055,7 +4055,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 48,
@@ -4075,7 +4075,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 96,
@@ -4095,7 +4095,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 144,
@@ -4115,7 +4115,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 192,
@@ -4135,7 +4135,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 240,
@@ -4155,7 +4155,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 288,
@@ -4175,7 +4175,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 336,
@@ -4195,7 +4195,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 384,
@@ -4215,7 +4215,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 432,
@@ -4235,7 +4235,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 480,
@@ -4255,7 +4255,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 528,
@@ -4275,7 +4275,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 576,
@@ -4295,7 +4295,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 624,
@@ -4315,7 +4315,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 672,
@@ -4335,7 +4335,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 720,
@@ -4355,7 +4355,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 768,
@@ -4375,7 +4375,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 816,
@@ -4395,7 +4395,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 864,
@@ -4415,7 +4415,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 912,
@@ -4435,7 +4435,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 0,
@@ -4455,7 +4455,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 48,
@@ -4475,7 +4475,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 96,
@@ -4495,7 +4495,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 144,
@@ -4515,7 +4515,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 192,
@@ -4535,7 +4535,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 240,
@@ -4555,7 +4555,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 288,
@@ -4575,7 +4575,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 336,
@@ -4595,7 +4595,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 384,
@@ -4615,7 +4615,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 432,
@@ -4635,7 +4635,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 480,
@@ -4655,7 +4655,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 528,
@@ -4675,7 +4675,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 576,
@@ -4695,7 +4695,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 624,
@@ -4715,7 +4715,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 672,
@@ -4735,7 +4735,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 720,
@@ -4755,7 +4755,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 768,
@@ -4775,7 +4775,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 816,
@@ -4795,7 +4795,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 864,
@@ -4815,7 +4815,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 912,
@@ -4835,7 +4835,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 0,
@@ -4855,7 +4855,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 48,
@@ -4875,7 +4875,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 96,
@@ -4895,7 +4895,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 144,
@@ -4915,7 +4915,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 192,
@@ -4935,7 +4935,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 240,
@@ -4955,7 +4955,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 288,
@@ -4975,7 +4975,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 336,
@@ -4995,7 +4995,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 384,
@@ -5015,7 +5015,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 432,
@@ -5035,7 +5035,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 480,
@@ -5055,7 +5055,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 528,
@@ -5075,7 +5075,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 576,
@@ -5095,7 +5095,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 624,
@@ -5115,7 +5115,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 672,
@@ -5135,7 +5135,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 720,
@@ -5155,7 +5155,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 768,
@@ -5175,7 +5175,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 816,
@@ -5195,7 +5195,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 864,
@@ -5215,7 +5215,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 912,
@@ -5235,7 +5235,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 0,
@@ -5255,7 +5255,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 48,
@@ -5275,7 +5275,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 96,
@@ -5295,7 +5295,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 144,
@@ -5315,7 +5315,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 192,
@@ -5335,7 +5335,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 240,
@@ -5355,7 +5355,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 288,
@@ -5375,7 +5375,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 336,
@@ -5395,7 +5395,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 384,
@@ -5415,7 +5415,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 432,
@@ -5435,7 +5435,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 480,
@@ -5455,7 +5455,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 528,
@@ -5475,7 +5475,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 576,
@@ -5495,7 +5495,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 624,
@@ -5515,7 +5515,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 672,
@@ -5535,7 +5535,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 720,
@@ -5555,7 +5555,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 768,
@@ -5575,7 +5575,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 816,
@@ -5595,7 +5595,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 864,
@@ -5615,7 +5615,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 912,
@@ -5635,7 +5635,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 0,
@@ -5655,7 +5655,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 48,
@@ -5675,7 +5675,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 96,
@@ -5695,7 +5695,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 144,
@@ -5715,7 +5715,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 192,
@@ -5735,7 +5735,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 240,
@@ -5755,7 +5755,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 288,
@@ -5775,7 +5775,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 336,
@@ -5795,7 +5795,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 384,
@@ -5815,7 +5815,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 432,
@@ -5835,7 +5835,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 480,
@@ -5855,7 +5855,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 528,
@@ -5875,7 +5875,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 576,
@@ -5895,7 +5895,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 624,
@@ -5915,7 +5915,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 672,
@@ -5935,7 +5935,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 720,
@@ -5955,7 +5955,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 768,
@@ -5975,7 +5975,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 816,
@@ -5995,7 +5995,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 864,
@@ -6015,7 +6015,7 @@
         "width": 48,
         "height": 48,
         "name": "0-1",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png"
       },
       "layer": 0,
       "x": 912,
@@ -6035,7 +6035,7 @@
         "width": 48,
         "height": 48,
         "name": "14-7",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
       },
       "layer": 1,
       "x": 0,
@@ -6055,7 +6055,7 @@
         "width": 48,
         "height": 48,
         "name": "14-7",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
       },
       "layer": 1,
       "x": 0,
@@ -6075,7 +6075,7 @@
         "width": 48,
         "height": 48,
         "name": "14-7",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
       },
       "layer": 1,
       "x": 0,
@@ -6095,7 +6095,7 @@
         "width": 48,
         "height": 48,
         "name": "14-7",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
       },
       "layer": 1,
       "x": 0,
@@ -6115,7 +6115,7 @@
         "width": 48,
         "height": 48,
         "name": "14-7",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
       },
       "layer": 1,
       "x": 0,
@@ -6135,7 +6135,7 @@
         "width": 48,
         "height": 48,
         "name": "14-7",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
       },
       "layer": 1,
       "x": 0,
@@ -6155,7 +6155,7 @@
         "width": 48,
         "height": 48,
         "name": "14-7",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
       },
       "layer": 1,
       "x": 0,
@@ -6180,7 +6180,7 @@
         "width": 48,
         "height": 48,
         "name": "14-7",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
       },
       "layer": 1,
       "x": 48,
@@ -6205,7 +6205,7 @@
         "width": 48,
         "height": 48,
         "name": "14-7",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
       },
       "layer": 1,
       "x": 96,
@@ -6225,7 +6225,7 @@
         "width": 48,
         "height": 48,
         "name": "14-7",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
       },
       "layer": 1,
       "x": 144,
@@ -6245,7 +6245,7 @@
         "width": 48,
         "height": 48,
         "name": "14-7",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
       },
       "layer": 1,
       "x": 192,
@@ -6265,7 +6265,7 @@
         "width": 48,
         "height": 48,
         "name": "14-7",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
       },
       "layer": 1,
       "x": 240,
@@ -6285,7 +6285,7 @@
         "width": 48,
         "height": 48,
         "name": "14-7",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
       },
       "layer": 1,
       "x": 288,
@@ -6305,7 +6305,7 @@
         "width": 48,
         "height": 48,
         "name": "14-7",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
       },
       "layer": 1,
       "x": 336,
@@ -6325,7 +6325,7 @@
         "width": 48,
         "height": 48,
         "name": "14-7",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
       },
       "layer": 1,
       "x": 384,
@@ -6345,7 +6345,7 @@
         "width": 48,
         "height": 48,
         "name": "14-7",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
       },
       "layer": 1,
       "x": 432,
@@ -6365,7 +6365,7 @@
         "width": 48,
         "height": 48,
         "name": "14-7",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
       },
       "layer": 1,
       "x": 480,
@@ -6385,7 +6385,7 @@
         "width": 48,
         "height": 48,
         "name": "14-7",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
       },
       "layer": 1,
       "x": 528,
@@ -6405,7 +6405,7 @@
         "width": 48,
         "height": 48,
         "name": "14-7",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
       },
       "layer": 1,
       "x": 576,
@@ -6425,7 +6425,7 @@
         "width": 48,
         "height": 48,
         "name": "14-7",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
       },
       "layer": 1,
       "x": 624,
@@ -6445,7 +6445,7 @@
         "width": 48,
         "height": 48,
         "name": "14-7",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
       },
       "layer": 1,
       "x": 672,
@@ -6470,7 +6470,7 @@
         "width": 48,
         "height": 48,
         "name": "14-7",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
       },
       "layer": 1,
       "x": 624,
@@ -6490,7 +6490,7 @@
         "width": 48,
         "height": 48,
         "name": "14-7",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
       },
       "layer": 1,
       "x": 768,
@@ -6510,7 +6510,7 @@
         "width": 48,
         "height": 48,
         "name": "14-7",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
       },
       "layer": 1,
       "x": 768,
@@ -6530,7 +6530,7 @@
         "width": 48,
         "height": 48,
         "name": "14-7",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
       },
       "layer": 1,
       "x": 720,
@@ -6550,7 +6550,7 @@
         "width": 48,
         "height": 48,
         "name": "14-7",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
       },
       "layer": 1,
       "x": 816,
@@ -6570,7 +6570,7 @@
         "width": 48,
         "height": 48,
         "name": "14-7",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
       },
       "layer": 1,
       "x": 864,
@@ -6590,7 +6590,7 @@
         "width": 48,
         "height": 48,
         "name": "14-7",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
       },
       "layer": 1,
       "x": 912,
@@ -6610,7 +6610,7 @@
         "width": 48,
         "height": 48,
         "name": "14-7",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
       },
       "layer": 1,
       "x": 0,
@@ -6630,7 +6630,7 @@
         "width": 48,
         "height": 48,
         "name": "14-7",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
       },
       "layer": 1,
       "x": 0,
@@ -6650,7 +6650,7 @@
         "width": 48,
         "height": 48,
         "name": "14-7",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
       },
       "layer": 1,
       "x": 0,
@@ -6670,7 +6670,7 @@
         "width": 48,
         "height": 48,
         "name": "14-7",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
       },
       "layer": 1,
       "x": 0,
@@ -6690,7 +6690,7 @@
         "width": 48,
         "height": 48,
         "name": "14-7",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
       },
       "layer": 1,
       "x": 0,
@@ -6710,7 +6710,7 @@
         "width": 48,
         "height": 48,
         "name": "14-7",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
       },
       "layer": 1,
       "x": 0,
@@ -6730,7 +6730,7 @@
         "width": 48,
         "height": 48,
         "name": "14-7",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
       },
       "layer": 1,
       "x": 0,
@@ -6750,7 +6750,7 @@
         "width": 48,
         "height": 48,
         "name": "14-7",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
       },
       "layer": 1,
       "x": 48,
@@ -6770,7 +6770,7 @@
         "width": 48,
         "height": 48,
         "name": "14-7",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
       },
       "layer": 1,
       "x": 96,
@@ -6790,7 +6790,7 @@
         "width": 48,
         "height": 48,
         "name": "14-7",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
       },
       "layer": 1,
       "x": 144,
@@ -6810,7 +6810,7 @@
         "width": 48,
         "height": 48,
         "name": "14-7",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
       },
       "layer": 1,
       "x": 192,
@@ -6830,7 +6830,7 @@
         "width": 48,
         "height": 48,
         "name": "14-7",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
       },
       "layer": 1,
       "x": 240,
@@ -6850,7 +6850,7 @@
         "width": 48,
         "height": 48,
         "name": "14-7",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
       },
       "layer": 1,
       "x": 288,
@@ -6870,7 +6870,7 @@
         "width": 48,
         "height": 48,
         "name": "14-7",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
       },
       "layer": 1,
       "x": 336,
@@ -6890,7 +6890,7 @@
         "width": 48,
         "height": 48,
         "name": "14-7",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
       },
       "layer": 1,
       "x": 384,
@@ -6910,7 +6910,7 @@
         "width": 48,
         "height": 48,
         "name": "14-7",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
       },
       "layer": 1,
       "x": 432,
@@ -6930,7 +6930,7 @@
         "width": 48,
         "height": 48,
         "name": "14-7",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
       },
       "layer": 1,
       "x": 480,
@@ -6955,7 +6955,7 @@
         "width": 48,
         "height": 48,
         "name": "14-7",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
       },
       "layer": 1,
       "x": 528,
@@ -6980,7 +6980,7 @@
         "width": 48,
         "height": 48,
         "name": "14-7",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
       },
       "layer": 1,
       "x": 576,
@@ -7000,7 +7000,7 @@
         "width": 48,
         "height": 48,
         "name": "14-7",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
       },
       "layer": 1,
       "x": 624,
@@ -7020,7 +7020,7 @@
         "width": 48,
         "height": 48,
         "name": "14-7",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
       },
       "layer": 1,
       "x": 672,
@@ -7040,7 +7040,7 @@
         "width": 48,
         "height": 48,
         "name": "14-7",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
       },
       "layer": 1,
       "x": 720,
@@ -7060,7 +7060,7 @@
         "width": 48,
         "height": 48,
         "name": "14-7",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
       },
       "layer": 1,
       "x": 768,
@@ -7080,7 +7080,7 @@
         "width": 48,
         "height": 48,
         "name": "14-7",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
       },
       "layer": 1,
       "x": 816,
@@ -7105,7 +7105,7 @@
         "width": 48,
         "height": 48,
         "name": "14-7",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
       },
       "layer": 1,
       "x": 864,
@@ -7125,7 +7125,7 @@
         "width": 48,
         "height": 48,
         "name": "14-7",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
       },
       "layer": 1,
       "x": 912,
@@ -7150,7 +7150,7 @@
         "width": 48,
         "height": 48,
         "name": "14-7",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
       },
       "layer": 1,
       "x": 912,
@@ -7170,7 +7170,7 @@
         "width": 48,
         "height": 48,
         "name": "14-7",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
       },
       "layer": 1,
       "x": 912,
@@ -7190,7 +7190,7 @@
         "width": 48,
         "height": 48,
         "name": "14-7",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
       },
       "layer": 1,
       "x": 912,
@@ -7210,7 +7210,7 @@
         "width": 48,
         "height": 48,
         "name": "14-7",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
       },
       "layer": 1,
       "x": 912,
@@ -7230,7 +7230,7 @@
         "width": 48,
         "height": 48,
         "name": "14-7",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
       },
       "layer": 1,
       "x": 912,
@@ -7255,7 +7255,7 @@
         "width": 48,
         "height": 48,
         "name": "14-7",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
       },
       "layer": 1,
       "x": 912,
@@ -7275,7 +7275,7 @@
         "width": 48,
         "height": 48,
         "name": "14-7",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
       },
       "layer": 1,
       "x": 912,
@@ -7295,7 +7295,7 @@
         "width": 48,
         "height": 48,
         "name": "14-7",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
       },
       "layer": 1,
       "x": 912,
@@ -7315,7 +7315,7 @@
         "width": 48,
         "height": 48,
         "name": "14-7",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
       },
       "layer": 1,
       "x": 912,
@@ -7335,7 +7335,7 @@
         "width": 48,
         "height": 48,
         "name": "14-7",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
       },
       "layer": 1,
       "x": 0,
@@ -7360,7 +7360,7 @@
         "width": 48,
         "height": 48,
         "name": "14-7",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
       },
       "layer": 1,
       "x": 912,
@@ -7380,7 +7380,7 @@
         "width": 48,
         "height": 48,
         "name": "9-2",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
       },
       "layer": 1,
       "x": 912,
@@ -7405,7 +7405,7 @@
         "width": 48,
         "height": 48,
         "name": "9-3",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
       },
       "layer": 1,
       "x": 912,
@@ -7430,7 +7430,7 @@
         "width": 48,
         "height": 48,
         "name": "9-3",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
       },
       "layer": 1,
       "x": 912,
@@ -7450,7 +7450,7 @@
         "width": 48,
         "height": 48,
         "name": "14-6",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
       },
       "layer": 1,
       "x": 240,
@@ -7475,7 +7475,7 @@
         "width": 48,
         "height": 48,
         "name": "14-6",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
       },
       "layer": 1,
       "x": 336,
@@ -7500,7 +7500,7 @@
         "width": 48,
         "height": 48,
         "name": "14-6",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
       },
       "layer": 1,
       "x": 96,
@@ -7525,7 +7525,7 @@
         "width": 48,
         "height": 48,
         "name": "14-6",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
       },
       "layer": 1,
       "x": 576,
@@ -7550,7 +7550,7 @@
         "width": 48,
         "height": 48,
         "name": "14-6",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
       },
       "layer": 1,
       "x": 624,
@@ -7575,7 +7575,7 @@
         "width": 48,
         "height": 48,
         "name": "14-6",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
       },
       "layer": 1,
       "x": 864,
@@ -7600,7 +7600,7 @@
         "width": 48,
         "height": 48,
         "name": "14-6",
-        "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
+        "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png"
       },
       "layer": 1,
       "x": 576,
@@ -7637,7 +7637,7 @@
             "height": 48,
             "name": "13-5",
             "imageSrc": null,
-            "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png",
+            "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png",
             "_cachedImage": {}
           },
           "layer": 1,
@@ -7661,7 +7661,7 @@
             "height": 48,
             "name": "14-5",
             "imageSrc": null,
-            "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png",
+            "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png",
             "_cachedImage": {}
           },
           "layer": 1,
@@ -7707,7 +7707,7 @@
             "width": 48,
             "height": 48,
             "name": "13-5",
-            "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png",
+            "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png",
             "_cachedImage": {}
           },
           "layer": 1,
@@ -7730,7 +7730,7 @@
             "width": 48,
             "height": 48,
             "name": "14-4",
-            "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png",
+            "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png",
             "_cachedImage": {}
           },
           "layer": 1,
@@ -7776,7 +7776,7 @@
             "width": 48,
             "height": 48,
             "name": "13-5",
-            "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png",
+            "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png",
             "_cachedImage": {}
           },
           "layer": 1,
@@ -7799,7 +7799,7 @@
             "width": 48,
             "height": 48,
             "name": "14-4",
-            "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png",
+            "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png",
             "_cachedImage": {}
           },
           "layer": 1,
@@ -7845,7 +7845,7 @@
             "width": 48,
             "height": 48,
             "name": "13-5",
-            "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png",
+            "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png",
             "_cachedImage": {}
           },
           "layer": 1,
@@ -7868,7 +7868,7 @@
             "width": 48,
             "height": 48,
             "name": "14-5",
-            "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png",
+            "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png",
             "_cachedImage": {}
           },
           "layer": 1,
@@ -7914,7 +7914,7 @@
             "width": 48,
             "height": 48,
             "name": "13-5",
-            "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png",
+            "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png",
             "_cachedImage": {}
           },
           "layer": 1,
@@ -7937,7 +7937,7 @@
             "width": 48,
             "height": 48,
             "name": "14-5",
-            "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png",
+            "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png",
             "_cachedImage": {}
           },
           "layer": 1,
@@ -7983,7 +7983,7 @@
             "width": 48,
             "height": 48,
             "name": "13-5",
-            "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png",
+            "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png",
             "_cachedImage": {}
           },
           "layer": 1,
@@ -8006,7 +8006,7 @@
             "width": 48,
             "height": 48,
             "name": "14-4",
-            "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png",
+            "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png",
             "_cachedImage": {}
           },
           "layer": 1,
@@ -8052,7 +8052,7 @@
             "width": 48,
             "height": 48,
             "name": "13-5",
-            "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png",
+            "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png",
             "_cachedImage": {}
           },
           "layer": 1,
@@ -8075,7 +8075,7 @@
             "width": 48,
             "height": 48,
             "name": "14-5",
-            "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png",
+            "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png",
             "_cachedImage": {}
           },
           "layer": 1,
@@ -8121,7 +8121,7 @@
             "width": 48,
             "height": 48,
             "name": "13-5",
-            "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png",
+            "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png",
             "_cachedImage": {}
           },
           "layer": 1,
@@ -8144,7 +8144,7 @@
             "width": 48,
             "height": 48,
             "name": "14-4",
-            "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png",
+            "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png",
             "_cachedImage": {}
           },
           "layer": 1,
@@ -8190,7 +8190,7 @@
             "width": 48,
             "height": 48,
             "name": "13-5",
-            "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png",
+            "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png",
             "_cachedImage": {}
           },
           "layer": 1,
@@ -8213,7 +8213,7 @@
             "width": 48,
             "height": 48,
             "name": "14-4",
-            "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png",
+            "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png",
             "_cachedImage": {}
           },
           "layer": 1,
@@ -8259,7 +8259,7 @@
             "width": 48,
             "height": 48,
             "name": "13-5",
-            "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png",
+            "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png",
             "_cachedImage": {}
           },
           "layer": 1,
@@ -8282,7 +8282,7 @@
             "width": 48,
             "height": 48,
             "name": "14-4",
-            "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png",
+            "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png",
             "_cachedImage": {}
           },
           "layer": 1,
@@ -8328,7 +8328,7 @@
             "width": 48,
             "height": 48,
             "name": "13-5",
-            "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png",
+            "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png",
             "_cachedImage": {}
           },
           "layer": 1,
@@ -8351,7 +8351,7 @@
             "width": 48,
             "height": 48,
             "name": "14-4",
-            "spriteImageSrc": "http://localhost:3001/resource/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png",
+            "spriteImageSrc": "/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png",
             "_cachedImage": {}
           },
           "layer": 1,
@@ -8398,7 +8398,7 @@
             "height": 48,
             "name": "4-1",
             "imageSrc": null,
-            "spriteImageSrc": "http://localhost:3001/resource/CP_V1.1.0_nyknck/Animations/BL001.png",
+            "spriteImageSrc": "/CP_V1.1.0_nyknck/Animations/BL001.png",
             "_cachedImage": {}
           },
           "layer": 2,
@@ -8422,7 +8422,7 @@
             "height": 48,
             "name": "3-1",
             "imageSrc": null,
-            "spriteImageSrc": "http://localhost:3001/resource/CP_V1.1.0_nyknck/Animations/BL001.png",
+            "spriteImageSrc": "/CP_V1.1.0_nyknck/Animations/BL001.png",
             "_cachedImage": {}
           },
           "layer": 2,
@@ -8446,7 +8446,7 @@
             "height": 48,
             "name": "5-1",
             "imageSrc": null,
-            "spriteImageSrc": "http://localhost:3001/resource/CP_V1.1.0_nyknck/Animations/BL001.png",
+            "spriteImageSrc": "/CP_V1.1.0_nyknck/Animations/BL001.png",
             "_cachedImage": {}
           },
           "layer": 2,
@@ -8489,7 +8489,7 @@
             "height": 48,
             "name": "0-1",
             "imageSrc": null,
-            "spriteImageSrc": "http://localhost:3001/resource/CP_V1.1.0_nyknck/Animations/BL001.png",
+            "spriteImageSrc": "/CP_V1.1.0_nyknck/Animations/BL001.png",
             "_cachedImage": {}
           },
           "layer": 2,
@@ -8513,7 +8513,7 @@
             "height": 48,
             "name": "1-1",
             "imageSrc": null,
-            "spriteImageSrc": "http://localhost:3001/resource/CP_V1.1.0_nyknck/Animations/BL001.png",
+            "spriteImageSrc": "/CP_V1.1.0_nyknck/Animations/BL001.png",
             "_cachedImage": {}
           },
           "layer": 2,
@@ -8537,7 +8537,7 @@
             "height": 48,
             "name": "2-1",
             "imageSrc": null,
-            "spriteImageSrc": "http://localhost:3001/resource/CP_V1.1.0_nyknck/Animations/BL001.png",
+            "spriteImageSrc": "/CP_V1.1.0_nyknck/Animations/BL001.png",
             "_cachedImage": {}
           },
           "layer": 2,
