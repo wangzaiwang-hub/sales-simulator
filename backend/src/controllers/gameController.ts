@@ -250,7 +250,7 @@ export const gameController = {
   async saveMap(req: Request, res: Response) {
     try {
       const userId = (req as any).userId; // 可能为 undefined（公开路由）
-      const { map, saveAsShared = false } = req.body;
+      const { map, saveAsShared = false, mapName } = req.body;
 
       if (!map || typeof map !== 'object') {
         return res.status(400).json({ error: 'Map payload is required' });
@@ -264,23 +264,41 @@ export const gameController = {
 
       if (saveAsShared) {
         // 保存为共享地图
-        // 先将所有地图设为非激活
-        await updateRows<Row>('SharedMap', {}, { isActive: false });
+        const finalMapName = mapName || 'main';
+        
+        // 检查是否已存在同名地图
+        const existingMaps = await selectMany<Row>('SharedMap', { ...eq('name', finalMapName) });
+        
+        if (existingMaps && existingMaps.length > 0) {
+          // 更新现有地图
+          const [updatedMap] = await updateRows<Row>(
+            'SharedMap',
+            { ...eq('name', finalMapName) },
+            { mapData: mapJson }
+          );
+          
+          return res.json({
+            message: 'Shared map updated successfully',
+            isShared: true,
+            mapId: updatedMap?.id,
+            mapName: updatedMap?.name,
+          });
+        } else {
+          // 创建新的共享地图
+          const [sharedMap] = await insertRows<Row>('SharedMap', {
+            name: finalMapName,
+            mapData: mapJson,
+            isActive: false,
+            createdBy: userId || null, // 允许为 null
+          });
 
-        // 创建新的共享地图
-        const [sharedMap] = await insertRows<Row>('SharedMap', {
-          id: crypto.randomUUID(),
-          name: 'main',
-          mapData: mapJson,
-          isActive: true,
-          createdBy: userId || null, // 允许为 null
-        });
-
-        return res.json({
-          message: 'Shared map saved successfully',
-          isShared: true,
-          mapId: sharedMap?.id,
-        });
+          return res.json({
+            message: 'Shared map saved successfully',
+            isShared: true,
+            mapId: sharedMap?.id,
+            mapName: sharedMap?.name,
+          });
+        }
       } else {
         // 保存为个人地图（需要认证）
         if (!userId) {
