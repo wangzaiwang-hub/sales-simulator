@@ -24,6 +24,30 @@ function parseStoredMap(currentMap: unknown) {
   }
 }
 
+// 默认地图（当数据库中没有地图时使用）
+function getDefaultMap() {
+  return {
+    width: 20,
+    height: 15,
+    tileSize: 48,
+    layers: [
+      {
+        name: "地面",
+        visible: true,
+        tileset: "CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png",
+        tileSize: 48,
+        data: Array(15).fill(null).map(() => 
+          Array(20).fill(null).map(() => ({
+            x: 0,
+            y: 0,
+            collision: false
+          }))
+        )
+      }
+    ]
+  };
+}
+
 function parseStoredAppearance(characterAppearance: unknown) {
   if (!characterAppearance) {
     return null;
@@ -122,6 +146,11 @@ export const gameController = {
       } else {
         // 回退到用户个人地图
         map = parseStoredMap(progress.currentMap);
+      }
+      
+      // 如果没有有效的地图数据，使用默认地图
+      if (!map) {
+        map = getDefaultMap();
       }
 
       const tileSize = map?.tileSize || 48;
