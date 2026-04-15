@@ -237,6 +237,14 @@
     </div>
 
     <script>
+        // ========== API配置 ==========
+        // 获取后端API URL
+        const API_URL = window.location.hostname === 'localhost' 
+            ? 'http://localhost:3001'  // 本地开发
+            : 'https://capable-energy-production-bf2e.up.railway.app';  // 生产环境
+        
+        console.log('Using API URL:', API_URL);
+        
         // ========== 资源URL处理 ==========
         function getResourceUrl(relativePath) {
             // 在云端部署时，资源通过前端public目录提供
@@ -3187,7 +3195,7 @@
                 };
                 
                 // 发送到后端API
-                const response = await fetch('/api/map-editor/map', {
+                const response = await fetch(`${API_URL}/api/map-editor/map`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -3229,7 +3237,7 @@
         async function loadMapFromCloud() {
             try {
                 // 获取地图列表
-                const listResponse = await fetch('/api/map-editor/list', {
+                const listResponse = await fetch(`${API_URL}/api/map-editor/list`, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
@@ -3267,7 +3275,7 @@
                 const selectedMap = listResult.maps[index];
                 
                 // 加载选中的地图
-                const response = await fetch(`/api/map-editor/map?id=${selectedMap.id}`, {
+                const response = await fetch(`${API_URL}/api/map-editor/map?id=${selectedMap.id}`, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
@@ -3463,7 +3471,7 @@
                     return;
                 }
                 
-                const response = await fetch('/api/map-editor/active', {
+                const response = await fetch(`${API_URL}/api/map-editor/active`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
