@@ -3194,16 +3194,15 @@
                     collisionAreas: collisionAreas
                 };
                 
-                // 发送到后端API - 使用公开端点
-                const response = await fetch(`${API_URL}/api/game/save-map`, {
+                // 发送到后端API - 使用独立端点（不需要认证）
+                const response = await fetch(`${API_URL}/api/game/save-map-temp`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
                         map: mapData,
-                        saveAsShared: true,  // 保存为共享地图，不需要认证
-                        mapName: mapName,    // 地图名称
+                        mapName: mapName,
                     })
                 });
                 

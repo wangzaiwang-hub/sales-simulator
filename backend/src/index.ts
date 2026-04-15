@@ -27,7 +27,7 @@ app.use(cors({
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// 临时地图保存端点 - 放在路由注册之前，不需要认证
+// 地图保存端点 - 放在路由注册之前，不需要认证
 app.post('/api/game/save-map-temp', async (req, res) => {
   try {
     const { map, mapName } = req.body;
@@ -38,22 +38,39 @@ app.post('/api/game/save-map-temp', async (req, res) => {
       return res.status(400).json({ error: 'Map and mapName are required' });
     }
     
-    // 简单保存到SharedMap表
-    const { insertRows } = await import('./lib/supabase');
+    const { selectMany, insertRows, updateRows, eq } = await import('./lib/supabase');
     const mapJson = JSON.stringify(map);
     
-    console.log('Saving map to database...');
-    const [created] = await insertRows('SharedMap', {
-      name: mapName,
-      mapData: mapJson,
-    });
+    // 检查是否已存在同名地图
+    const existingMaps = await selectMany('SharedMap', { ...eq('name', mapName) });
     
-    console.log('Map saved successfully:', created?.id);
-    res.json({
-      message: 'Map saved successfully',
-      mapId: created?.id,
-      mapName: created?.name,
-    });
+    if (existingMaps && existingMaps.length > 0) {
+      // 更新现有地图
+      console.log('Updating existing map:', mapName);
+      const [updated] = await updateRows('SharedMap', { ...eq('name', mapName) }, { mapData: mapJson });
+      
+      console.log('Map updated successfully:', updated?.id);
+      return res.json({
+        message: 'Map updated successfully',
+        mapId: updated?.id,
+        mapName: updated?.name,
+      });
+    } else {
+      // 创建新地图
+      console.log('Creating new map:', mapName);
+      const [created] = await insertRows('SharedMap', {
+        name: mapName,
+        mapData: mapJson,
+        isActive: false,
+      });
+      
+      console.log('Map created successfully:', created?.id);
+      return res.json({
+        message: 'Map saved successfully',
+        mapId: created?.id,
+        mapName: created?.name,
+      });
+    }
   } catch (error) {
     console.error('Save map error:', error);
     res.status(500).json({ error: error instanceof Error ? error.message : 'Failed to save map' });
