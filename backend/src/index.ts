@@ -49,7 +49,7 @@ app.post('/api/map-editor/save', async (req, res) => {
     if (existingMaps && existingMaps.length > 0) {
       // 更新现有地图
       console.log('Updating existing map:', mapName);
-      const [updated] = await updateRows('SharedMap', { ...eq('name', mapName) }, { mapData: mapJson });
+      const [updated] = await updateRows('SharedMap', { ...eq('name', mapName) }, { mapData: mapJson }) as any[];
       
       console.log('Map updated successfully:', updated?.id);
       return res.json({
@@ -64,7 +64,7 @@ app.post('/api/map-editor/save', async (req, res) => {
         name: mapName,
         mapData: mapJson,
         isActive: false,
-      });
+      }) as any[];
       
       console.log('Map created successfully:', created?.id);
       return res.json({
@@ -99,7 +99,7 @@ app.post('/api/game/save-map-temp', async (req, res) => {
     if (existingMaps && existingMaps.length > 0) {
       // 更新现有地图
       console.log('Updating existing map:', mapName);
-      const [updated] = await updateRows('SharedMap', { ...eq('name', mapName) }, { mapData: mapJson });
+      const [updated] = await updateRows('SharedMap', { ...eq('name', mapName) }, { mapData: mapJson }) as any[];
       
       console.log('Map updated successfully:', updated?.id);
       return res.json({
@@ -114,7 +114,7 @@ app.post('/api/game/save-map-temp', async (req, res) => {
         name: mapName,
         mapData: mapJson,
         isActive: false,
-      });
+      }) as any[];
       
       console.log('Map created successfully:', created?.id);
       return res.json({
