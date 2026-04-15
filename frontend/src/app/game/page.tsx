@@ -1351,7 +1351,7 @@ export default function GamePage() {
               <RpgLinkButton href="/character-creator">
                 角色工坊
               </RpgLinkButton>
-              <RpgLinkButton href="/editor">编辑地图</RpgLinkButton>
+              <RpgLinkButton href="/map-editor">地图编辑器</RpgLinkButton>
               <RpgLinkButton href="/">返回首页</RpgLinkButton>
             </div>
           </div>

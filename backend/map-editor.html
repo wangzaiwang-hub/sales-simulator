@@ -235,10 +235,8 @@
     <script>
         // ========== 资源URL处理 ==========
         function getResourceUrl(relativePath) {
-            // 如果是通过HTTPS访问（局域网），资源需要从后端HTTP端口加载
-            if (window.location.protocol === 'https:') {
-                return 'http://localhost:3001' + relativePath;
-            }
+            // 在云端部署时，资源通过前端public目录提供
+            // 在本地开发时，也使用相对路径
             return relativePath;
         }
         
