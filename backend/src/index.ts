@@ -27,6 +27,65 @@ app.use(cors({
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
+// ========== 地图编辑器保存端点（完全独立，不需要认证）==========
+app.post('/api/map-editor/map', async (req, res) => {
+  try {
+    const { map, mapName, mapId } = req.body;
+
+    console.log('=== Map Editor Save ===');
+    console.log('Map name:', mapName);
+    console.log('Map ID:', mapId);
+    console.log('Has map data:', !!map);
+
+    if (!map || typeof map !== 'object') {
+      return res.status(400).json({ error: 'Map payload is required' });
+    }
+
+    if (!map.width || !map.height || !Array.isArray(map.layers)) {
+      return res.status(400).json({ error: 'Invalid map format' });
+    }
+
+    if (!mapName) {
+      return res.status(400).json({ error: 'Map name is required' });
+    }
+
+    const { selectMany, insertRows, updateRows, eq } = await import('./lib/supabase');
+    const mapJson = JSON.stringify(map);
+
+    let savedMap;
+
+    if (mapId) {
+      // 更新现有地图
+      console.log('Updating existing map:', mapId);
+      const [updated] = await updateRows('SharedMap', { ...eq('id', mapId) }, {
+        mapData: mapJson,
+        name: mapName,
+        updatedAt: new Date().toISOString(),
+      }) as any[];
+      savedMap = updated;
+    } else {
+      // 创建新地图
+      console.log('Creating new map:', mapName);
+      const [created] = await insertRows('SharedMap', {
+        name: mapName,
+        mapData: mapJson,
+      }) as any[];
+      savedMap = created;
+    }
+
+    console.log('Map saved successfully:', savedMap?.id);
+    return res.json({
+      message: 'Map saved successfully',
+      mapId: savedMap?.id,
+      mapName: savedMap?.name,
+    });
+  } catch (error) {
+    console.error('Map editor save error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Failed to save map';
+    return res.status(500).json({ error: errorMessage });
+  }
+});
+
 // 地图编辑器专用保存端点 - 完全公开，不需要认证
 app.post('/api/map-editor/save', async (req, res) => {
   try {
