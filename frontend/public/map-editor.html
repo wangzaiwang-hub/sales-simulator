@@ -287,6 +287,7 @@
         
         // 预览模式
         let isPreviewMode = false;
+        let showCollisionBoxes = false; // 控制是否显示碰撞框
         
         // 测试角色
         let testCharacter = {
@@ -451,6 +452,11 @@
             
             if (e.key.toLowerCase() === 'h') {
                 togglePreviewMode();
+            }
+            
+            // 预览模式下按C键切换碰撞框显示
+            if (isPreviewMode && e.key.toLowerCase() === 'c') {
+                showCollisionBoxes = !showCollisionBoxes;
             }
             
             switch(e.key.toLowerCase()) {
@@ -1808,16 +1814,52 @@
                         ctx.fill();
                     }
                     
-                    // 碰撞框已隐藏
+                    // 绘制角色脚部碰撞框（可选显示）
+                    if (showCollisionBoxes) {
+                        ctx.strokeStyle = 'rgba(0, 255, 0, 0.8)';
+                        ctx.lineWidth = 2;
+                        const footWidth = testCharacter.width * 0.6;
+                        const footX = testCharacter.x + (testCharacter.width - footWidth) / 2;
+                        const footY = testCharacter.y + testCharacter.height * 0.5;
+                        const footHeight = testCharacter.height * 0.45;
+                        ctx.strokeRect(footX, footY, footWidth, footHeight);
+                    }
+                }
+                
+                // 绘制所有碰撞框（如果开启）
+                if (showCollisionBoxes) {
+                    ctx.save();
+                    
+                    // 绘制对象的碰撞框
+                    sorted.forEach(obj => {
+                        if (obj.collision) {
+                            ctx.strokeStyle = 'rgba(255, 0, 0, 0.6)';
+                            ctx.lineWidth = 2;
+                            ctx.strokeRect(obj.collision.x, obj.collision.y, obj.collision.width, obj.collision.height);
+                        }
+                    });
+                    
+                    // 绘制独立碰撞区域
+                    collisionAreas.forEach(area => {
+                        const layer = layers.find(l => l.id === area.layer);
+                        if (layer && layer.visible) {
+                            ctx.strokeStyle = 'rgba(255, 200, 0, 0.6)';
+                            ctx.lineWidth = 2;
+                            ctx.strokeRect(area.x, area.y, area.width, area.height);
+                        }
+                    });
+                    
+                    ctx.restore();
                 }
                 
                 // 简化提示文字
                 ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
-                ctx.fillRect(10, 10, 240, 60);
+                ctx.fillRect(10, 10, 240, 80);
                 ctx.fillStyle = '#fff';
                 ctx.font = '14px Arial';
                 ctx.fillText('方向键/WASD: 移动角色', 20, 30);
                 ctx.fillText('H键/ESC: 退出预览', 20, 50);
+                ctx.fillText('C键: 切换碰撞框显示', 20, 70);
                 
                 ctx.restore();
             }
