@@ -96,26 +96,35 @@ export const mapEditorController = {
       if (mapId) {
         // 更新现有地图
         console.log('Updating existing map:', mapId);
-        const [updated] = await updateRows<Row>(
-          'SharedMap',
-          { ...eq('id', mapId) },
-          {
-            mapData: mapJson,
-            name: mapName, // 也更新名称
-            updatedAt: new Date().toISOString(),
-          }
-        );
-        savedMap = updated;
+        try {
+          const [updated] = await updateRows<Row>(
+            'SharedMap',
+            { ...eq('id', mapId) },
+            {
+              mapData: mapJson,
+              name: mapName, // 也更新名称
+              updatedAt: new Date().toISOString(),
+            }
+          );
+          savedMap = updated;
+        } catch (updateError) {
+          console.error('Update error:', updateError);
+          throw updateError;
+        }
       } else {
-        // 创建新地图 - 让数据库自动生成UUID
+        // 创建新地图 - 只传必需字段，让数据库处理默认值
         console.log('Creating new map:', mapName);
-        const [created] = await insertRows<Row>('SharedMap', {
-          name: mapName,
-          mapData: mapJson,
-          isActive: false, // 新地图默认不激活
-          createdBy: null,
-        });
-        savedMap = created;
+        try {
+          const [created] = await insertRows<Row>('SharedMap', {
+            name: mapName,
+            mapData: mapJson,
+          });
+          savedMap = created;
+          console.log('Created map with ID:', created?.id);
+        } catch (insertError) {
+          console.error('Insert error:', insertError);
+          throw insertError;
+        }
       }
 
       console.log('Map saved successfully:', savedMap?.id);
@@ -126,7 +135,8 @@ export const mapEditorController = {
       });
     } catch (error) {
       console.error('Save map error:', error);
-      res.status(500).json({ error: 'Failed to save map' });
+      const errorMessage = error instanceof Error ? error.message : 'Failed to save map';
+      res.status(500).json({ error: errorMessage });
     }
   },
 
