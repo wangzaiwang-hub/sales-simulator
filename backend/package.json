@@ -7,6 +7,7 @@
     "dev": "tsx watch src/index.ts",
     "copy:deployment-assets": "node scripts/copyDeploymentAssets.mjs",
     "build": "npm run copy:deployment-assets && prisma generate && tsc",
+    "postbuild": "ls -la *.html || echo 'No HTML files found'",
     "start": "node dist/index.js",
     "sync:secondme-keys": "tsx src/scripts/syncSecondMeAvatarKeys.ts",
     "prisma:generate": "prisma generate",
