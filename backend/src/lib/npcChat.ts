@@ -101,9 +101,40 @@ function waitForVisitorReply(wsUrl: string) {
   });
 }
 
-export async function requestSecondMeDirectReply(npc: ChatNpcProfile, userMessage: string) {
+export async function requestSecondMeDirectReply(
+  npc: ChatNpcProfile,
+  userMessage: string,
+  chatHistory?: Array<{ role: string; content: string; createdAt: string }>
+) {
   if (!npc.secondmeAccessToken) {
     throw new Error('NPC 未保存 SecondMe access token');
+  }
+
+  // 导入上下文管理器
+  const { buildContextFromHistory, buildFullContext } = await import('./contextManager');
+  
+  // 构建系统提示
+  const systemPrompt = buildSystemPrompt(npc);
+  
+  // 构建上下文
+  let messages: Array<{ role: 'user' | 'assistant' | 'system'; content: string }>;
+  
+  if (chatHistory && chatHistory.length > 0) {
+    // 有历史记录，使用智能上下文管理
+    const historyMessages = buildContextFromHistory(chatHistory, 20);
+    messages = await buildFullContext(
+      systemPrompt,
+      historyMessages,
+      userMessage,
+      2000, // 最大token数
+      npc.secondmeAccessToken
+    );
+  } else {
+    // 没有历史记录，使用简单上下文
+    messages = [
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: userMessage },
+    ];
   }
 
   const response = await fetch('https://api.mindverse.com/gate/lab/api/secondme/chat/stream', {
@@ -113,8 +144,7 @@ export async function requestSecondMeDirectReply(npc: ChatNpcProfile, userMessag
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      message: userMessage,
-      systemPrompt: buildSystemPrompt(npc),
+      messages, // 使用完整的消息数组而不是单条消息
     }),
   });
 
@@ -167,7 +197,13 @@ export async function requestSecondMeDirectReply(npc: ChatNpcProfile, userMessag
   return reply;
 }
 
-export async function requestSecondMeNpcReply(npc: ChatNpcProfile, userMessage: string, visitorId?: string, visitorName?: string) {
+export async function requestSecondMeNpcReply(
+  npc: ChatNpcProfile,
+  userMessage: string,
+  visitorId?: string,
+  visitorName?: string,
+  chatHistory?: Array<{ role: string; content: string; createdAt: string }>
+) {
   if (!npc.secondmeAccessToken) {
     throw new Error('NPC 未保存 SecondMe access token');
   }
@@ -209,6 +245,39 @@ export async function requestSecondMeNpcReply(npc: ChatNpcProfile, userMessage: 
 
   const replyPromise = waitForVisitorReply(wsUrl);
 
+  // 构建带上下文的消息
+  let finalMessage = userMessage;
+  
+  if (chatHistory && chatHistory.length > 0) {
+    // 导入上下文管理器
+    const { buildContextFromHistory, compressContext } = await import('./contextManager');
+    
+    // 构建历史上下文
+    const historyMessages = buildContextFromHistory(chatHistory, 15);
+    
+    // 压缩上下文
+    const compressed = await compressContext(historyMessages, 1500, npc.secondmeAccessToken);
+    
+    // 构建上下文字符串
+    let contextStr = '';
+    if (compressed.summary) {
+      contextStr += `${compressed.summary}\n\n`;
+    }
+    
+    // 添加最近的对话
+    const recentMessages = compressed.messages.slice(-6); // 最近6条
+    if (recentMessages.length > 0) {
+      contextStr += '最近的对话：\n';
+      recentMessages.forEach(msg => {
+        const speaker = msg.role === 'user' ? visitorName || '访客' : npc.name;
+        contextStr += `${speaker}: ${msg.content}\n`;
+      });
+      contextStr += '\n';
+    }
+    
+    finalMessage = `${contextStr}当前消息：${userMessage}`;
+  }
+
   const sendResponse = await fetch('https://api.mindverse.com/gate/lab/api/secondme/visitor-chat/send', {
     method: 'POST',
     headers: {
@@ -218,7 +287,7 @@ export async function requestSecondMeNpcReply(npc: ChatNpcProfile, userMessage: 
     body: JSON.stringify({
       sessionId,
       apiKey: npc.secondmeApiKey,
-      message: `${buildSystemPrompt(npc)}\n\n访客消息：${userMessage}`,
+      message: `${buildSystemPrompt(npc)}\n\n${finalMessage}`,
     }),
   });
 

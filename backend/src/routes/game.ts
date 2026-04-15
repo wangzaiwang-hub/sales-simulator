@@ -10,6 +10,10 @@ router.get('/npc-states-public', gameController.getNpcStates);
 // 更新所有NPC的状态（不需要认证，供内部调用）
 router.post('/update-npc-states-public', gameController.updateNpcStates);
 
+// 地图编辑器公开路由（不需要认证）
+router.get('/map-public', gameController.getMap);
+router.put('/map-public', gameController.saveMap);
+
 // 所有游戏路由都需要认证
 router.use(authMiddleware);
 

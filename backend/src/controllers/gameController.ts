@@ -180,7 +180,7 @@ export const gameController = {
 
   async saveMap(req: Request, res: Response) {
     try {
-      const userId = (req as any).userId;
+      const userId = (req as any).userId; // 可能为 undefined（公开路由）
       const { map, saveAsShared = false } = req.body;
 
       if (!map || typeof map !== 'object') {
@@ -204,7 +204,7 @@ export const gameController = {
           name: 'main',
           mapData: mapJson,
           isActive: true,
-          createdBy: userId,
+          createdBy: userId || null, // 允许为 null
         });
 
         return res.json({
@@ -213,7 +213,11 @@ export const gameController = {
           mapId: sharedMap?.id,
         });
       } else {
-        // 保存为个人地图
+        // 保存为个人地图（需要认证）
+        if (!userId) {
+          return res.status(401).json({ error: 'Authentication required for personal maps' });
+        }
+        
         const [progress] = await updateRows<Row>(
           'GameProgress',
           { ...eq('userId', userId) },
@@ -524,6 +528,30 @@ export const gameController = {
           }
         }
 
+        // 加载聊天历史（用于上下文）
+        let chatHistory: Array<{ role: string; content: string; createdAt: string }> = [];
+        try {
+          const history = await selectMany<Row>('ChatMessage', {
+            select: 'role,content,createdAt',
+            ...eq('userId', ownerUserId),
+            ...eq('targetUserId', visitorUserId),
+          });
+          
+          if (history && history.length > 0) {
+            // 按时间排序
+            chatHistory = history
+              .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
+              .map(h => ({
+                role: h.role,
+                content: h.content,
+                createdAt: h.createdAt,
+              }));
+            console.log(`📚 加载了 ${chatHistory.length} 条聊天历史用于上下文`);
+          }
+        } catch (error) {
+          console.warn('加载聊天历史失败，将使用无上下文模式:', error);
+        }
+
         // 生成NPC回复
         let reply: string | null = null;
         try {
@@ -545,8 +573,13 @@ export const gameController = {
                 message,
                 visitorUserId,
                 visitorUser?.username || `player-${visitorUserId}`,
+                chatHistory, // 传递聊天历史
               )
-            : await requestSecondMeDirectReply(npcProfile, message);
+            : await requestSecondMeDirectReply(
+                npcProfile,
+                message,
+                chatHistory, // 传递聊天历史
+              );
         } catch (error) {
           console.error('SecondMe NPC chat fallback:', error);
         }

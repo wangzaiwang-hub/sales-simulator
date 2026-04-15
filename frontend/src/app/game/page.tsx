@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import type { PersonalityTraits, Mood, ActivityStatus } from "@/types/npc-emotions";
 import { getStatusDisplayText, getStatusColor } from "@/types/npc-emotions";
 import { getRelationshipText, getAffinityText, getAffinityColor, getFamiliarityText } from "@/utils/relationship";
-import { AssetButton, AssetCounter, AssetIconButton, AssetWindow } from "@/components/game/mobile-casual-ui";
+import { AssetCounter, AssetIconButton } from "@/components/game/mobile-casual-ui";
 import { RpgButton, RpgKeyBadge, RpgLinkButton, RpgPromptPanel } from "@/components/game/rpg-ui";
 
 const apiUrl = "";
@@ -506,9 +506,15 @@ export default function GamePage() {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const tileSize = map.tileSize || 48;
-    canvas.width = map.width * tileSize;
-    canvas.height = map.height * tileSize;
+    // 兼容新旧地图格式
+    // 新格式：width/height是像素值，cols/rows是格子数，gridSize是格子大小
+    // 旧格式：width/height是格子数，tileSize是格子大小
+    const tileSize = (map as any).gridSize || map.tileSize || 48;
+    const mapCols = (map as any).cols || map.width || 20;
+    const mapRows = (map as any).rows || map.height || 15;
+    
+    canvas.width = mapCols * tileSize;
+    canvas.height = mapRows * tileSize;
     ctx.imageSmoothingEnabled = false;
 
     const imageCache = new Map<string, HTMLImageElement>();
@@ -548,24 +554,83 @@ export default function GamePage() {
         return true;
       }
 
-      const tileX1 = Math.floor(bounds.x / tileSize);
-      const tileY1 = Math.floor(bounds.y / tileSize);
-      const tileX2 = Math.floor((bounds.x + bounds.width - 1) / tileSize);
-      const tileY2 = Math.floor((bounds.y + bounds.height - 1) / tileSize);
-
-      for (let ty = tileY1; ty <= tileY2; ty += 1) {
-        for (let tx = tileX1; tx <= tileX2; tx += 1) {
-          for (const layer of map.layers) {
-            if (!layer.visible) continue;
-            const tile = layer.data?.[ty]?.[tx];
-            if (tile?.collision && tile.x >= 0 && tile.y >= 0) {
+      // 检查是否是新格式的地图
+      const isNewFormat = (map as any).objects && Array.isArray((map as any).objects);
+      
+      if (isNewFormat) {
+        // 新格式：检查对象的碰撞框和独立碰撞区域
+        const objects = (map as any).objects as Array<{
+          x: number;
+          y: number;
+          width: number;
+          height: number;
+          collision?: { x: number; y: number; width: number; height: number };
+          isGroup?: boolean;
+          children?: any[];
+        }>;
+        
+        const checkCollision = (obj: any): boolean => {
+          if (obj.collision) {
+            const collisionBounds = {
+              x: obj.collision.x,
+              y: obj.collision.y,
+              width: obj.collision.width,
+              height: obj.collision.height,
+            };
+            if (intersects(bounds, collisionBounds)) {
               return true;
             }
           }
+          
+          if (obj.isGroup && obj.children) {
+            for (const child of obj.children) {
+              if (checkCollision(child)) return true;
+            }
+          }
+          
+          return false;
+        };
+        
+        for (const obj of objects) {
+          if (checkCollision(obj)) return true;
         }
-      }
+        
+        // 检查独立碰撞区域
+        const collisionAreas = (map as any).collisionAreas as Array<{
+          x: number;
+          y: number;
+          width: number;
+          height: number;
+        }> || [];
+        
+        for (const area of collisionAreas) {
+          if (intersects(bounds, area)) {
+            return true;
+          }
+        }
+        
+        return false;
+      } else {
+        // 旧格式：检查瓦片的碰撞属性
+        const tileX1 = Math.floor(bounds.x / tileSize);
+        const tileY1 = Math.floor(bounds.y / tileSize);
+        const tileX2 = Math.floor((bounds.x + bounds.width - 1) / tileSize);
+        const tileY2 = Math.floor((bounds.y + bounds.height - 1) / tileSize);
 
-      return false;
+        for (let ty = tileY1; ty <= tileY2; ty += 1) {
+          for (let tx = tileX1; tx <= tileX2; tx += 1) {
+            for (const layer of map.layers) {
+              if (!layer.visible) continue;
+              const tile = layer.data?.[ty]?.[tx];
+              if (tile?.collision && tile.x >= 0 && tile.y >= 0) {
+                return true;
+              }
+            }
+          }
+        }
+
+        return false;
+      }
     };
 
     const isBlockedByNpcs = (bounds: { x: number; y: number; width: number; height: number }, ignoreId?: string) =>
@@ -875,34 +940,114 @@ export default function GamePage() {
     const drawMap = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      for (const layer of map.layers) {
-        if (!layer.visible || !layer.tileset) continue;
-
-        const img = imageCache.get(toAssetUrl(layer.tileset));
-        if (!img) continue;
-
-        const layerTileSize = layer.tileSize || tileSize;
-        for (let y = 0; y < map.height; y += 1) {
-          for (let x = 0; x < map.width; x += 1) {
-            const tile = layer.data?.[y]?.[x];
-            if (!tile || tile.x < 0 || tile.y < 0) continue;
-
+      // 检查是否是新格式的地图（使用objects而不是layers的瓦片数据）
+      const isNewFormat = (map as any).objects && Array.isArray((map as any).objects);
+      
+      if (isNewFormat) {
+        // 新格式：渲染对象
+        const objects = (map as any).objects as Array<{
+          x: number;
+          y: number;
+          width: number;
+          height: number;
+          layer: number;
+          rotation?: number;
+          spriteData?: {
+            spriteImageSrc?: string;
+            sx: number;
+            sy: number;
+            sWidth: number;
+            sHeight: number;
+          };
+          imageData?: string;
+          isBackground?: boolean;
+          isGroup?: boolean;
+          children?: any[];
+        }>;
+        
+        // 按图层和Y坐标排序
+        const sortedObjects = [...objects].sort((a, b) => {
+          if (a.layer !== b.layer) return a.layer - b.layer;
+          return a.y - b.y;
+        });
+        
+        // 递归绘制对象（支持组合对象）
+        const drawObject = (obj: any, offsetX = 0, offsetY = 0) => {
+          if (obj.isGroup && obj.children) {
+            // 绘制组合对象的子对象
+            obj.children.forEach((child: any) => {
+              drawObject(child, obj.x + (child.relativeX || 0), obj.y + (child.relativeY || 0));
+            });
+          } else {
+            const x = offsetX || obj.x;
+            const y = offsetY || obj.y;
+            
             ctx.save();
-            ctx.translate(x * tileSize + tileSize / 2, y * tileSize + tileSize / 2);
-            ctx.rotate(((tile.r || 0) * Math.PI) / 180);
-            ctx.scale(tile.fh ? -1 : 1, tile.fv ? -1 : 1);
-            ctx.drawImage(
-              img,
-              tile.x * layerTileSize,
-              tile.y * layerTileSize,
-              layerTileSize,
-              layerTileSize,
-              -tileSize / 2,
-              -tileSize / 2,
-              tileSize,
-              tileSize,
-            );
+            ctx.translate(x + obj.width / 2, y + obj.height / 2);
+            if (obj.rotation) {
+              ctx.rotate((obj.rotation * Math.PI) / 180);
+            }
+            
+            if (obj.isBackground && obj.imageData) {
+              // 背景图
+              const img = imageCache.get(obj.imageData);
+              if (img) {
+                ctx.drawImage(img, -obj.width / 2, -obj.height / 2, obj.width, obj.height);
+              }
+            } else if (obj.spriteData && obj.spriteData.spriteImageSrc) {
+              // 瓦片集素材
+              const img = imageCache.get(toAssetUrl(obj.spriteData.spriteImageSrc));
+              if (img) {
+                ctx.drawImage(
+                  img,
+                  obj.spriteData.sx,
+                  obj.spriteData.sy,
+                  obj.spriteData.sWidth,
+                  obj.spriteData.sHeight,
+                  -obj.width / 2,
+                  -obj.height / 2,
+                  obj.width,
+                  obj.height
+                );
+              }
+            }
+            
             ctx.restore();
+          }
+        };
+        
+        sortedObjects.forEach(obj => drawObject(obj));
+      } else {
+        // 旧格式：渲染瓦片
+        for (const layer of map.layers) {
+          if (!layer.visible || !layer.tileset) continue;
+
+          const img = imageCache.get(toAssetUrl(layer.tileset));
+          if (!img) continue;
+
+          const layerTileSize = layer.tileSize || tileSize;
+          for (let y = 0; y < mapRows; y += 1) {
+            for (let x = 0; x < mapCols; x += 1) {
+              const tile = layer.data?.[y]?.[x];
+              if (!tile || tile.x < 0 || tile.y < 0) continue;
+
+              ctx.save();
+              ctx.translate(x * tileSize + tileSize / 2, y * tileSize + tileSize / 2);
+              ctx.rotate(((tile.r || 0) * Math.PI) / 180);
+              ctx.scale(tile.fh ? -1 : 1, tile.fv ? -1 : 1);
+              ctx.drawImage(
+                img,
+                tile.x * layerTileSize,
+                tile.y * layerTileSize,
+                layerTileSize,
+                layerTileSize,
+                -tileSize / 2,
+                -tileSize / 2,
+                tileSize,
+                tileSize,
+              );
+              ctx.restore();
+            }
           }
         }
       }
@@ -934,14 +1079,43 @@ export default function GamePage() {
       }
 
       // 收集所有需要加载的图片
-      const sources = Array.from(
-        new Set(
-          [
-            ...map.layers.map((layer) => layer.tileset).filter(Boolean),
-            CGS_CHARACTER_SPRITE,
-          ].map((path) => toAssetUrl(path)),
-        ),
-      );
+      const sources: string[] = [];
+      
+      // 检查是否是新格式的地图
+      const isNewFormat = (map as any).objects && Array.isArray((map as any).objects);
+      
+      if (isNewFormat) {
+        // 新格式：收集对象的图片
+        const objects = (map as any).objects as Array<{
+          spriteData?: { spriteImageSrc?: string };
+          imageData?: string;
+          isBackground?: boolean;
+          isGroup?: boolean;
+          children?: any[];
+        }>;
+        
+        const collectImages = (obj: any) => {
+          if (obj.isBackground && obj.imageData) {
+            sources.push(obj.imageData);
+          } else if (obj.spriteData && obj.spriteData.spriteImageSrc) {
+            sources.push(toAssetUrl(obj.spriteData.spriteImageSrc));
+          }
+          
+          if (obj.isGroup && obj.children) {
+            obj.children.forEach((child: any) => collectImages(child));
+          }
+        };
+        
+        objects.forEach(obj => collectImages(obj));
+      } else {
+        // 旧格式：收集图层的瓦片集
+        sources.push(
+          ...map.layers.map((layer) => layer.tileset).filter(Boolean).map((path) => toAssetUrl(path!))
+        );
+      }
+      
+      // 添加角色精灵图
+      sources.push(toAssetUrl(CGS_CHARACTER_SPRITE));
       
       // 添加角色图层精灵图
       const basePath = '/32x32%20Customizable%20Character%20Pack/Walk';
@@ -965,7 +1139,9 @@ export default function GamePage() {
         });
       });
 
-      await Promise.all(sources.map((src) => loadImage(src)));
+      // 去重
+      const uniqueSources = Array.from(new Set(sources));
+      await Promise.all(uniqueSources.map((src) => loadImage(src)));
       setStatus("游戏已加载，使用方向键或 WASD 移动角色。靠近 NPC 后按 C，或直接点击 NPC 对话。");
     };
 
@@ -1094,6 +1270,12 @@ export default function GamePage() {
     .filter((npc) => Math.hypot(npc.x - playerRef.current.x, npc.y - playerRef.current.y) < 180)
     .sort((a, b) => Math.hypot(a.x - playerRef.current.x, a.y - playerRef.current.y) - Math.hypot(b.x - playerRef.current.x, b.y - playerRef.current.y));
   const closestNpc = nearbyNpcs[0] || null;
+  const activeChatMessages = selectedNpc ? (chatMessages[selectedNpc.id] || []) : [];
+  const latestRelationship = [...activeChatMessages]
+    .reverse()
+    .find((message) => message.role === "npc" && message.relationship)?.relationship;
+  const affinityValue = latestRelationship?.affinity ?? 0;
+  const familiarityValue = latestRelationship?.familiarity ?? 0;
 
   return (
     <main className="font-game-body fixed inset-0 overflow-hidden bg-[#09111f] text-white">
@@ -1166,173 +1348,132 @@ export default function GamePage() {
 
       {selectedNpc && (
         <div className="absolute inset-0 z-40 flex items-center justify-center bg-[rgba(5,10,20,0.35)] px-3 py-4">
-          <AssetWindow
-            translucent
-            className="font-game-body relative flex h-[85vh] max-h-[720px] w-full max-w-[376px] flex-col overflow-hidden drop-shadow-[0_30px_90px_rgba(0,0,0,0.45)]"
-            contentClassName="flex h-full flex-col px-6 py-6"
-          >
-            {/* 关闭按钮 - 右上角 */}
-            <AssetIconButton
-              variant="close"
-              label="关闭聊天"
+          <div className="font-game-body relative flex h-[85vh] max-h-[720px] w-full max-w-[340px] flex-col overflow-hidden rounded-[20px] border border-white/10 bg-[#f5f8ff] text-slate-900 shadow-[0_30px_90px_rgba(0,0,0,0.45)]">
+            <button
+              type="button"
               onClick={() => setSelectedNpcId(null)}
-              className="absolute right-3 top-3 z-50"
-            />
-            {/* 头部 - 极简布局 */}
-            <div className="rounded-[18px] bg-[linear-gradient(135deg,_rgba(18,214,223,0.92),_rgba(119,242,200,0.92))] px-3 py-2 text-slate-950 shadow-[0_10px_24px_rgba(63,103,102,0.18)]">
-              {/* 单行布局：NPC头像、进度条、玩家头像 - 居中对齐 */}
+              className="absolute right-1 top-1 z-50 flex h-6 w-6 items-center justify-center rounded-full bg-black/20 text-white backdrop-blur-sm transition hover:bg-black/40"
+              aria-label="关闭"
+            >
+              <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+
+            <div className="bg-[linear-gradient(135deg,_#12d6df,_#77f2c8)] px-3 py-2 text-slate-950">
               <div className="flex items-center justify-center gap-3">
-                {/* NPC头像 - 左边 */}
                 <div className="flex-shrink-0">
                   {selectedNpc.avatar ? (
-                    <img 
-                      src={toAssetUrl(selectedNpc.avatar)} 
+                    <img
+                      src={toAssetUrl(selectedNpc.avatar)}
                       alt={selectedNpc.name}
-                      className="w-9 h-9 rounded-full object-cover shadow-md"
+                      className="h-9 w-9 rounded-full object-cover shadow-md"
                       onError={(e) => {
-                        // 头像加载失败时显示首字母
-                        e.currentTarget.style.display = 'none';
+                        e.currentTarget.style.display = "none";
                         if (e.currentTarget.nextElementSibling) {
-                          (e.currentTarget.nextElementSibling as HTMLElement).style.display = 'flex';
+                          (e.currentTarget.nextElementSibling as HTMLElement).style.display = "flex";
                         }
                       }}
                     />
                   ) : null}
-                  <div 
+                  <div
                     className="font-game-display flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-pink-400 to-purple-500 text-xs text-white shadow-md"
-                    style={{ display: selectedNpc.avatar ? 'none' : 'flex' }}
+                    style={{ display: selectedNpc.avatar ? "none" : "flex" }}
                   >
-                    {selectedNpc.name?.[0]?.toUpperCase() || 'N'}
+                    {selectedNpc.name?.[0]?.toUpperCase() || "N"}
                   </div>
                 </div>
 
-                {/* 中间进度条区域 */}
-                <div className="flex-1 min-w-0 max-w-[180px]">
+                <div className="min-w-0 max-w-[180px] flex-1">
                   {chatLoading ? (
-                    // 正在输入中
-                    <div className="text-center py-1">
-                      <div className="inline-flex items-center gap-1 px-2 py-1 bg-white/30 rounded-full">
+                    <div className="py-1 text-center">
+                      <div className="inline-flex items-center gap-1 rounded-full bg-white/30 px-2 py-1">
                         <div className="flex gap-0.5">
-                          <span className="w-1 h-1 bg-slate-800 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
-                          <span className="w-1 h-1 bg-slate-800 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
-                          <span className="w-1 h-1 bg-slate-800 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
+                          <span className="h-1 w-1 animate-bounce rounded-full bg-slate-800" style={{ animationDelay: "0ms" }} />
+                          <span className="h-1 w-1 animate-bounce rounded-full bg-slate-800" style={{ animationDelay: "150ms" }} />
+                          <span className="h-1 w-1 animate-bounce rounded-full bg-slate-800" style={{ animationDelay: "300ms" }} />
                         </div>
-                        <span className="font-game-ui text-[9px] text-slate-800 font-medium">输入中...</span>
+                        <span className="font-game-readable text-[9px] font-medium text-slate-700">输入中...</span>
                       </div>
                     </div>
                   ) : (
-                    // 关系进度条
                     <>
-                      {/* 好感度进度条 - 中间为0，左负右正 */}
                       <div className="mb-1">
-                        <div className="flex items-center justify-between mb-0.5">
-                          <span className="font-game-ui text-[9px] text-slate-800 font-medium">好感度</span>
-                          <span className="font-game-ui text-[9px] text-slate-800 font-bold">
-                            {(() => {
-                              const messages = chatMessages[selectedNpc.id] || [];
-                              const lastNpcMessage = [...messages].reverse().find(m => m.role === 'npc' && m.relationship);
-                              return lastNpcMessage?.relationship?.affinity ?? 0;
-                            })()}
-                          </span>
+                        <div className="mb-0.5 flex items-center justify-between">
+                          <span className="font-game-readable text-[9px] font-medium text-slate-800">好感度</span>
+                          <span className="font-game-readable text-[9px] font-semibold text-slate-800">{affinityValue}</span>
                         </div>
-                        <div className="relative h-1 bg-white/30 rounded-full overflow-hidden">
-                          {/* 中间分界线 */}
-                          <div className="absolute left-1/2 top-0 bottom-0 w-px bg-slate-600/30 z-10"></div>
-                          {/* 进度条 */}
-                          <div 
+                        <div className="relative h-1 overflow-hidden rounded-full bg-white/30">
+                          <div className="absolute left-1/2 top-0 bottom-0 z-10 w-px bg-slate-600/30" />
+                          <div
                             className="absolute h-full transition-all duration-500"
-                            style={(() => {
-                              const messages = chatMessages[selectedNpc.id] || [];
-                              const lastNpcMessage = [...messages].reverse().find(m => m.role === 'npc' && m.relationship);
-                              const affinity = lastNpcMessage?.relationship?.affinity ?? 0;
-                              
-                              if (affinity >= 0) {
-                                // 正值：从中间往右
-                                return {
-                                  left: '50%',
-                                  width: `${(affinity / 100) * 50}%`,
-                                  background: 'linear-gradient(to right, #fbbf24, #22c55e)'
-                                };
-                              } else {
-                                // 负值：从中间往左
-                                return {
-                                  right: '50%',
-                                  width: `${(Math.abs(affinity) / 100) * 50}%`,
-                                  background: 'linear-gradient(to left, #fbbf24, #f87171)'
-                                };
-                              }
-                            })()}
-                          ></div>
+                            style={
+                              affinityValue >= 0
+                                ? {
+                                    left: "50%",
+                                    width: `${(affinityValue / 100) * 50}%`,
+                                    background: "linear-gradient(to right, #fbbf24, #22c55e)",
+                                  }
+                                : {
+                                    right: "50%",
+                                    width: `${(Math.abs(affinityValue) / 100) * 50}%`,
+                                    background: "linear-gradient(to left, #fbbf24, #f87171)",
+                                  }
+                            }
+                          />
                         </div>
                       </div>
 
-                      {/* 熟悉度进度条 */}
                       <div>
-                        <div className="flex items-center justify-between mb-0.5">
-                          <span className="font-game-ui text-[9px] text-slate-800 font-medium">熟悉度</span>
-                          <span className="font-game-ui text-[9px] text-slate-800 font-bold">
-                            {(() => {
-                              const messages = chatMessages[selectedNpc.id] || [];
-                              const lastNpcMessage = [...messages].reverse().find(m => m.role === 'npc' && m.relationship);
-                              return lastNpcMessage?.relationship?.familiarity ?? 0;
-                            })()}
-                          </span>
+                        <div className="mb-0.5 flex items-center justify-between">
+                          <span className="font-game-readable text-[9px] font-medium text-slate-800">熟悉度</span>
+                          <span className="font-game-readable text-[9px] font-semibold text-slate-800">{familiarityValue}</span>
                         </div>
-                        <div className="h-1 bg-white/30 rounded-full overflow-hidden">
-                          <div 
+                        <div className="h-1 overflow-hidden rounded-full bg-white/30">
+                          <div
                             className="h-full bg-gradient-to-r from-blue-400 to-purple-400 transition-all duration-500"
-                            style={{ 
-                              width: `${(() => {
-                                const messages = chatMessages[selectedNpc.id] || [];
-                                const lastNpcMessage = [...messages].reverse().find(m => m.role === 'npc' && m.relationship);
-                                return lastNpcMessage?.relationship?.familiarity ?? 0;
-                              })()}%` 
-                            }}
-                          ></div>
+                            style={{ width: `${familiarityValue}%` }}
+                          />
                         </div>
                       </div>
                     </>
                   )}
                 </div>
 
-                {/* 玩家头像 - 右边 */}
                 <div className="flex-shrink-0">
                   {userAvatar ? (
-                    <img 
-                      src={toAssetUrl(userAvatar)} 
+                    <img
+                      src={toAssetUrl(userAvatar)}
                       alt={username}
-                      className="w-9 h-9 rounded-full object-cover shadow-md"
+                      className="h-9 w-9 rounded-full object-cover shadow-md"
                       onError={(e) => {
-                        // 头像加载失败时显示首字母
-                        e.currentTarget.style.display = 'none';
+                        e.currentTarget.style.display = "none";
                         if (e.currentTarget.nextElementSibling) {
-                          (e.currentTarget.nextElementSibling as HTMLElement).style.display = 'flex';
+                          (e.currentTarget.nextElementSibling as HTMLElement).style.display = "flex";
                         }
                       }}
                     />
                   ) : null}
-                  <div 
+                  <div
                     className="font-game-display flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-cyan-400 to-blue-500 text-xs text-white shadow-md"
-                    style={{ display: userAvatar ? 'none' : 'flex' }}
+                    style={{ display: userAvatar ? "none" : "flex" }}
                   >
-                    {username?.[0]?.toUpperCase() || 'P'}
+                    {username?.[0]?.toUpperCase() || "P"}
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="mt-3 flex-1 overflow-hidden rounded-[20px] bg-[linear-gradient(180deg,_rgba(234,242,255,0.96),_rgba(248,251,255,0.96))] p-3 shadow-inner">
-              <div ref={chatScrollRef} className="h-full overflow-auto rounded-[18px] border border-slate-200/80 bg-white/72 px-2.5 py-3 shadow-inner">
-                {(chatMessages[selectedNpc.id] || []).length ? (
+            <div className="flex-1 overflow-hidden bg-[linear-gradient(180deg,_#eaf2ff,_#f8fbff)] p-3">
+              <div ref={chatScrollRef} className="h-full overflow-auto rounded-[20px] border border-slate-200/80 bg-white/72 px-2.5 py-3 shadow-inner">
+                {activeChatMessages.length ? (
                   <div className="space-y-3">
-                    {(chatMessages[selectedNpc.id] || []).map((item, index) => (
+                    {activeChatMessages.map((item, index) => (
                       <div key={`${selectedNpc.id}-${index}`}>
-                        <div
-                          className={`flex ${item.senderId === userId ? "justify-end" : "justify-start"}`}
-                        >
+                        <div className={`flex ${item.role === "user" ? "justify-end" : "justify-start"}`}>
                           <div
-                            className={`font-game-ui max-w-[82%] rounded-[18px] px-3 py-2 text-[13px] leading-6 shadow-sm ${
-                              item.senderId === userId
+                            className={`font-game-ui max-w-[82%] rounded-[18px] px-3 py-2 text-[13px] leading-5 shadow-sm ${
+                              item.role === "user"
                                 ? "bg-[#9eea6a] text-slate-900"
                                 : "border border-slate-200 bg-white text-slate-800"
                             }`}
@@ -1340,69 +1481,58 @@ export default function GamePage() {
                             {item.text}
                           </div>
                         </div>
-                        {/* 显示关系变化 */}
-                        {item.senderId !== userId && item.relationship && (
+                        {item.role === "npc" && item.relationship ? (
                           <div className="mt-1 flex justify-start">
                             <div className="max-w-[82%] space-y-1 px-2">
-                              {/* AI评估反馈 */}
-                              {item.aiEvaluation && (
-                                <div className="font-game-ui rounded-lg bg-slate-50 p-1.5 text-[10px] leading-5">
-                                  {item.aiEvaluation.emotionalResponse && (
-                                    <div className="mb-1 text-slate-600">
-                                      💭 {item.aiEvaluation.emotionalResponse}
-                                    </div>
-                                  )}
-                                  {item.aiEvaluation.reasoning && (
-                                    <div className="text-slate-500">
-                                      📝 {item.aiEvaluation.reasoning}
-                                    </div>
-                                  )}
+                              {item.aiEvaluation ? (
+                                <div className="font-game-readable rounded-lg bg-slate-50 p-1.5 text-[10px] leading-5">
+                                  {item.aiEvaluation.emotionalResponse ? (
+                                    <div className="mb-1 text-slate-600">💭 {item.aiEvaluation.emotionalResponse}</div>
+                                  ) : null}
+                                  {item.aiEvaluation.reasoning ? (
+                                    <div className="text-slate-500">📝 {item.aiEvaluation.reasoning}</div>
+                                  ) : null}
                                 </div>
-                              )}
-                              {/* 关系信息 */}
-                              <div className="font-game-ui text-[9px] leading-4 text-slate-400">
-                                {item.relationship.relationshipType && (
-                                  <span className="mr-2">
-                                    关系: {getRelationshipText(item.relationship.relationshipType as any)}
-                                  </span>
-                                )}
-                                {item.relationship.affinity !== undefined && (
+                              ) : null}
+                              <div className="font-game-readable text-[9px] leading-5 text-slate-500">
+                                {item.relationship.relationshipType ? (
+                                  <span className="mr-2">关系: {getRelationshipText(item.relationship.relationshipType as never)}</span>
+                                ) : null}
+                                {item.relationship.affinity !== undefined ? (
                                   <span className="mr-2" style={{ color: getAffinityColor(item.relationship.affinity) }}>
                                     好感: {item.relationship.affinity} ({getAffinityText(item.relationship.affinity)})
-                                    {item.relationship.affinityChange !== undefined && item.relationship.affinityChange !== 0 && (
+                                    {item.relationship.affinityChange !== undefined && item.relationship.affinityChange !== 0 ? (
                                       <span className={item.relationship.affinityChange > 0 ? "text-green-500" : "text-red-500"}>
                                         {" "}({item.relationship.affinityChange > 0 ? "+" : ""}{item.relationship.affinityChange})
                                       </span>
-                                    )}
+                                    ) : null}
                                   </span>
-                                )}
-                                {item.relationship.familiarity !== undefined && (
+                                ) : null}
+                                {item.relationship.familiarity !== undefined ? (
                                   <span>
                                     熟悉度: {item.relationship.familiarity} ({getFamiliarityText(item.relationship.familiarity)})
-                                    {item.relationship.familiarityChange !== undefined && item.relationship.familiarityChange !== 0 && (
-                                      <span className="text-blue-500">
-                                        {" "}(+{item.relationship.familiarityChange})
-                                      </span>
-                                    )}
+                                    {item.relationship.familiarityChange !== undefined && item.relationship.familiarityChange !== 0 ? (
+                                      <span className="text-blue-500"> (+{item.relationship.familiarityChange})</span>
+                                    ) : null}
                                   </span>
-                                )}
+                                ) : null}
                               </div>
                             </div>
                           </div>
-                        )}
+                        ) : null}
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <div className="font-game-ui flex h-full items-center justify-center px-6 text-center text-sm leading-7 text-slate-500">
+                  <div className="font-game-readable flex h-full items-center justify-center px-6 text-center text-[15px] leading-7 text-slate-600">
                     和 {selectedNpc.name} 打个招呼吧
                   </div>
                 )}
               </div>
             </div>
 
-            <div className="mt-3 flex-shrink-0 rounded-[18px] border border-[#ead3b4] bg-white/90 px-3 pb-3 pt-2 shadow-[0_8px_18px_rgba(108,82,46,0.08)]">
-              <div className="font-game-ui mb-1.5 text-[10px] text-slate-400">按 Enter 发送，按 Esc 关闭聊天</div>
+            <div className="flex-shrink-0 border-t border-slate-200 bg-white px-3 pb-3 pt-2">
+              <div className="font-game-readable mb-1.5 text-[10px] text-slate-500">按 Enter 发送，按 Esc 关闭聊天</div>
               <div className="flex items-end gap-2">
                 <textarea
                   value={chatInput}
@@ -1415,20 +1545,19 @@ export default function GamePage() {
                   }}
                   rows={2}
                   placeholder={`给 ${selectedNpc.name} 发消息...`}
-                  className="font-game-ui min-h-[44px] flex-1 resize-none rounded-[16px] border border-slate-200 bg-slate-50 px-3 py-2 text-[13px] leading-6 text-slate-800 outline-none placeholder:text-slate-400 focus:border-cyan-400"
-                />
-                <AssetButton
+                  className="font-game-ui min-h-[44px] flex-1 resize-none rounded-[16px] border border-slate-200 bg-slate-50 px-3 py-2 text-[13px] text-slate-800 outline-none placeholder:text-slate-400 focus:border-cyan-400"
+                  />
+                <button
+                  type="button"
                   disabled={chatLoading || !chatInput.trim()}
                   onClick={() => void sendNpcMessage()}
-                  skin="play"
-                  className="text-[12px]"
-                  style={{ minWidth: 118, minHeight: 58 }}
-                >
+                  className="rounded-[16px] bg-[#12d6df] px-4 py-2 text-[13px] font-semibold text-slate-950 transition disabled:cursor-not-allowed disabled:bg-slate-300"
+                  >
                   {chatLoading ? "发送中" : "发送"}
-                </AssetButton>
+                </button>
               </div>
             </div>
-          </AssetWindow>
+          </div>
         </div>
       )}
     </main>

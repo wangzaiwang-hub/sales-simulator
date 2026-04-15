@@ -81,9 +81,10 @@ echo "3️⃣  准备Apache配置..."
 sudo mkdir -p /usr/local/var/log/httpd
 sudo mkdir -p /usr/local/var/run/apache2
 
-# 复制配置文件并替换证书路径
+# 复制配置文件并替换证书路径和后端目录
 TEMP_CONF="/tmp/httpd-lan-ssl.conf"
-sed "s|CERT_PATH|$CERT_DIR|g" "$(pwd)/httpd-lan-ssl.conf" > "$TEMP_CONF"
+BACKEND_DIR="$(pwd)/backend"
+sed -e "s|CERT_PATH|$CERT_DIR|g" -e "s|BACKEND_DIR|$BACKEND_DIR|g" "$(pwd)/httpd-lan-ssl.conf" > "$TEMP_CONF"
 
 echo "✅ 配置已准备"
 echo ""

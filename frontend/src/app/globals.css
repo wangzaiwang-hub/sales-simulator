@@ -83,6 +83,13 @@ body {
     letter-spacing: 0.08em;
   }
 
+  .font-game-readable {
+    font-family: var(--font-body);
+    letter-spacing: 0.02em;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: auto;
+  }
+
   .font-game-display {
     font-family: var(--font-game-display);
     letter-spacing: 0.1em;

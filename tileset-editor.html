@@ -2,7 +2,6 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <base href="/">
     <title>瓦片地图编辑器 - 使用你的素材</title>
     <style>
         * { box-sizing: border-box; }
@@ -59,23 +58,65 @@
             <h3>🖼️ 瓦片集</h3>
             <select id="tileset" onchange="loadTileset()">
                 <optgroup label="室内/房屋场景 (48x48)">
-                    <option value="resource/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png" data-size="48">室内场景瓦片</option>
-                    <option value="resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png" data-size="48">城市瓦片A2</option>
-                    <option value="resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A5.png" data-size="48">城市瓦片A5</option>
+                    <option value="/resource/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png" data-size="48">室内场景瓦片</option>
+                    <option value="/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png" data-size="48">城市瓦片A2</option>
+                    <option value="/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A5.png" data-size="48">城市瓦片A5</option>
+                </optgroup>
+                <optgroup label="角色精灵集 (32x48)">
+                    <option value="/resource/CGS_RU_HouseFree/img/characters/CGS_Char_1.png" data-size="32">CGS角色集1 (12x8网格)</option>
+                    <option value="/resource/CGS_RU_HouseFree/img/characters/!CGS_House_1.png" data-size="32">CGS房屋角色集</option>
                 </optgroup>
                 <optgroup label="城市场景 (30x30)">
-                    <option value="resource/225525db3ab3e4a8/Urban City Tileset Free Demo version Dlou Saiyan/Urban City Tileset Free Demo version 30x30 Dlou Saiyan.png" data-size="30">城市瓦片集 30x30</option>
+                    <option value="/resource/225525db3ab3e4a8/Urban City Tileset Free Demo version Dlou Saiyan/Urban City Tileset Free Demo version 30x30 Dlou Saiyan.png" data-size="30">城市瓦片集 30x30</option>
+                </optgroup>
+                <optgroup label="动画精灵集 (48x48)">
+                    <option value="/resource/CP_V1.1.0_nyknck/Animations/SL001.png" data-size="48">睡觉动画集 (5x14网格)</option>
+                    <option value="/resource/CP_V1.1.0_nyknck/Animations/BD001.png" data-size="48">床动画集</option>
+                    <option value="/resource/CP_V1.1.0_nyknck/Animations/BL001.png" data-size="48">蓝色动画集</option>
                 </optgroup>
                 <optgroup label="其他瓦片集">
-                    <option value="resource/CP_V1.1.0_nyknck/CP_V1.0.4_nyknck/CP_V1.0.4.png" data-size="32">CP瓦片集 (32x32)</option>
-                    <option value="resource/4dc7190bd20eb0ee/spritesheet.png" data-size="16">桌面物品集 (16x16)</option>
+                    <option value="/resource/CP_V1.1.0_nyknck/CP_V1.0.4_nyknck/CP_V1.0.4.png" data-size="32">CP瓦片集 (32x32)</option>
+                    <option value="/resource/4dc7190bd20eb0ee/spritesheet.png" data-size="16">桌面物品集 (16x16)</option>
                 </optgroup>
             </select>
             
+            <div class="info" style="margin-top: 10px; font-size: 11px; color: #999;">
+                💡 <strong>提示：</strong>此编辑器用于瓦片集（多个瓦片组成的网格图）。<br>
+                单个家具素材（Wooden Furniture）请直接在游戏中使用，无需在此编辑。
+            </div>
+            
             <label style="margin-top: 10px; display: block;">瓦片大小：</label>
             <div style="display: flex; gap: 5px;">
-                <input type="number" id="tileSize" value="48" min="8" max="128" style="flex: 1;">
+                <input type="number" id="tileSize" value="48" min="8" max="256" style="flex: 1;">
                 <button onclick="changeTileSize()" style="width: auto; padding: 8px 15px;">应用</button>
+            </div>
+            
+            <label style="margin-top: 10px; display: block;">起始偏移 (X, Y)：</label>
+            <div style="display: flex; gap: 5px;">
+                <input type="number" id="offsetX" value="0" min="0" max="500" placeholder="X" style="flex: 1;">
+                <input type="number" id="offsetY" value="0" min="0" max="500" placeholder="Y" style="flex: 1;">
+                <button onclick="applyOffset()" style="width: auto; padding: 8px 15px;">应用</button>
+            </div>
+            
+            <label style="margin-top: 10px; display: block;">瓦片间距 (X, Y)：</label>
+            <div style="display: flex; gap: 5px;">
+                <input type="number" id="spacingX" value="0" min="0" max="100" placeholder="X" style="flex: 1;">
+                <input type="number" id="spacingY" value="0" min="0" max="100" placeholder="Y" style="flex: 1;">
+                <button onclick="applySpacing()" style="width: auto; padding: 8px 15px;">应用</button>
+            </div>
+            
+            <h3 style="margin-top: 15px;">🔍 智能检测</h3>
+            <label style="margin-top: 10px; display: block;">检测模式：</label>
+            <select id="detectMode">
+                <option value="free">自由检测（所有独立物体）</option>
+                <option value="column" selected>按列检测（每列一个类型）</option>
+            </select>
+            <button onclick="autoDetectTiles()" style="background: #2196F3; margin-top: 10px;">🤖 自动检测瓦片边界</button>
+            <button onclick="resetTilesetView()" style="background: #666; margin-top: 5px;">🔄 重置视图</button>
+            <div class="info" style="font-size: 11px; color: #999; margin-top: 5px;">
+                💡 <strong>自由检测：</strong>找到所有独立物体<br>
+                💡 <strong>按列检测：</strong>每列的多个变体合并为一组<br>
+                💡 <strong>右键/中键拖动</strong>平移，<strong>滚轮</strong>缩放
             </div>
             
             <label style="margin-top: 10px; display: block;">显示模式：</label>
@@ -107,6 +148,11 @@
             </label>
             <div class="info" style="font-size: 11px;">
                 💡 勾选后绘制的瓦片会阻挡角色移动
+            </div>
+            
+            <div id="layoutModeIndicator" style="display: none; margin-top: 15px; padding: 10px; background: #2196F3; border-radius: 5px; text-align: center;">
+                <strong>🎨 自由布局模式</strong><br>
+                <span style="font-size: 11px;">点击放置 | 拖动移动 | 缩放调整 | Delete删除</span>
             </div>
         </div>
         
@@ -180,9 +226,31 @@
         let viewMode = 'grid';
         let collisionMode = false; // 是否绘制碰撞瓦片
         
+        // 瓦片偏移和间距
+        let offsetX = 0, offsetY = 0;
+        let spacingX = 0, spacingY = 0;
+        
+        // 自动检测的瓦片边界信息
+        let detectedTiles = null; // 存储检测到的瓦片边界 [{x, y, width, height}, ...]
+        let useDetectedBounds = false; // 是否使用检测到的边界
+        
+        // 瓦片集画布的平移和缩放
+        let tilesetPanX = 0, tilesetPanY = 0;
+        let tilesetScale = 1;
+        let tilesetDragging = false;
+        let tilesetDragStartX = 0, tilesetDragStartY = 0;
+        
+        // 自由布局模式的对象列表
+        let freeObjects = []; // [{id, tileIndex, x, y, width, height, rotation, flipH, flipV, collision}, ...]
+        let selectedObject = null; // 当前选中的对象
+        let isDragging = false;
+        let isResizing = false;
+        let dragStartX = 0, dragStartY = 0;
+        let resizeHandle = null; // 'nw', 'ne', 'sw', 'se', 'n', 's', 'e', 'w'
+        
         // 图层系统（只保留一个初始图层）
         let layers = [
-            {name: '图层 1', data: [], visible: true, locked: false, tileset: '', tileSize: 48}
+            {name: '图层 1', data: [], visible: true, locked: false, tileset: '', tileSize: 48, objects: []}
         ];
         let currentLayer = 0;
         
@@ -211,6 +279,18 @@
             draw();
         }
         
+        // 获取资源的完整URL
+        function getResourceUrl(relativePath) {
+            // 如果是通过HTTPS访问（局域网），资源需要从后端HTTP端口加载
+            if (window.location.protocol === 'https:') {
+                // 移除开头的 /
+                const cleanPath = relativePath.replace(/^\//, '');
+                return `http://localhost:3001/${cleanPath}`;
+            }
+            // 否则使用相对路径
+            return relativePath;
+        }
+        
         function loadTileset() {
             const select = document.getElementById('tileset');
             const option = select.options[select.selectedIndex];
@@ -230,7 +310,14 @@
                 console.log(`图层 ${currentLayer} 已设置瓦片集:`, path);
             }
             
+            // 重置自由布局模式
+            useDetectedBounds = false;
+            detectedTiles = null;
+            selectedObject = null;
+            document.getElementById('layoutModeIndicator').style.display = 'none';
+            
             img = new Image();
+            img.crossOrigin = 'anonymous'; // 允许跨域读取像素数据
             img.onload = () => {
                 cols = Math.floor(img.width / SIZE);
                 rows = Math.floor(img.height / SIZE);
@@ -241,22 +328,308 @@
                 console.log(`瓦片集加载: ${cols}x${rows} 瓦片 (${SIZE}x${SIZE}px)`);
             };
             img.onerror = () => alert('加载失败: ' + path);
-            img.src = path;
+            img.src = getResourceUrl(path);
         }
         
         function changeTileSize() {
             const newSize = parseInt(document.getElementById('tileSize').value);
-            if (newSize < 8 || newSize > 128) {
-                alert('瓦片大小必须在8-128之间');
+            if (newSize < 8 || newSize > 256) {
+                alert('瓦片大小必须在8-256之间');
                 return;
             }
             SIZE = newSize;
+            recalculateTileGrid();
+        }
+        
+        function applyOffset() {
+            offsetX = parseInt(document.getElementById('offsetX').value) || 0;
+            offsetY = parseInt(document.getElementById('offsetY').value) || 0;
+            recalculateTileGrid();
+        }
+        
+        function applySpacing() {
+            spacingX = parseInt(document.getElementById('spacingX').value) || 0;
+            spacingY = parseInt(document.getElementById('spacingY').value) || 0;
+            recalculateTileGrid();
+        }
+        
+        function recalculateTileGrid() {
             if (img && img.complete) {
-                cols = Math.floor(img.width / SIZE);
-                rows = Math.floor(img.height / SIZE);
+                // 计算可用区域
+                const availableWidth = img.width - offsetX;
+                const availableHeight = img.height - offsetY;
+                
+                // 计算瓦片数量（考虑间距）
+                cols = Math.floor((availableWidth + spacingX) / (SIZE + spacingX));
+                rows = Math.floor((availableHeight + spacingY) / (SIZE + spacingY));
+                
                 drawTileset();
                 draw();
-                console.log(`瓦片大小已更改为: ${SIZE}x${SIZE}px, 瓦片数: ${cols}x${rows}`);
+                console.log(`瓦片网格: ${cols}x${rows}, 大小: ${SIZE}px, 偏移: (${offsetX}, ${offsetY}), 间距: (${spacingX}, ${spacingY})`);
+            }
+        }
+        
+        // 重置瓦片集视图
+        function resetTilesetView() {
+            tilesetPanX = 0;
+            tilesetPanY = 0;
+            tilesetScale = 1;
+            drawTileset();
+        }
+        
+        // 自动检测瓦片边界 - 支持两种模式
+        function autoDetectTiles() {
+            if (!img || !img.complete) {
+                alert('请先加载瓦片集图片');
+                return;
+            }
+            
+            const detectMode = document.getElementById('detectMode').value;
+            console.log('开始智能检测，模式:', detectMode);
+            
+            try {
+                // 创建临时canvas来分析像素
+                const tempCanvas = document.createElement('canvas');
+                tempCanvas.width = img.width;
+                tempCanvas.height = img.height;
+                const tempCtx = tempCanvas.getContext('2d');
+                tempCtx.drawImage(img, 0, 0);
+                
+                const imageData = tempCtx.getImageData(0, 0, img.width, img.height);
+                const pixels = imageData.data;
+                
+                console.log('成功获取图像数据，开始分析...');
+            
+                // 检测函数：判断像素是否为"空"（透明或接近黑色）
+                function isEmptyPixel(x, y) {
+                    if (x < 0 || x >= img.width || y < 0 || y >= img.height) return true;
+                    const idx = (y * img.width + x) * 4;
+                    const r = pixels[idx];
+                    const g = pixels[idx + 1];
+                    const b = pixels[idx + 2];
+                    const a = pixels[idx + 3];
+                    
+                    // 透明或接近黑色（RGB < 20）
+                    return a < 10 || (r < 20 && g < 20 && b < 20);
+                }
+            
+            if (detectMode === 'column') {
+                // 按列检测模式
+                detectedTiles = [];
+                
+                // 1. 先检测所有独立物体
+                const visited = new Array(img.width * img.height).fill(false);
+                const allObjects = [];
+                
+                function findConnectedRegion(startX, startY) {
+                    if (visited[startY * img.width + startX] || isEmptyPixel(startX, startY)) {
+                        return null;
+                    }
+                    
+                    let minX = startX, minY = startY;
+                    let maxX = startX, maxY = startY;
+                    
+                    const queue = [{x: startX, y: startY}];
+                    visited[startY * img.width + startX] = true;
+                    
+                    while (queue.length > 0) {
+                        const {x, y} = queue.shift();
+                        
+                        minX = Math.min(minX, x);
+                        minY = Math.min(minY, y);
+                        maxX = Math.max(maxX, x);
+                        maxY = Math.max(maxY, y);
+                        
+                        const neighbors = [
+                            {x: x - 1, y: y}, {x: x + 1, y: y},
+                            {x: x, y: y - 1}, {x: x, y: y + 1}
+                        ];
+                        
+                        for (const neighbor of neighbors) {
+                            const nx = neighbor.x;
+                            const ny = neighbor.y;
+                            
+                            if (nx >= 0 && nx < img.width && ny >= 0 && ny < img.height) {
+                                const idx = ny * img.width + nx;
+                                if (!visited[idx] && !isEmptyPixel(nx, ny)) {
+                                    visited[idx] = true;
+                                    queue.push({x: nx, y: ny});
+                                }
+                            }
+                        }
+                    }
+                    
+                    const padding = 2;
+                    return {
+                        x: Math.max(0, minX - padding),
+                        y: Math.max(0, minY - padding),
+                        width: Math.min(img.width, maxX + padding) - Math.max(0, minX - padding) + 1,
+                        height: Math.min(img.height, maxY + padding) - Math.max(0, minY - padding) + 1,
+                        centerX: (minX + maxX) / 2,
+                        centerY: (minY + maxY) / 2
+                    };
+                }
+                
+                // 找到所有物体
+                for (let y = 0; y < img.height; y++) {
+                    for (let x = 0; x < img.width; x++) {
+                        const region = findConnectedRegion(x, y);
+                        if (region && region.width >= 10 && region.height >= 10) {
+                            allObjects.push(region);
+                        }
+                    }
+                }
+                
+                console.log(`找到 ${allObjects.length} 个独立物体`);
+                
+                // 2. 按X坐标分组（同一列的物体）
+                allObjects.sort((a, b) => a.centerX - b.centerX);
+                
+                const columns = [];
+                let currentColumn = [];
+                let lastCenterX = -1000;
+                
+                for (const obj of allObjects) {
+                    if (currentColumn.length === 0 || Math.abs(obj.centerX - lastCenterX) < 50) {
+                        // 同一列
+                        currentColumn.push(obj);
+                        lastCenterX = obj.centerX;
+                    } else {
+                        // 新的一列
+                        if (currentColumn.length > 0) {
+                            columns.push(currentColumn);
+                        }
+                        currentColumn = [obj];
+                        lastCenterX = obj.centerX;
+                    }
+                }
+                if (currentColumn.length > 0) {
+                    columns.push(currentColumn);
+                }
+                
+                console.log(`分成 ${columns.length} 列`);
+                
+                // 3. 每列按Y坐标排序，取第一个作为代表
+                columns.forEach((column, colIndex) => {
+                    column.sort((a, b) => a.centerY - b.centerY);
+                    const representative = column[0]; // 取第一个（最上面的）
+                    
+                    detectedTiles.push({
+                        index: colIndex,
+                        contentX: representative.x,
+                        contentY: representative.y,
+                        contentWidth: representative.width,
+                        contentHeight: representative.height,
+                        variants: column.length // 记录有多少个变体
+                    });
+                });
+                
+                cols = Math.ceil(Math.sqrt(detectedTiles.length));
+                rows = Math.ceil(detectedTiles.length / cols);
+                
+                console.log(`最终检测到 ${detectedTiles.length} 种建筑类型`);
+                
+            } else {
+                // 自由检测模式（原来的逻辑）
+                const visited = new Array(img.width * img.height).fill(false);
+                detectedTiles = [];
+                let tileIndex = 0;
+                
+                function findConnectedRegion(startX, startY) {
+                    if (visited[startY * img.width + startX] || isEmptyPixel(startX, startY)) {
+                        return null;
+                    }
+                    
+                    let minX = startX, minY = startY;
+                    let maxX = startX, maxY = startY;
+                    
+                    const queue = [{x: startX, y: startY}];
+                    visited[startY * img.width + startX] = true;
+                    
+                    while (queue.length > 0) {
+                        const {x, y} = queue.shift();
+                        
+                        minX = Math.min(minX, x);
+                        minY = Math.min(minY, y);
+                        maxX = Math.max(maxX, x);
+                        maxY = Math.max(maxY, y);
+                        
+                        const neighbors = [
+                            {x: x - 1, y: y}, {x: x + 1, y: y},
+                            {x: x, y: y - 1}, {x: x, y: y + 1}
+                        ];
+                        
+                        for (const neighbor of neighbors) {
+                            const nx = neighbor.x;
+                            const ny = neighbor.y;
+                            
+                            if (nx >= 0 && nx < img.width && ny >= 0 && ny < img.height) {
+                                const idx = ny * img.width + nx;
+                                if (!visited[idx] && !isEmptyPixel(nx, ny)) {
+                                    visited[idx] = true;
+                                    queue.push({x: nx, y: ny});
+                                }
+                            }
+                        }
+                    }
+                    
+                    const padding = 2;
+                    minX = Math.max(0, minX - padding);
+                    minY = Math.max(0, minY - padding);
+                    maxX = Math.min(img.width - 1, maxX + padding);
+                    maxY = Math.min(img.height - 1, maxY + padding);
+                    
+                    return {
+                        x: minX,
+                        y: minY,
+                        width: maxX - minX + 1,
+                        height: maxY - minY + 1
+                    };
+                }
+                
+                for (let y = 0; y < img.height; y++) {
+                    for (let x = 0; x < img.width; x++) {
+                        const region = findConnectedRegion(x, y);
+                        
+                        if (region && region.width >= 10 && region.height >= 10) {
+                            detectedTiles.push({
+                                index: tileIndex++,
+                                contentX: region.x,
+                                contentY: region.y,
+                                contentWidth: region.width,
+                                contentHeight: region.height
+                            });
+                        }
+                    }
+                }
+                
+                detectedTiles.sort((a, b) => {
+                    const rowDiff = a.contentY - b.contentY;
+                    if (Math.abs(rowDiff) > 20) return rowDiff;
+                    return a.contentX - b.contentX;
+                });
+                
+                detectedTiles.forEach((tile, idx) => tile.index = idx);
+                
+                cols = Math.ceil(Math.sqrt(detectedTiles.length));
+                rows = Math.ceil(detectedTiles.length / cols);
+            }
+            
+            useDetectedBounds = true;
+            
+            // 显示自由布局模式指示器
+            document.getElementById('layoutModeIndicator').style.display = 'block';
+            
+            console.log('检测完成，找到', detectedTiles.length, '个对象');
+            
+            drawTileset();
+            
+            const modeText = detectMode === 'column' ? '建筑类型' : '独立物体';
+            alert(`智能检测完成！\n找到 ${detectedTiles.length} 个${modeText}\n每个已自动裁剪到最小边界\n\n现在可以点击放置素材，拖动移动，缩放调整大小`);
+            
+            } catch (error) {
+                console.error('检测失败:', error);
+                alert('检测失败: ' + error.message + '\n\n可能是跨域问题，请确保图片已正确加载。');
             }
         }
         
@@ -264,24 +637,93 @@
             if (!img) return;
             
             if (viewMode === 'grid') {
-                tc.width = img.width;
-                tc.height = img.height;
-                tctx.clearRect(0, 0, tc.width, tc.height);
-                tctx.drawImage(img, 0, 0);
-                
-                tctx.strokeStyle = 'rgba(255,255,255,0.3)';
-                tctx.lineWidth = 1;
-                for (let x = 0; x <= cols; x++) {
-                    tctx.beginPath();
-                    tctx.moveTo(x * SIZE, 0);
-                    tctx.lineTo(x * SIZE, rows * SIZE);
-                    tctx.stroke();
+                // 设置canvas大小
+                if (useDetectedBounds && detectedTiles) {
+                    const cellSize = 150;
+                    const padding = 10;
+                    tc.width = cols * (cellSize + padding) + padding;
+                    tc.height = rows * (cellSize + padding) + padding;
+                } else {
+                    tc.width = img.width;
+                    tc.height = img.height;
                 }
-                for (let y = 0; y <= rows; y++) {
-                    tctx.beginPath();
-                    tctx.moveTo(0, y * SIZE);
-                    tctx.lineTo(cols * SIZE, y * SIZE);
-                    tctx.stroke();
+                
+                // 清空并填充背景
+                tctx.clearRect(0, 0, tc.width, tc.height);
+                tctx.fillStyle = '#1a1a1a';
+                tctx.fillRect(0, 0, tc.width, tc.height);
+                
+                // 应用变换
+                tctx.save();
+                tctx.translate(tilesetPanX, tilesetPanY);
+                tctx.scale(tilesetScale, tilesetScale);
+                
+                if (useDetectedBounds && detectedTiles) {
+                    // 使用自动检测模式：以网格方式显示检测到的内容块
+                    const cellSize = 150;
+                    const padding = 10;
+                    
+                    detectedTiles.forEach((tile, index) => {
+                        const col = index % cols;
+                        const row = Math.floor(index / cols);
+                        
+                        const cellX = padding + col * (cellSize + padding);
+                        const cellY = padding + row * (cellSize + padding);
+                        
+                        // 绘制格子背景
+                        tctx.fillStyle = '#2c2c2c';
+                        tctx.fillRect(cellX, cellY, cellSize, cellSize);
+                        
+                        // 计算缩放比例以适应格子
+                        const scale = Math.min(
+                            (cellSize - 20) / tile.contentWidth,
+                            (cellSize - 20) / tile.contentHeight
+                        );
+                        
+                        const drawWidth = tile.contentWidth * scale;
+                        const drawHeight = tile.contentHeight * scale;
+                        const drawX = cellX + (cellSize - drawWidth) / 2;
+                        const drawY = cellY + (cellSize - drawHeight) / 2;
+                        
+                        // 绘制内容
+                        tctx.drawImage(
+                            img,
+                            tile.contentX, tile.contentY, tile.contentWidth, tile.contentHeight,
+                            drawX, drawY, drawWidth, drawHeight
+                        );
+                        
+                        // 绘制边框
+                        tctx.strokeStyle = '#4CAF50';
+                        tctx.lineWidth = 2 / tilesetScale;
+                        tctx.strokeRect(cellX, cellY, cellSize, cellSize);
+                        
+                        // 绘制索引号
+                        tctx.fillStyle = '#4CAF50';
+                        tctx.font = `${12 / tilesetScale}px Arial`;
+                        tctx.fillText(`#${index}`, cellX + 5, cellY + 15);
+                    });
+                } else {
+                    // 绘制原始图片
+                    tctx.drawImage(img, 0, 0);
+                    
+                    // 绘制网格（考虑偏移和间距）
+                    tctx.strokeStyle = 'rgba(255,255,255,0.3)';
+                    tctx.lineWidth = 1 / tilesetScale;
+                    
+                    for (let x = 0; x <= cols; x++) {
+                        const xPos = offsetX + x * (SIZE + spacingX);
+                        tctx.beginPath();
+                        tctx.moveTo(xPos, offsetY);
+                        tctx.lineTo(xPos, offsetY + rows * (SIZE + spacingY) - spacingY);
+                        tctx.stroke();
+                    }
+                    for (let y = 0; y <= rows; y++) {
+                        const yPos = offsetY + y * (SIZE + spacingY);
+                        tctx.beginPath();
+                        tctx.moveTo(offsetX, yPos);
+                        tctx.lineTo(offsetX + cols * (SIZE + spacingX) - spacingX, yPos);
+                        tctx.stroke();
+                    }
                 }
                 
                 // 绘制选择区域
@@ -291,26 +733,30 @@
                     const endX = Math.max(selectionStart.x, selectionEnd.x);
                     const endY = Math.max(selectionStart.y, selectionEnd.y);
                     
+                    const rectX = offsetX + startX * (SIZE + spacingX);
+                    const rectY = offsetY + startY * (SIZE + spacingY);
+                    const rectW = (endX - startX + 1) * (SIZE + spacingX) - spacingX;
+                    const rectH = (endY - startY + 1) * (SIZE + spacingY) - spacingY;
+                    
                     tctx.fillStyle = 'rgba(76, 175, 80, 0.3)';
-                    tctx.fillRect(startX * SIZE, startY * SIZE, (endX - startX + 1) * SIZE, (endY - startY + 1) * SIZE);
+                    tctx.fillRect(rectX, rectY, rectW, rectH);
                     tctx.strokeStyle = '#4CAF50';
-                    tctx.lineWidth = 3;
-                    tctx.strokeRect(startX * SIZE + 1.5, startY * SIZE + 1.5, (endX - startX + 1) * SIZE - 3, (endY - startY + 1) * SIZE - 3);
+                    tctx.lineWidth = 3 / tilesetScale;
+                    tctx.strokeRect(rectX + 1.5, rectY + 1.5, rectW - 3, rectH - 3);
                 } else if (selectedTiles) {
+                    const rectX = offsetX + selectedTiles.startX * (SIZE + spacingX);
+                    const rectY = offsetY + selectedTiles.startY * (SIZE + spacingY);
+                    const rectW = (selectedTiles.endX - selectedTiles.startX + 1) * (SIZE + spacingX) - spacingX;
+                    const rectH = (selectedTiles.endY - selectedTiles.startY + 1) * (SIZE + spacingY) - spacingY;
+                    
                     tctx.fillStyle = 'rgba(76, 175, 80, 0.3)';
-                    tctx.fillRect(
-                        selectedTiles.startX * SIZE, selectedTiles.startY * SIZE,
-                        (selectedTiles.endX - selectedTiles.startX + 1) * SIZE,
-                        (selectedTiles.endY - selectedTiles.startY + 1) * SIZE
-                    );
+                    tctx.fillRect(rectX, rectY, rectW, rectH);
                     tctx.strokeStyle = '#4CAF50';
-                    tctx.lineWidth = 3;
-                    tctx.strokeRect(
-                        selectedTiles.startX * SIZE + 1.5, selectedTiles.startY * SIZE + 1.5,
-                        (selectedTiles.endX - selectedTiles.startX + 1) * SIZE - 3,
-                        (selectedTiles.endY - selectedTiles.startY + 1) * SIZE - 3
-                    );
+                    tctx.lineWidth = 3 / tilesetScale;
+                    tctx.strokeRect(rectX + 1.5, rectY + 1.5, rectW - 3, rectH - 3);
                 }
+                
+                tctx.restore();
                 
             } else if (viewMode === 'spaced') {
                 const spacing = 4;
@@ -395,6 +841,29 @@
             drawTileset();
         }
         
+        function getTileSourceRect(tileX, tileY) {
+            // 如果使用自动检测的边界
+            if (useDetectedBounds && detectedTiles) {
+                // 计算线性索引
+                const index = tileY * cols + tileX;
+                
+                if (index >= 0 && index < detectedTiles.length) {
+                    const tile = detectedTiles[index];
+                    return {
+                        x: tile.contentX,
+                        y: tile.contentY,
+                        width: tile.contentWidth,
+                        height: tile.contentHeight
+                    };
+                }
+            }
+            
+            // 否则使用手动设置的偏移和间距
+            const srcX = offsetX + tileX * (SIZE + spacingX);
+            const srcY = offsetY + tileY * (SIZE + spacingY);
+            return { x: srcX, y: srcY, width: SIZE, height: SIZE };
+        }
+        
         function updatePreview() {
             if (!img || !img.complete || !pc) return;
             pctx.clearRect(0, 0, pc.width, pc.height);
@@ -417,11 +886,10 @@
                     for (let dy = 0; dy < height; dy++) {
                         for (let dx = 0; dx < width; dx++) {
                             try {
+                                const src = getTileSourceRect(selectedTiles.startX + dx, selectedTiles.startY + dy);
                                 pctx.drawImage(
                                     img,
-                                    (selectedTiles.startX + dx) * SIZE,
-                                    (selectedTiles.startY + dy) * SIZE,
-                                    SIZE, SIZE,
+                                    src.x, src.y, src.width, src.height,
                                     (dx - width/2) * SIZE * scale,
                                     (dy - height/2) * SIZE * scale,
                                     SIZE * scale, SIZE * scale
@@ -434,11 +902,10 @@
                     for (let dy = 0; dy < height; dy++) {
                         for (let dx = 0; dx < width; dx++) {
                             try {
+                                const src = getTileSourceRect(selectedTiles.startX + dx, selectedTiles.startY + dy);
                                 pctx.drawImage(
                                     img,
-                                    (selectedTiles.startX + dx) * SIZE,
-                                    (selectedTiles.startY + dy) * SIZE,
-                                    SIZE, SIZE,
+                                    src.x, src.y, src.width, src.height,
                                     dx * SIZE * scale, dy * SIZE * scale,
                                     SIZE * scale, SIZE * scale
                                 );
@@ -452,10 +919,10 @@
                     drawTileTransformed(pctx, sel.x, sel.y, 0, 0, 96);
                 } else {
                     try {
+                        const src = getTileSourceRect(sel.x, sel.y);
                         pctx.drawImage(
                             img,
-                            sel.x * SIZE, sel.y * SIZE,
-                            SIZE, SIZE,
+                            src.x, src.y, src.width, src.height,
                             0, 0,
                             96, 96
                         );
@@ -487,7 +954,8 @@
                 if (!layerImg) {
                     // 如果还没加载，创建并缓存
                     layerImg = new Image();
-                    layerImg.src = layer.tileset;
+                    layerImg.crossOrigin = 'anonymous'; // 允许跨域读取像素数据
+                    layerImg.src = getResourceUrl(layer.tileset);
                     tilesetCache[layer.tileset] = layerImg;
                 }
                 
@@ -495,6 +963,7 @@
                 
                 const layerTileSize = layer.tileSize || SIZE;
                 
+                // 绘制网格瓦片
                 for (let y = 0; y < h; y++) {
                     for (let x = 0; x < w; x++) {
                         const t = layer.data[y][x];
@@ -510,9 +979,13 @@
                                     mctx.globalAlpha = 0.6;
                                 }
                                 
+                                // 使用getTileSourceRect获取瓦片的实际位置
+                                // 注意：这里使用当前的偏移和间距设置
+                                const src = getTileSourceRect(t.x, t.y);
+                                
                                 mctx.drawImage(
                                     layerImg,
-                                    t.x * layerTileSize, t.y * layerTileSize, layerTileSize, layerTileSize,
+                                    src.x, src.y, src.width, src.height,
                                     -SIZE / 2, -SIZE / 2, SIZE, SIZE
                                 );
                                 
@@ -527,6 +1000,91 @@
                             } catch (e) {}
                         }
                     }
+                }
+                
+                // 绘制自由布局对象
+                if (layer.objects && layer.objects.length > 0 && detectedTiles) {
+                    layer.objects.forEach(obj => {
+                        if (obj.tileIndex >= 0 && obj.tileIndex < detectedTiles.length) {
+                            const tile = detectedTiles[obj.tileIndex];
+                            
+                            try {
+                                mctx.save();
+                                
+                                // 如果不是当前图层，稍微透明一点
+                                if (idx !== currentLayer) {
+                                    mctx.globalAlpha = 0.6;
+                                }
+                                
+                                // 移动到对象中心点
+                                mctx.translate(obj.x + obj.width / 2, obj.y + obj.height / 2);
+                                
+                                // 应用旋转
+                                if (obj.rotation) {
+                                    mctx.rotate(obj.rotation * Math.PI / 180);
+                                }
+                                
+                                // 应用翻转
+                                mctx.scale(obj.flipH ? -1 : 1, obj.flipV ? -1 : 1);
+                                
+                                // 绘制对象（从中心点偏移）
+                                mctx.drawImage(
+                                    layerImg,
+                                    tile.contentX, tile.contentY, tile.contentWidth, tile.contentHeight,
+                                    -obj.width / 2, -obj.height / 2, obj.width, obj.height
+                                );
+                                
+                                mctx.restore();
+                                
+                                // 如果有碰撞属性，绘制红色边框
+                                if (obj.collision) {
+                                    mctx.strokeStyle = 'rgba(255, 0, 0, 0.6)';
+                                    mctx.lineWidth = 2;
+                                    mctx.strokeRect(obj.x, obj.y, obj.width, obj.height);
+                                }
+                                
+                                // 如果是选中的对象，绘制选择框和缩放手柄
+                                if (obj === selectedObject && idx === currentLayer) {
+                                    // 绘制选择框
+                                    mctx.strokeStyle = '#00ff00';
+                                    mctx.lineWidth = 2;
+                                    mctx.strokeRect(obj.x, obj.y, obj.width, obj.height);
+                                    
+                                    // 只绘制四个角的缩放手柄（更大更明显）
+                                    const handleSize = 10;
+                                    const handles = [
+                                        {x: obj.x, y: obj.y}, // nw
+                                        {x: obj.x + obj.width, y: obj.y}, // ne
+                                        {x: obj.x, y: obj.y + obj.height}, // sw
+                                        {x: obj.x + obj.width, y: obj.y + obj.height} // se
+                                    ];
+                                    
+                                    // 绘制手柄（白色填充+绿色边框）
+                                    handles.forEach(handle => {
+                                        // 填充
+                                        mctx.fillStyle = '#ffffff';
+                                        mctx.fillRect(
+                                            handle.x - handleSize / 2,
+                                            handle.y - handleSize / 2,
+                                            handleSize,
+                                            handleSize
+                                        );
+                                        // 边框
+                                        mctx.strokeStyle = '#00ff00';
+                                        mctx.lineWidth = 2;
+                                        mctx.strokeRect(
+                                            handle.x - handleSize / 2,
+                                            handle.y - handleSize / 2,
+                                            handleSize,
+                                            handleSize
+                                        );
+                                    });
+                                }
+                            } catch (e) {
+                                console.error('绘制自由对象失败:', e);
+                            }
+                        }
+                    });
                 }
             });
             
@@ -554,12 +1112,22 @@
             const clickX = (e.clientX - r.left) * scaleX;
             const clickY = (e.clientY - r.top) * scaleY;
             
-            const coords = getTileCoords(clickX, clickY);
-            if (coords) {
-                isSelecting = true;
-                selectionStart = coords;
-                selectionEnd = coords;
-                drawTileset();
+            if (e.button === 2 || e.button === 1 || (e.button === 0 && e.ctrlKey)) {
+                // 右键、中键或Ctrl+左键：开始拖动画布
+                tilesetDragging = true;
+                tilesetDragStartX = clickX - tilesetPanX;
+                tilesetDragStartY = clickY - tilesetPanY;
+                tc.style.cursor = 'grabbing';
+                e.preventDefault();
+            } else if (e.button === 0) {
+                // 左键：选择瓦片
+                const coords = getTileCoords(clickX, clickY);
+                if (coords) {
+                    isSelecting = true;
+                    selectionStart = coords;
+                    selectionEnd = coords;
+                    drawTileset();
+                }
             }
         };
         
@@ -570,7 +1138,12 @@
             const clickX = (e.clientX - r.left) * scaleX;
             const clickY = (e.clientY - r.top) * scaleY;
             
-            if (isSelecting) {
+            if (tilesetDragging) {
+                // 拖动画布
+                tilesetPanX = clickX - tilesetDragStartX;
+                tilesetPanY = clickY - tilesetDragStartY;
+                drawTileset();
+            } else if (isSelecting) {
                 // 正在拖动选择
                 const coords = getTileCoords(clickX, clickY);
                 if (coords) {
@@ -579,59 +1152,118 @@
                 }
             } else {
                 // 显示悬停信息
-                const x = Math.floor(clickX / SIZE);
-                const y = Math.floor(clickY / SIZE);
+                const x = Math.floor((clickX - tilesetPanX) / tilesetScale / SIZE);
+                const y = Math.floor((clickY - tilesetPanY) / tilesetScale / SIZE);
                 if (x >= 0 && x < cols && y >= 0 && y < rows) {
                     if (selectedTiles) {
                         const width = selectedTiles.endX - selectedTiles.startX + 1;
                         const height = selectedTiles.endY - selectedTiles.startY + 1;
                         document.getElementById('tileInfo').textContent = 
-                            `悬停: (${x}, ${y}) | 选中: ${width}x${height}`;
+                            `悬停: (${x}, ${y}) | 选中: ${width}x${height} | 缩放: ${(tilesetScale * 100).toFixed(0)}%`;
                     } else {
-                        document.getElementById('tileInfo').textContent = `悬停: (${x}, ${y})`;
+                        document.getElementById('tileInfo').textContent = `悬停: (${x}, ${y}) | 缩放: ${(tilesetScale * 100).toFixed(0)}%`;
                     }
                 }
             }
         };
         
-        tc.onmouseup = () => {
-            if (isSelecting && selectionStart && selectionEnd) {
-                // 确定选择区域
-                selectedTiles = {
-                    startX: Math.min(selectionStart.x, selectionEnd.x),
-                    startY: Math.min(selectionStart.y, selectionEnd.y),
-                    endX: Math.max(selectionStart.x, selectionEnd.x),
-                    endY: Math.max(selectionStart.y, selectionEnd.y)
-                };
-                
-                sel = {x: selectedTiles.startX, y: selectedTiles.startY};
-                
-                const width = selectedTiles.endX - selectedTiles.startX + 1;
-                const height = selectedTiles.endY - selectedTiles.startY + 1;
-                document.getElementById('tileInfo').textContent = 
-                    `选中: ${width}x${height} 瓦片`;
-                
-                updatePreview();
+        tc.onmouseup = (e) => {
+            if (tilesetDragging) {
+                tilesetDragging = false;
+                tc.style.cursor = 'default';
+            } else if (isSelecting) {
+                isSelecting = false;
+                if (selectionStart && selectionEnd) {
+                    selectedTiles = {
+                        startX: Math.min(selectionStart.x, selectionEnd.x),
+                        startY: Math.min(selectionStart.y, selectionEnd.y),
+                        endX: Math.max(selectionStart.x, selectionEnd.x),
+                        endY: Math.max(selectionStart.y, selectionEnd.y)
+                    };
+                    sel = {x: selectedTiles.startX, y: selectedTiles.startY};
+                    drawPreview();
+                }
             }
-            isSelecting = false;
-            drawTileset();
         };
         
         tc.onmouseleave = () => {
-            isSelecting = false;
+            tilesetDragging = false;
+            tc.style.cursor = 'default';
         };
         
+        // 滚轮缩放
+        tc.onwheel = (e) => {
+            e.preventDefault();
+            
+            const r = tc.getBoundingClientRect();
+            const scaleX = tc.width / r.width;
+            const scaleY = tc.height / r.height;
+            const mouseX = (e.clientX - r.left) * scaleX;
+            const mouseY = (e.clientY - r.top) * scaleY;
+            
+            // 计算鼠标在画布内容中的位置（缩放前）
+            const contentX = (mouseX - tilesetPanX) / tilesetScale;
+            const contentY = (mouseY - tilesetPanY) / tilesetScale;
+            
+            // 更新缩放
+            const zoomSpeed = 0.1;
+            const delta = e.deltaY > 0 ? -zoomSpeed : zoomSpeed;
+            const newScale = Math.max(0.1, Math.min(5, tilesetScale + delta));
+            
+            // 调整平移以保持鼠标位置不变
+            tilesetPanX = mouseX - contentX * newScale;
+            tilesetPanY = mouseY - contentY * newScale;
+            tilesetScale = newScale;
+            
+            drawTileset();
+        };
+        };
+        
+        
         function getTileCoords(clickX, clickY) {
+            // 转换为画布内容坐标（考虑平移和缩放）
+            const contentX = (clickX - tilesetPanX) / tilesetScale;
+            const contentY = (clickY - tilesetPanY) / tilesetScale;
+            
             let x, y;
             
             if (viewMode === 'grid') {
-                x = Math.floor(clickX / SIZE);
-                y = Math.floor(clickY / SIZE);
+                if (useDetectedBounds && detectedTiles) {
+                    // 自动检测模式：使用网格布局
+                    const cellSize = 150;
+                    const padding = 10;
+                    
+                    const col = Math.floor((contentX - padding) / (cellSize + padding));
+                    const row = Math.floor((contentY - padding) / (cellSize + padding));
+                    
+                    const index = row * cols + col;
+                    
+                    if (index >= 0 && index < detectedTiles.length) {
+                        return { x: col, y: row };
+                    }
+                    return null;
+                } else {
+                    // 手动模式：考虑偏移量和间距
+                    const adjustedX = contentX - offsetX;
+                    const adjustedY = contentY - offsetY;
+                    
+                    if (adjustedX < 0 || adjustedY < 0) return null;
+                    
+                    x = Math.floor(adjustedX / (SIZE + spacingX));
+                    y = Math.floor(adjustedY / (SIZE + spacingY));
+                    
+                    // 检查是否点击在间距区域
+                    const inTileX = (adjustedX % (SIZE + spacingX)) < SIZE;
+                    const inTileY = (adjustedY % (SIZE + spacingY)) < SIZE;
+                    
+                    if (!inTileX || !inTileY) return null;
+                }
+                
             } else if (viewMode === 'spaced') {
                 const spacing = 4;
                 const tileWithSpacing = SIZE + spacing;
-                x = Math.floor(clickX / tileWithSpacing);
-                y = Math.floor(clickY / tileWithSpacing);
+                x = Math.floor(contentX / tileWithSpacing);
+                y = Math.floor(contentY / tileWithSpacing);
             } else if (viewMode === 'list') {
                 const iconSize = 64;
                 const padding = 8;
@@ -639,8 +1271,8 @@
                 const itemWidth = iconSize + padding * 2;
                 const itemHeight = iconSize + padding * 2;
                 
-                const col = Math.floor(clickX / itemWidth);
-                const row = Math.floor(clickY / itemHeight);
+                const col = Math.floor(contentX / itemWidth);
+                const row = Math.floor(contentY / itemHeight);
                 const index = row * itemsPerRow + col;
                 
                 x = index % cols;
@@ -653,11 +1285,245 @@
             return null;
         }
         
-        mc.onmousedown = (e) => { drawing = true; paint(e); };
-        mc.onmousemove = (e) => { if (drawing) paint(e); };
-        mc.onmouseup = () => drawing = false;
-        mc.onmouseleave = () => drawing = false;
+        mc.onmousedown = (e) => {
+            console.log('地图画布点击事件', {useDetectedBounds, detectedTiles: !!detectedTiles});
+            if (useDetectedBounds && detectedTiles) {
+                // 自由布局模式
+                console.log('进入自由布局模式处理');
+                handleFreeLayoutMouseDown(e);
+            } else {
+                // 传统网格模式
+                console.log('进入传统网格模式');
+                drawing = true;
+                paint(e);
+            }
+        };
+        
+        console.log('mc.onmousedown 已绑定，类型:', typeof mc.onmousedown);
+        
+        mc.onmousemove = (e) => {
+            if (useDetectedBounds && detectedTiles) {
+                handleFreeLayoutMouseMove(e);
+            } else {
+                if (drawing) paint(e);
+            }
+        };
+        
+        mc.onmouseup = () => {
+            if (useDetectedBounds && detectedTiles) {
+                handleFreeLayoutMouseUp();
+            } else {
+                drawing = false;
+            }
+        };
+        
+        mc.onmouseleave = () => {
+            if (useDetectedBounds && detectedTiles) {
+                handleFreeLayoutMouseUp();
+            } else {
+                drawing = false;
+            }
+        };
+        
         mc.oncontextmenu = (e) => { e.preventDefault(); return false; };
+        
+        // 自由布局模式的鼠标事件处理
+        function handleFreeLayoutMouseDown(e) {
+            const r = mc.getBoundingClientRect();
+            const scaleX = mc.width / r.width;
+            const scaleY = mc.height / r.height;
+            const mouseX = (e.clientX - r.left) * scaleX;
+            const mouseY = (e.clientY - r.top) * scaleY;
+            
+            const layer = layers[currentLayer];
+            if (!layer || layer.locked) {
+                console.log('图层不存在或已锁定');
+                return;
+            }
+            
+            console.log('自由布局模式点击:', {mouseX, mouseY, objectsCount: layer.objects.length});
+            
+            // 检查是否点击了已有对象
+            for (let i = layer.objects.length - 1; i >= 0; i--) {
+                const obj = layer.objects[i];
+                
+                // 检查是否点击了缩放手柄
+                const handle = getResizeHandle(obj, mouseX, mouseY);
+                if (handle) {
+                    console.log('点击了缩放手柄:', handle);
+                    selectedObject = obj;
+                    isResizing = true;
+                    resizeHandle = handle;
+                    dragStartX = mouseX;
+                    dragStartY = mouseY;
+                    draw();
+                    return;
+                }
+                
+                // 检查是否点击了对象本身
+                if (mouseX >= obj.x && mouseX <= obj.x + obj.width &&
+                    mouseY >= obj.y && mouseY <= obj.y + obj.height) {
+                    console.log('点击了对象');
+                    selectedObject = obj;
+                    isDragging = true;
+                    dragStartX = mouseX - obj.x;
+                    dragStartY = mouseY - obj.y;
+                    draw();
+                    return;
+                }
+            }
+            
+            // 没有点击已有对象，放置新对象
+            if (sel && detectedTiles) {
+                const tileIndex = sel.y * cols + sel.x;
+                console.log('尝试放置新对象:', {tileIndex, cols, sel});
+                if (tileIndex >= 0 && tileIndex < detectedTiles.length) {
+                    const tile = detectedTiles[tileIndex];
+                    
+                    const newObj = {
+                        id: Date.now() + Math.random(),
+                        tileIndex: tileIndex,
+                        x: mouseX - tile.contentWidth / 2,
+                        y: mouseY - tile.contentHeight / 2,
+                        width: tile.contentWidth,
+                        height: tile.contentHeight,
+                        rotation: rotation,
+                        flipH: flipH,
+                        flipV: flipV,
+                        collision: collisionMode
+                    };
+                    
+                    console.log('创建新对象:', newObj);
+                    layer.objects.push(newObj);
+                    selectedObject = newObj;
+                    console.log('对象已添加，当前对象数:', layer.objects.length);
+                    draw();
+                } else {
+                    console.log('tileIndex超出范围');
+                }
+            } else {
+                console.log('sel或detectedTiles不存在:', {sel, detectedTiles: !!detectedTiles});
+            }
+        }
+        
+        function handleFreeLayoutMouseMove(e) {
+            const r = mc.getBoundingClientRect();
+            const scaleX = mc.width / r.width;
+            const scaleY = mc.height / r.height;
+            const mouseX = (e.clientX - r.left) * scaleX;
+            const mouseY = (e.clientY - r.top) * scaleY;
+            
+            if (isDragging && selectedObject) {
+                selectedObject.x = mouseX - dragStartX;
+                selectedObject.y = mouseY - dragStartY;
+                draw();
+            } else if (isResizing && selectedObject) {
+                handleResize(selectedObject, mouseX, mouseY);
+                draw();
+            } else {
+                // 更新鼠标样式
+                updateCursor(mouseX, mouseY);
+            }
+        }
+        
+        function handleFreeLayoutMouseUp() {
+            isDragging = false;
+            isResizing = false;
+            resizeHandle = null;
+        }
+        
+        function getResizeHandle(obj, mouseX, mouseY) {
+            const handleSize = 12; // 增大手柄检测区域
+            
+            // 只检测四个角
+            const handles = {
+                'nw': {x: obj.x, y: obj.y},
+                'ne': {x: obj.x + obj.width, y: obj.y},
+                'sw': {x: obj.x, y: obj.y + obj.height},
+                'se': {x: obj.x + obj.width, y: obj.y + obj.height}
+            };
+            
+            for (const [name, pos] of Object.entries(handles)) {
+                if (Math.abs(mouseX - pos.x) < handleSize && Math.abs(mouseY - pos.y) < handleSize) {
+                    return name;
+                }
+            }
+            return null;
+        }
+        
+        function handleResize(obj, mouseX, mouseY) {
+            const dx = mouseX - dragStartX;
+            const dy = mouseY - dragStartY;
+            
+            const minSize = 20;
+            
+            // 保存原始宽高比
+            const aspectRatio = obj.width / obj.height;
+            
+            switch (resizeHandle) {
+                case 'se': // 右下角 - 保持比例
+                    const newWidthSE = Math.max(minSize, obj.width + dx);
+                    obj.width = newWidthSE;
+                    obj.height = newWidthSE / aspectRatio;
+                    break;
+                    
+                case 'nw': // 左上角 - 保持比例
+                    const newWidthNW = Math.max(minSize, obj.width - dx);
+                    const newHeightNW = newWidthNW / aspectRatio;
+                    obj.x += obj.width - newWidthNW;
+                    obj.y += obj.height - newHeightNW;
+                    obj.width = newWidthNW;
+                    obj.height = newHeightNW;
+                    break;
+                    
+                case 'ne': // 右上角 - 保持比例
+                    const newWidthNE = Math.max(minSize, obj.width + dx);
+                    const newHeightNE = newWidthNE / aspectRatio;
+                    obj.y += obj.height - newHeightNE;
+                    obj.width = newWidthNE;
+                    obj.height = newHeightNE;
+                    break;
+                    
+                case 'sw': // 左下角 - 保持比例
+                    const newWidthSW = Math.max(minSize, obj.width - dx);
+                    const newHeightSW = newWidthSW / aspectRatio;
+                    obj.x += obj.width - newWidthSW;
+                    obj.width = newWidthSW;
+                    obj.height = newHeightSW;
+                    break;
+            }
+            
+            dragStartX = mouseX;
+            dragStartY = mouseY;
+        }
+        
+        function updateCursor(mouseX, mouseY) {
+            const layer = layers[currentLayer];
+            if (!layer) return;
+            
+            for (const obj of layer.objects) {
+                const handle = getResizeHandle(obj, mouseX, mouseY);
+                if (handle) {
+                    // 只有四个角的光标样式
+                    const cursors = {
+                        'nw': 'nw-resize', 
+                        'ne': 'ne-resize',
+                        'sw': 'sw-resize', 
+                        'se': 'se-resize'
+                    };
+                    mc.style.cursor = cursors[handle];
+                    return;
+                }
+                
+                if (mouseX >= obj.x && mouseX <= obj.x + obj.width &&
+                    mouseY >= obj.y && mouseY <= obj.y + obj.height) {
+                    mc.style.cursor = 'move';
+                    return;
+                }
+            }
+            
+            mc.style.cursor = 'crosshair';
+        }
         
         function paint(e) {
             const r = mc.getBoundingClientRect();
@@ -756,10 +1622,13 @@
             // 应用翻转
             ctx.scale(flipH ? -1 : 1, flipV ? -1 : 1);
             
+            // 获取瓦片在原图中的实际位置
+            const src = getTileSourceRect(tileX, tileY);
+            
             // 绘制瓦片（从中心点绘制）
             ctx.drawImage(
                 img,
-                tileX * SIZE, tileY * SIZE, SIZE, SIZE,
+                src.x, src.y, src.width, src.height,
                 -destSize / 2, -destSize / 2, destSize, destSize
             );
             
@@ -926,6 +1795,7 @@
                         
                         // 重新加载瓦片集预览
                         img = new Image();
+                        img.crossOrigin = 'anonymous'; // 允许跨域读取像素数据
                         img.onload = () => {
                             cols = Math.floor(img.width / SIZE);
                             rows = Math.floor(img.height / SIZE);
@@ -933,7 +1803,7 @@
                             tc.height = img.height;
                             drawTileset();
                         };
-                        img.src = path;
+                        img.src = getResourceUrl(path);
                     } else {
                         // 图层没有瓦片集，使用当前瓦片集并保存到图层
                         if (path) {
@@ -974,7 +1844,8 @@
                     visible: true,
                     locked: false,
                     tileset: path || '',  // 使用当前瓦片集
-                    tileSize: SIZE
+                    tileSize: SIZE,
+                    objects: []  // 自由布局对象数组
                 };
                 
                 layers.push(newLayer);
@@ -1007,6 +1878,8 @@
         function clear() {
             if (confirm(`确定清空图层"${layers[currentLayer].name}"？`)) {
                 layers[currentLayer].data = Array(h).fill().map(() => Array(w).fill().map(() => ({x:-1,y:-1,r:0,fh:false,fv:false,collision:false})));
+                layers[currentLayer].objects = []; // 清空自由布局对象
+                selectedObject = null;
                 draw();
             }
         }
@@ -1074,6 +1947,14 @@
                 h = data.height;
                 SIZE = data.tileSize || 48;
                 layers = data.layers;
+                
+                // 确保每个图层都有objects数组
+                layers.forEach(layer => {
+                    if (!layer.objects) {
+                        layer.objects = [];
+                    }
+                });
+                
                 currentLayer = 0;
                 
                 // 更新UI
@@ -1187,10 +2068,35 @@
             if (e.key === 'r' || e.key === 'R') { rotate(90); }
             if (e.key === 'h' || e.key === 'H') { flipH = !flipH; updateTransform(); }
             if (e.key === 'v' || e.key === 'V') { flipV = !flipV; updateTransform(); }
+            
+            // 删除选中的自由布局对象
+            if ((e.key === 'Delete' || e.key === 'Backspace') && selectedObject && useDetectedBounds) {
+                const layer = layers[currentLayer];
+                if (layer && !layer.locked) {
+                    const index = layer.objects.indexOf(selectedObject);
+                    if (index > -1) {
+                        layer.objects.splice(index, 1);
+                        selectedObject = null;
+                        draw();
+                        e.preventDefault();
+                    }
+                }
+            }
         };
         
         loadTileset();
         init();
+        
+        // 测试事件绑定
+        console.log('页面加载完成');
+        console.log('mc元素:', mc);
+        console.log('mc.onmousedown:', typeof mc.onmousedown);
+        
+        // 添加一个简单的测试点击
+        mc.addEventListener('click', function(e) {
+            console.log('Canvas被点击了！addEventListener方式');
+        });
+        
         try {
             const storedToken = localStorage.getItem('sales-simulator-token');
             if (storedToken) {

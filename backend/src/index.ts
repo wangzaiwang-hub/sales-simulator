@@ -6,6 +6,7 @@ import authRoutes from './routes/auth';
 import gameRoutes from './routes/game';
 import shopRoutes from './routes/shop';
 import productRoutes from './routes/product';
+import mapEditorRoutes from './routes/mapEditor';
 
 dotenv.config();
 
@@ -28,6 +29,12 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 try {
+  // 为静态资源添加CORS头
+  app.use('/resource', (req, res, next) => {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET');
+    next();
+  });
   app.use('/resource', express.static(resourceDir));
   console.log('Resource static middleware enabled');
 } catch (e) {
@@ -41,6 +48,10 @@ app.get('/tools/tileset-editor', (req, res) => {
 
 app.get('/tools/map-test', (req, res) => {
   res.sendFile(path.join(toolsDir, 'map-test.html'));
+});
+
+app.get('/tools/map-editor', (req, res) => {
+  res.sendFile(path.join(toolsDir, 'map-editor.html'));
 });
 
 app.get('/tools/character-creator', (req, res) => {
@@ -59,6 +70,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/game', gameRoutes);
 app.use('/api/shop', shopRoutes);
 app.use('/api/products', productRoutes);
+app.use('/api/map-editor', mapEditorRoutes);
 
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
@@ -149,6 +161,8 @@ app.get('/api/resource/:path(*)', (req, res) => {
   const contentType = contentTypes[ext] || 'application/octet-stream';
   res.setHeader('Content-Type', contentType);
   res.setHeader('Cache-Control', 'public, max-age=31536000');
+  res.setHeader('Access-Control-Allow-Origin', '*'); // 允许跨域访问
+  res.setHeader('Access-Control-Allow-Methods', 'GET');
   
   res.sendFile(filePath);
 });
