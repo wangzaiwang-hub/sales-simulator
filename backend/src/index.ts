@@ -15,10 +15,8 @@ const PORT = process.env.PORT || 3001;
 
 const corsOrigin = process.env.CORS_ORIGIN || process.env.FRONTEND_URL || 'https://sales-simulator-zeta-tau.vercel.app';
 
-const resourceDir = path.resolve(__dirname, '../resource');
 const toolsDir = path.resolve(__dirname, '../');
 
-console.log('Resource directory:', resourceDir);
 console.log('Tools directory:', toolsDir);
 
 app.use(cors({
@@ -27,19 +25,6 @@ app.use(cors({
 }));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
-
-try {
-  // 为静态资源添加CORS头
-  app.use('/resource', (req, res, next) => {
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET');
-    next();
-  });
-  app.use('/resource', express.static(resourceDir));
-  console.log('Resource static middleware enabled');
-} catch (e) {
-  console.log('Resource directory not found, skipping static middleware');
-}
 
 // 提供工具页面（HTML文件）
 app.get('/tools/tileset-editor', (req, res) => {
@@ -74,97 +59,6 @@ app.use('/api/map-editor', mapEditorRoutes);
 
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
-});
-
-app.get('/debug/resource-check', (req, res) => {
-  const fs = require('fs');
-  try {
-    const exists = fs.existsSync(resourceDir);
-    let contents: string[] = [];
-    if (exists) {
-      contents = fs.readdirSync(resourceDir);
-    }
-    res.json({
-      resourceDir,
-      exists,
-      contents,
-      cwd: process.cwd(),
-      dirname: __dirname,
-    });
-  } catch (error: any) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-app.get('/api/character-assets', (req, res) => {
-  const fs = require('fs');
-  const assetsPath = path.join(resourceDir, '32x32 Customizable Character Pack', 'Walk');
-  
-  try {
-    const assets: Record<string, string[]> = {
-      character: [],
-      clothing: [],
-      hair: [],
-      eyes: []
-    };
-
-    const folders = ['Character', 'Clothing', 'Hair', 'Eyes'];
-    folders.forEach(folder => {
-      const folderPath = path.join(assetsPath, folder);
-      if (fs.existsSync(folderPath)) {
-        const files = fs.readdirSync(folderPath);
-        assets[folder.toLowerCase()] = files.filter((f: string) => f.endsWith('.png'));
-      }
-    });
-
-    res.json(assets);
-  } catch (error: any) {
-    res.status(500).json({ error: error?.message || 'Unknown error' });
-  }
-});
-
-app.get('/api/resource/:path(*)', (req, res) => {
-  const fs = require('fs');
-  const resourcePath = req.params.path as string;
-  const filePath = path.join(resourceDir, resourcePath);
-  
-  console.log('Resource request:', resourcePath);
-  console.log('Full path:', filePath);
-  
-  const normalizedPath = path.normalize(filePath);
-  const normalizedResourceDir = path.normalize(resourceDir);
-  
-  if (!normalizedPath.startsWith(normalizedResourceDir)) {
-    return res.status(403).json({ error: 'Access denied' });
-  }
-  
-  if (!fs.existsSync(filePath)) {
-    console.log('File not found:', filePath);
-    return res.status(404).json({ error: 'File not found' });
-  }
-  
-  const stats = fs.statSync(filePath);
-  if (!stats.isFile()) {
-    return res.status(404).json({ error: 'Not a file' });
-  }
-  
-  const ext = path.extname(filePath).toLowerCase();
-  const contentTypes: Record<string, string> = {
-    '.png': 'image/png',
-    '.jpg': 'image/jpeg',
-    '.jpeg': 'image/jpeg',
-    '.gif': 'image/gif',
-    '.svg': 'image/svg+xml',
-    '.json': 'application/json',
-  };
-  
-  const contentType = contentTypes[ext] || 'application/octet-stream';
-  res.setHeader('Content-Type', contentType);
-  res.setHeader('Cache-Control', 'public, max-age=31536000');
-  res.setHeader('Access-Control-Allow-Origin', '*'); // 允许跨域访问
-  res.setHeader('Access-Control-Allow-Methods', 'GET');
-  
-  res.sendFile(filePath);
 });
 
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
