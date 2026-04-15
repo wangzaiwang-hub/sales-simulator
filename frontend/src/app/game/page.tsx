@@ -145,15 +145,15 @@ function toAssetUrl(path?: string) {
   if (/^https?:\/\//.test(path)) return path;
   
   // 移除resource/前缀（如果存在）
-  const cleanPath = path.replace(/^resource\//, '');
+  const cleanPath = path.replace(/^resource\//, '').replace(/^\//, '');
   
   // 在生产环境中，从后端API加载资源
   if (apiUrl) {
-    return `${apiUrl}/resource/${cleanPath.replace(/^\//, "")}`;
+    return `${apiUrl}/resource/${cleanPath}`;
   }
   
   // 开发环境：使用前端public目录的相对路径
-  return `/${cleanPath.replace(/^\//, "")}`;
+  return `/${cleanPath}`;
 }
 
 function createPlayer(x: number, y: number): ActorState {
