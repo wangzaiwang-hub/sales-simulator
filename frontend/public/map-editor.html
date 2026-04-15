@@ -3194,8 +3194,8 @@
                     collisionAreas: collisionAreas
                 };
                 
-                // 发送到后端API - 使用独立的地图编辑器端点（不需要认证）
-                const response = await fetch(`${API_URL}/api/map-editor/save`, {
+                // 发送到后端API - 使用现有的地图编辑器端点（不需要认证）
+                const response = await fetch(`${API_URL}/api/map-editor/map`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
