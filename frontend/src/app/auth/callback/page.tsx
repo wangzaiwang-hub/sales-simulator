@@ -135,8 +135,14 @@ function AuthCallbackContent() {
           },
           body: JSON.stringify({ code, redirectUri }),
         });
+        const rawText = await response.text();
+        let data: any = {};
 
-        const data = await response.json();
+        try {
+          data = rawText ? JSON.parse(rawText) : {};
+        } catch {
+          data = { error: rawText || "登录失败" };
+        }
 
         if (!response.ok) {
           const detail =

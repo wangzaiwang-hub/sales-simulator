@@ -49,6 +49,19 @@ function env(name: string) {
   return process.env[name]?.trim() || '';
 }
 
+function extractSecondMeDetail(payload: unknown, fallback: string) {
+  if (!payload || typeof payload !== 'object') {
+    return fallback;
+  }
+
+  const record = payload as Record<string, unknown>;
+  const parts = [record.message, record.subCode, record.code]
+    .filter((value) => value !== undefined && value !== null && value !== '')
+    .map((value) => String(value));
+
+  return parts.length ? parts.join(' | ') : fallback;
+}
+
 export const authController = {
   async secondmeCallback(req: Request, res: Response) {
     try {
@@ -109,9 +122,18 @@ export const authController = {
   async secondmeLogin(req: Request, res: Response) {
     try {
       const { code, redirectUri: requestRedirectUri } = req.body;
+      const clientId = env('SECONDME_CLIENT_ID');
+      const clientSecret = env('SECONDME_CLIENT_SECRET');
 
       if (!code) {
         return res.status(400).json({ error: 'Authorization code is required' });
+      }
+
+      if (!clientId || !clientSecret) {
+        return res.status(500).json({
+          error: 'SecondMe OAuth is not configured',
+          detail: 'Missing SECONDME_CLIENT_ID or SECONDME_CLIENT_SECRET',
+        });
       }
 
       const redirectUri =
@@ -120,8 +142,8 @@ export const authController = {
         `${env('FRONTEND_URL') || 'http://localhost:3000'}/auth/callback`;
 
       const tokenParams = new URLSearchParams({
-        client_id: env('SECONDME_CLIENT_ID'),
-        client_secret: env('SECONDME_CLIENT_SECRET'),
+        client_id: clientId,
+        client_secret: clientSecret,
         code,
         grant_type: 'authorization_code',
         redirect_uri: redirectUri,
@@ -158,12 +180,13 @@ export const authController = {
 
       if (!tokenResponse.ok || !accessToken) {
         console.error('SecondMe token response:', tokenResponse.data || tokenResponse.bodyText);
+        const tokenDetail =
+          extractSecondMeDetail(tokenResponse.data, tokenResponse.bodyText || 'Unknown token exchange error');
         return res.status(500).json({
           error: 'Failed to get access token',
-          detail:
-            process.env.NODE_ENV === 'development'
-              ? tokenResponse.data || tokenResponse.bodyText
-              : undefined,
+          detail: tokenDetail,
+          status: tokenResponse.status,
+          redirectUri,
         });
       }
 
@@ -207,12 +230,12 @@ export const authController = {
 
       if (!userResponse.ok || !secondmeUser || !secondmeId) {
         console.error('SecondMe user info response:', userResponse.data || userResponse.bodyText);
+        const userDetail =
+          extractSecondMeDetail(userResponse.data, userResponse.bodyText || 'Unknown user info error');
         return res.status(500).json({
           error: 'Failed to get user info',
-          detail:
-            process.env.NODE_ENV === 'development'
-              ? userResponse.data || userResponse.bodyText
-              : undefined,
+          detail: userDetail,
+          status: userResponse.status,
         });
       }
 
