@@ -72,9 +72,9 @@ export default function EditorPage() {
             </p>
           </AssetWindow>
           <AssetWindow className="min-h-[166px]" translucent contentClassName="bg-[rgba(24,72,168,0.16)] text-[#eff6ff]">
-            <div className="font-pixel text-[10px] uppercase tracking-[0.24em] text-[#8ee5ff]">本地编辑</div>
+            <div className="font-pixel text-[10px] uppercase tracking-[0.24em] text-[#8ee5ff]">部署一致</div>
             <p className="mt-4 font-game-ui text-[13px] leading-7 text-[#dce9ff]">
-              使用本地的 map-editor.html 文件，无需后端部署。所有功能完全可用。
+              线上编辑器统一走后端提供的运行时页面，避免前后端各自维护一份地图编辑器脚本。
             </p>
           </AssetWindow>
         </div>
@@ -85,7 +85,7 @@ export default function EditorPage() {
           </div>
           <iframe
             key={currentEditor}
-            src={currentEditor === "map" ? "/map-editor.html" : "/editor-runtime/tileset-editor"}
+            src={currentEditor === "map" ? "/editor-runtime/map-editor" : "/editor-runtime/tileset-editor"}
             title={currentEditor === "map" ? "地图编辑器" : "瓦片编辑器"}
             className="h-[calc(100vh-250px)] min-h-[760px] w-full bg-[#1a1a1a]"
           />
