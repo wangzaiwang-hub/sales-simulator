@@ -11,7 +11,13 @@ const nextConfig = {
     pagesBufferLength: 5,
   },
   async rewrites() {
-    const backendUrl = process.env.BACKEND_URL || "https://capable-energy-production-bf2e.up.railway.app";
+    const backendUrl =
+      process.env.BACKEND_URL ||
+      (process.env.NODE_ENV === "development" ? "http://localhost:3001" : "");
+
+    if (!backendUrl) {
+      throw new Error("BACKEND_URL is required for production builds");
+    }
     
     return [
       {

@@ -259,6 +259,23 @@
 
             return relativePath;
         }
+
+        async function readJsonResponse(response, fallbackMessage) {
+            const rawText = await response.text();
+
+            if (!rawText) {
+                return {};
+            }
+
+            try {
+                return JSON.parse(rawText);
+            } catch (error) {
+                if (!response.ok) {
+                    throw new Error(rawText || fallbackMessage);
+                }
+                throw new Error(fallbackMessage || '响应格式不正确');
+            }
+        }
         
         // ========== 核心数据结构 ==========
         const canvas = document.getElementById('mapCanvas');
@@ -393,6 +410,9 @@
                     };
                     
                     img.onerror = () => {
+                        if (layer === 'eyes' && direction === 'Back') {
+                            return;
+                        }
                         console.error(`✗ 加载失败: ${layer} ${direction} - ${fullUrl}`);
                     };
                     
@@ -602,12 +622,14 @@
                 startGameLoop();
             } else {
                 // 退出全屏
-                if (document.exitFullscreen) {
-                    document.exitFullscreen();
-                } else if (document.webkitExitFullscreen) {
-                    document.webkitExitFullscreen();
-                } else if (document.msExitFullscreen) {
-                    document.msExitFullscreen();
+                if (document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement) {
+                    if (document.exitFullscreen) {
+                        document.exitFullscreen().catch(() => {});
+                    } else if (document.webkitExitFullscreen) {
+                        document.webkitExitFullscreen();
+                    } else if (document.msExitFullscreen) {
+                        document.msExitFullscreen();
+                    }
                 }
                 
                 // 显示所有UI元素
@@ -3244,11 +3266,11 @@
                 });
                 
                 if (!response.ok) {
-                    const error = await response.json();
+                    const error = await readJsonResponse(response, '保存失败');
                     throw new Error(error.error || '保存失败');
                 }
                 
-                const result = await response.json();
+                const result = await readJsonResponse(response, '保存响应格式错误');
                 console.log('地图保存成功:', result);
                 
                 // 保存地图ID，下次保存时更新而不是创建新地图
@@ -3290,11 +3312,11 @@
                 });
                 
                 if (!listResponse.ok) {
-                    const error = await listResponse.json();
+                    const error = await readJsonResponse(listResponse, '获取地图列表失败');
                     throw new Error(error.error || '获取地图列表失败');
                 }
                 
-                const listResult = await listResponse.json();
+                const listResult = await readJsonResponse(listResponse, '地图列表响应格式错误');
                 
                 if (!listResult.maps || listResult.maps.length === 0) {
                     alert('云端没有保存的地图');
@@ -3328,11 +3350,11 @@
                 });
                 
                 if (!response.ok) {
-                    const error = await response.json();
+                    const error = await readJsonResponse(response, '加载失败');
                     throw new Error(error.error || '加载失败');
                 }
                 
-                const result = await response.json();
+                const result = await readJsonResponse(response, '地图响应格式错误');
                 
                 if (!result.map) {
                     throw new Error('地图数据为空');
@@ -3530,7 +3552,7 @@
                 });
                 
                 if (!response.ok) {
-                    const error = await response.json();
+                    const error = await readJsonResponse(response, '设置失败');
                     throw new Error(error.error || '设置失败');
                 }
                 
