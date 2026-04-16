@@ -16,7 +16,8 @@ import {
   type CharacterAppearance,
 } from "@/lib/character-appearance";
 
-const clientId = process.env.NEXT_PUBLIC_SECONDME_CLIENT_ID;
+const rawClientId = process.env.NEXT_PUBLIC_SECONDME_CLIENT_ID;
+const SECONDME_AUTHORIZE_URL = "https://go.second-me.cn/oauth/";
 
 const townSignals = [
   {
@@ -80,7 +81,10 @@ export default function LoginPage() {
   );
 
   useEffect(() => {
-    const redirectUri = process.env.NEXT_PUBLIC_SECONDME_REDIRECT_URI || `${window.location.origin}/auth/callback`;
+    const clientId = rawClientId?.trim();
+    const redirectUri =
+      process.env.NEXT_PUBLIC_SECONDME_REDIRECT_URI?.trim() ||
+      `${window.location.origin}/auth/callback`;
 
     try {
       const storedRoleId = window.sessionStorage.getItem(CHARACTER_ROLE_STORAGE_KEY);
@@ -120,7 +124,7 @@ export default function LoginPage() {
       state,
     });
 
-    setAuthorizeUrl(`https://go.second-me.cn/oauth/?${params.toString()}`);
+    setAuthorizeUrl(`${SECONDME_AUTHORIZE_URL}?${params.toString()}`);
   }, []);
 
   useEffect(() => {

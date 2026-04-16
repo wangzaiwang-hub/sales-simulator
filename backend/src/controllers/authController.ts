@@ -45,6 +45,10 @@ function resolveBackendBaseUrl(req: Request) {
   return process.env.BASE_URL || `${req.protocol}://${req.get('host')}`;
 }
 
+function env(name: string) {
+  return process.env[name]?.trim() || '';
+}
+
 export const authController = {
   async secondmeCallback(req: Request, res: Response) {
     try {
@@ -56,12 +60,12 @@ export const authController = {
       }
 
       const redirectUri =
-        process.env.SECONDME_REDIRECT_URI ||
+        env('SECONDME_REDIRECT_URI') ||
         `${resolveBackendBaseUrl(req)}/api/auth/callback`;
       
       const tokenParams = new URLSearchParams({
-        client_id: process.env.SECONDME_CLIENT_ID || '',
-        client_secret: process.env.SECONDME_CLIENT_SECRET || '',
+        client_id: env('SECONDME_CLIENT_ID'),
+        client_secret: env('SECONDME_CLIENT_SECRET'),
         code,
         grant_type: 'authorization_code',
         redirect_uri: redirectUri,
@@ -112,12 +116,12 @@ export const authController = {
 
       const redirectUri =
         (typeof requestRedirectUri === 'string' && requestRedirectUri.trim()) ||
-        process.env.SECONDME_REDIRECT_URI ||
-        `${process.env.FRONTEND_URL || 'http://localhost:3000'}/auth/callback`;
+        env('SECONDME_REDIRECT_URI') ||
+        `${env('FRONTEND_URL') || 'http://localhost:3000'}/auth/callback`;
 
       const tokenParams = new URLSearchParams({
-        client_id: process.env.SECONDME_CLIENT_ID || '',
-        client_secret: process.env.SECONDME_CLIENT_SECRET || '',
+        client_id: env('SECONDME_CLIENT_ID'),
+        client_secret: env('SECONDME_CLIENT_SECRET'),
         code,
         grant_type: 'authorization_code',
         redirect_uri: redirectUri,
