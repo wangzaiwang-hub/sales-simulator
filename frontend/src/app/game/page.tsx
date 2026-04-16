@@ -1041,12 +1041,16 @@ export default function GamePage() {
               // 瓦片集素材
               const img = imageCache.get(toAssetUrl(obj.spriteData.spriteImageSrc));
               if (img) {
+                const sourceX = obj.spriteData.sx ?? obj.spriteData.x ?? 0;
+                const sourceY = obj.spriteData.sy ?? obj.spriteData.y ?? 0;
+                const sourceWidth = obj.spriteData.sWidth ?? obj.spriteData.width ?? obj.width;
+                const sourceHeight = obj.spriteData.sHeight ?? obj.spriteData.height ?? obj.height;
                 ctx.drawImage(
                   img,
-                  obj.spriteData.sx,
-                  obj.spriteData.sy,
-                  obj.spriteData.sWidth,
-                  obj.spriteData.sHeight,
+                  sourceX,
+                  sourceY,
+                  sourceWidth,
+                  sourceHeight,
                   -obj.width / 2,
                   -obj.height / 2,
                   obj.width,
