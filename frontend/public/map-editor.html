@@ -1,0 +1,3520 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🗺️ 地图编辑器 - 支持Y轴排序和碰撞编辑</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #1a1a1a;
+            color: #fff;
+            padding: 10px;
+            overflow: hidden;
+        }
+        h1 { text-align: center; margin-bottom: 5px; font-size: 20px; }
+        .container {
+            display: grid;
+            grid-template-columns: 250px 1fr 250px;
+            gap: 10px;
+            max-width: 100vw;
+            margin: 0 auto;
+            height: calc(100vh - 80px);
+        }
+        .panel {
+            background: #2a2a2a;
+            border-radius: 6px;
+            padding: 10px;
+            overflow-y: auto;
+            font-size: 12px;
+        }
+        .panel h3 {
+            margin: 10px 0 8px 0;
+            color: #4CAF50;
+            font-size: 14px;
+        }
+        button {
+            width: 100%;
+            padding: 6px;
+            margin: 3px 0;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 11px;
+        }
+        button:hover { background: #45a049; }
+        button:active { transform: scale(0.98); }
+        select, input {
+            width: 100%;
+            padding: 5px;
+            margin: 3px 0;
+            background: #333;
+            color: white;
+            border: 1px solid #555;
+            border-radius: 3px;
+            font-size: 11px;
+        }
+        .canvas-container {
+            background: #000;
+            border-radius: 6px;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            overflow: auto;
+            width: 100%;
+            position: relative;
+        }
+        canvas {
+            border: 2px solid #4CAF50;
+            image-rendering: pixelated;
+            cursor: crosshair;
+            display: block;
+            box-sizing: content-box;
+        }
+        .sprite-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+            gap: 6px;
+            margin-top: 8px;
+        }
+        .sprite-item {
+            background: #333;
+            border: 2px solid #555;
+            border-radius: 3px;
+            padding: 3px;
+            cursor: pointer;
+            text-align: center;
+        }
+        .sprite-item:hover { border-color: #4CAF50; }
+        .sprite-item.selected { border-color: #4CAF50; background: #3a3a3a; }
+        .sprite-item canvas {
+            width: 100%;
+            height: 50px;
+            object-fit: contain;
+            border: none;
+            image-rendering: pixelated;
+        }
+        .info {
+            background: #333;
+            padding: 6px;
+            border-radius: 3px;
+            font-size: 10px;
+            margin: 6px 0;
+            color: #aaa;
+        }
+        .tool-btn {
+            display: inline-block;
+            width: auto;
+            padding: 5px 8px;
+            margin: 3px 3px 3px 0;
+            font-size: 10px;
+        }
+        .tool-btn.active { background: #2196F3; }
+        label { display: block; margin: 8px 0 4px 0; font-size: 11px; }
+        .layer-item {
+            background: #333;
+            padding: 6px;
+            margin: 4px 0;
+            border-radius: 3px;
+            cursor: move;
+            border: 2px solid #555;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 11px;
+        }
+        .layer-item.active { border-color: #4CAF50; background: #3a3a3a; }
+        .layer-item:hover { background: #3a3a3a; }
+        .layer-controls {
+            display: flex;
+            gap: 3px;
+        }
+        .layer-controls button {
+            width: auto;
+            padding: 3px 6px;
+            margin: 0;
+            font-size: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🗺️ 地图编辑器</h1>
+    <p style="text-align:center; color:#999; margin-bottom:10px; font-size:11px;">支持Y轴深度排序、碰撞区域编辑、图层管理</p>
+    
+    <div class="container">
+        <!-- 左侧：素材库 -->
+        <div class="panel">
+            <h3>📦 素材库</h3>
+            <select id="spriteSource" onchange="loadSprites()">
+                <option value="">选择素材集</option>
+                <optgroup label="城市瓦片">
+                    <option value="urbanB">城市建筑 (UrbanB)</option>
+                    <option value="urbanA2">城市地面 (Urban_A2)</option>
+                    <option value="urbanA5">城市装饰 (Urban_A5)</option>
+                    <option value="urbanCity">城市瓦片集</option>
+                </optgroup>
+                <optgroup label="家具动画">
+                    <option value="bed">床动画 (BD001)</option>
+                    <option value="lamp">灯动画 (BL001)</option>
+                    <option value="shelf">架子动画 (SL001)</option>
+                </optgroup>
+                <optgroup label="家具素材">
+                    <option value="woodenFurniture">木质家具</option>
+                    <option value="deskEssentials">办公桌物品</option>
+                </optgroup>
+            </select>
+            
+            <div class="info">
+                💡 选择素材集后会自动加载所有素材
+            </div>
+            
+            <div id="spriteGrid" class="sprite-grid"></div>
+        </div>
+        
+        <!-- 中间：画布 -->
+        <div class="canvas-container">
+            <div style="margin-bottom: 10px;">
+                <button class="tool-btn active" id="tool-select" onclick="setTool('select')">👆 画笔 (B)</button>
+                <button class="tool-btn" id="tool-delete" onclick="setTool('delete')">🗑️ 橡皮 (E)</button>
+                <button class="tool-btn" id="tool-fill" onclick="setTool('fill')">🪣 填充 (F)</button>
+                <button class="tool-btn" id="tool-collision" onclick="setTool('collision')">⬜ 碰撞 (P)</button>
+            </div>
+            <canvas id="mapCanvas" width="960" height="720"></canvas>
+            <div class="info" style="margin-top: 8px; font-size: 10px;">
+                <strong>当前工具：</strong><span id="toolInfo">画笔工具</span><br>
+                <strong>提示：</strong>按住V键拖动可以平移画布查看其他区域
+            </div>
+        </div>
+        
+        <!-- 右侧：属性面板 -->
+        <div class="panel">
+            <h3>📚 图层管理</h3>
+            <button onclick="addLayer()">➕ 新建图层</button>
+            <div id="layerList" style="margin-top: 10px;"></div>
+            
+            <h3>⚙️ 地图设置</h3>
+            <label>导入背景图：</label>
+            <input type="file" id="bgImageInput" accept="image/*" onchange="loadBackgroundImage()" style="width: 100%; padding: 4px; font-size: 10px;">
+            <div class="info" style="font-size: 9px;">
+                💡 背景图会作为可编辑对象添加到最底层
+            </div>
+            
+            <label style="margin-top: 10px;">地图尺寸（格子数）：</label>
+            <input type="number" id="mapCols" value="20" placeholder="列数" min="10" max="200">
+            <input type="number" id="mapRows" value="15" placeholder="行数" min="10" max="200">
+            <button onclick="resizeMap()">应用尺寸</button>
+            
+            <label>网格大小（像素）：</label>
+            <input type="number" id="gridSize" value="48" min="16" max="128" onchange="updateGridSize()">
+            <label style="display: flex; align-items: center; margin-top: 10px;">
+                <input type="checkbox" id="showGrid" checked onchange="toggleGrid()" style="width: auto; margin-right: 8px;">
+                显示网格
+            </label>
+            
+            <h3>🎨 选中对象</h3>
+            <div id="objectProps">
+                <div class="info">未选中任何对象</div>
+            </div>
+            
+            <h3>💾 保存/加载</h3>
+            <label>地图名称：</label>
+            <input type="text" id="mapName" placeholder="输入地图名称" style="margin-bottom: 8px;">
+            <button onclick="saveMapToCloud()">☁️ 保存到云端</button>
+            <button onclick="loadMapFromCloud()">☁️ 从云端加载</button>
+            <button onclick="setActiveMap()">✅ 设为激活地图</button>
+            <button onclick="exportMap()">📋 导出JSON</button>
+            <button onclick="importMap()">📥 导入JSON</button>
+            <textarea id="mapData" style="width:100%; height:100px; margin-top:10px; background:#333; color:#fff; border:1px solid #555; border-radius:4px; padding:8px;" placeholder="JSON数据"></textarea>
+        </div>
+    </div>
+
+    <script>
+        // ========== API配置 ==========
+        // 生产环境统一走同域，由 Vercel rewrites 转发到后端 API
+        const API_URL = window.location.hostname === 'localhost'
+            ? 'http://localhost:3001'
+            : window.location.origin;
+
+        console.log('Using API URL:', API_URL);
+
+        // ========== 资源URL处理 ==========
+        function getResourceUrl(relativePath) {
+            // 在云端部署时，资源通过前端public目录提供
+            // 在本地开发时，也使用相对路径
+            return relativePath;
+        }
+        
+        // ========== 核心数据结构 ==========
+        const canvas = document.getElementById('mapCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        let sprites = []; // 检测到的素材列表
+        let mapObjects = []; // 地图上的对象
+        let selectedSprite = null; // 当前选中的素材模板
+        let selectedObject = null; // 当前选中的地图对象
+        let selectedObjects = []; // 多选的对象列表
+        let currentTool = 'select';
+        let spriteImage = null;
+        let currentSpriteSetId = null; // 当前素材集ID
+        let currentMapId = null; // 当前地图ID（用于更新现有地图）
+        
+        // 记住每个素材的自定义大小
+        let spriteSizes = {}; // {spriteIndex: {width, height}}
+        
+        // 图层系统
+        let layers = [
+            {id: 0, name: '图层 0', visible: true, locked: false}
+        ];
+        let currentLayer = 0;
+        
+        // 背景图
+        let backgroundImage = null;
+        let backgroundImageData = null;
+        
+        // 交互状态
+        let isDragging = false;
+        let isResizing = false;
+        let isDrawingCollision = false;
+        let isPainting = false; // 画笔模式
+        let isPanning = false; // 画布平移模式
+        let isVKeyPressed = false; // V键是否按下
+        let dragStart = {x: 0, y: 0};
+        let resizeHandle = null;
+        let collisionStart = null;
+        
+        // 独立碰撞区域列表
+        let collisionAreas = [];
+        
+        // 画布偏移
+        let canvasOffsetX = 0;
+        let canvasOffsetY = 0;
+        
+        // 预览模式
+        let isPreviewMode = false;
+        
+        // 测试角色
+        let testCharacter = {
+            x: 100,
+            y: 100,
+            width: 64,  // 2格宽（32像素放大2倍）
+            height: 64, // 2格高（32像素放大2倍）
+            speed: 3,
+            appearance: {
+                character: 1,
+                tops: 16,
+                bottoms: 5,
+                shoes: 2,
+                hair: 12,
+                eyes: 1
+            },
+            images: {
+                walk: {
+                    Front: {},
+                    Back: {},
+                    Left: {},
+                    Right: {}
+                }
+            },
+            frame: 0,
+            frameTimer: 0,
+            frameDelay: 8,
+            direction: 'Front',
+            moving: false
+        };
+        
+        let characterKeys = {
+            up: false,
+            down: false,
+            left: false,
+            right: false
+        };
+        
+        // 角色图层顺序
+        const CHARACTER_LAYER_ORDER = ['character', 'shoes', 'bottoms', 'tops', 'hair', 'eyes'];
+        const CHARACTER_BASE_PATH = '/resource/32x32 Customizable Character Pack/Walk';
+        
+        const CHARACTER_LAYER_FILES = {
+            character: 'Character_Walk',
+            tops: 'Clothing_Tops_Walk',
+            bottoms: 'Clothing_Bottoms_Walk',
+            shoes: 'Clothing_Shoes_Walk',
+            hair: 'Hair_Walk',
+            eyes: 'Eyes_Walk'
+        };
+        
+        const CHARACTER_LAYER_FOLDERS = {
+            character: 'Character',
+            tops: 'Clothing',
+            bottoms: 'Clothing',
+            shoes: 'Clothing',
+            hair: 'Hair',
+            eyes: 'Eyes'
+        };
+        
+        // 预加载角色图片
+        function preloadCharacterImages() {
+            const directions = ['Front', 'Back', 'Left', 'Right'];
+            
+            console.log('开始预加载角色图片...');
+            
+            directions.forEach(direction => {
+                CHARACTER_LAYER_ORDER.forEach(layer => {
+                    const folder = CHARACTER_LAYER_FOLDERS[layer];
+                    const file = CHARACTER_LAYER_FILES[layer];
+                    
+                    // 文件名不包含变体编号，所有变体在同一个文件的不同行
+                    const path = `${CHARACTER_BASE_PATH}/${folder}/${file}_${direction}-Sheet.png`;
+                    const fullUrl = getResourceUrl(path);
+                    
+                    console.log(`加载图层 ${layer} (${direction}): ${fullUrl}`);
+                    
+                    const img = new Image();
+                    img.crossOrigin = 'anonymous';
+                    
+                    img.onload = () => {
+                        console.log(`✓ 成功加载: ${layer} ${direction}`);
+                    };
+                    
+                    img.onerror = () => {
+                        console.error(`✗ 加载失败: ${layer} ${direction} - ${fullUrl}`);
+                    };
+                    
+                    img.src = fullUrl;
+                    
+                    if (!testCharacter.images.walk[direction][layer]) {
+                        testCharacter.images.walk[direction][layer] = img;
+                    }
+                });
+            });
+        }
+        
+        // 网格设置
+        let gridSize = 48;
+        let showGrid = true;
+        
+        // ========== 工具切换 ==========
+        function setTool(tool) {
+            currentTool = tool;
+            document.querySelectorAll('.tool-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`tool-${tool}`).classList.add('active');
+            
+            const toolNames = {
+                'select': '画笔工具 (B) - 单击放置，拖动连续填充，双击选中对象可缩放',
+                'delete': '橡皮擦工具 (E) - 点击删除对象',
+                'fill': '填充工具 (F) - 点击填充整个区域',
+                'collision': '碰撞框工具 (P) - 选中对象后拖动绘制碰撞框，或直接拖动创建独立碰撞区域（空气墙）'
+            };
+            document.getElementById('toolInfo').textContent = toolNames[tool];
+            selectedObject = null;
+            render();
+        }
+        
+        // 快捷键
+        document.addEventListener('keydown', (e) => {
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+            
+            // 预览模式下的角色控制
+            if (isPreviewMode) {
+                switch(e.key) {
+                    case 'ArrowUp':
+                    case 'w':
+                    case 'W':
+                        characterKeys.up = true;
+                        testCharacter.direction = 'Back';
+                        e.preventDefault();
+                        break;
+                    case 'ArrowDown':
+                    case 's':
+                    case 'S':
+                        characterKeys.down = true;
+                        testCharacter.direction = 'Front';
+                        e.preventDefault();
+                        break;
+                    case 'ArrowLeft':
+                    case 'a':
+                    case 'A':
+                        characterKeys.left = true;
+                        testCharacter.direction = 'Left';
+                        e.preventDefault();
+                        break;
+                    case 'ArrowRight':
+                    case 'd':
+                    case 'D':
+                        characterKeys.right = true;
+                        testCharacter.direction = 'Right';
+                        e.preventDefault();
+                        break;
+                }
+                return;
+            }
+            
+            if (e.key.toLowerCase() === 'v') {
+                isVKeyPressed = true;
+                canvas.style.cursor = 'grab';
+            }
+            
+            if (e.key.toLowerCase() === 'h') {
+                togglePreviewMode();
+            }
+            
+            switch(e.key.toLowerCase()) {
+                case 'b':
+                    setTool('select');
+                    break;
+                case 'e':
+                    setTool('delete');
+                    break;
+                case 'f':
+                    setTool('fill');
+                    break;
+                case 'p':
+                    setTool('collision');
+                    break;
+                case 'r':
+                    rotateSelectedObject();
+                    break;
+                case 'g':
+                    if (e.shiftKey) {
+                        ungroupSelectedObject();
+                    } else {
+                        groupSelectedObjects();
+                    }
+                    break;
+                case 'u':
+                    ungroupSelectedObject();
+                    break;
+            }
+        });
+        
+        document.addEventListener('keyup', (e) => {
+            if (e.key.toLowerCase() === 'v') {
+                isVKeyPressed = false;
+                isPanning = false;
+                canvas.style.cursor = 'crosshair';
+            }
+            
+            // 预览模式下的角色控制
+            if (isPreviewMode) {
+                switch(e.key) {
+                    case 'ArrowUp':
+                    case 'w':
+                    case 'W':
+                        characterKeys.up = false;
+                        break;
+                    case 'ArrowDown':
+                    case 's':
+                    case 'S':
+                        characterKeys.down = false;
+                        break;
+                    case 'ArrowLeft':
+                    case 'a':
+                    case 'A':
+                        characterKeys.left = false;
+                        break;
+                    case 'ArrowRight':
+                    case 'd':
+                    case 'D':
+                        characterKeys.right = false;
+                        break;
+                }
+            }
+        });
+        
+        // 预览模式切换
+        function togglePreviewMode() {
+            isPreviewMode = !isPreviewMode;
+            
+            if (isPreviewMode) {
+                // 预加载角色图片
+                preloadCharacterImages();
+                
+                // 重置角色位置到画布中心
+                testCharacter.x = canvas.width / 2 - testCharacter.width / 2;
+                testCharacter.y = canvas.height / 2 - testCharacter.height / 2;
+                testCharacter.frame = 0;
+                testCharacter.frameTimer = 0;
+                testCharacter.moving = false;
+                
+                // 进入全屏
+                const elem = document.documentElement;
+                if (elem.requestFullscreen) {
+                    elem.requestFullscreen();
+                } else if (elem.webkitRequestFullscreen) {
+                    elem.webkitRequestFullscreen();
+                } else if (elem.msRequestFullscreen) {
+                    elem.msRequestFullscreen();
+                }
+                
+                // 隐藏所有UI元素
+                document.querySelectorAll('.panel').forEach(el => el.style.display = 'none');
+                document.querySelector('h1').style.display = 'none';
+                document.querySelectorAll('p').forEach(el => el.style.display = 'none');
+                document.querySelectorAll('.info').forEach(el => el.style.display = 'none');
+                document.querySelectorAll('.tool-btn').forEach(el => el.style.display = 'none');
+                
+                // 画布容器全屏样式
+                const container = document.querySelector('.canvas-container');
+                container.style.position = 'fixed';
+                container.style.top = '0';
+                container.style.left = '0';
+                container.style.width = '100vw';
+                container.style.height = '100vh';
+                container.style.background = '#000';
+                container.style.padding = '0';
+                container.style.zIndex = '9999';
+                container.style.display = 'flex';
+                container.style.justifyContent = 'center';
+                container.style.alignItems = 'center';
+                
+                // 取消选中
+                selectedObject = null;
+                
+                // 启动游戏循环
+                startGameLoop();
+            } else {
+                // 退出全屏
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.webkitExitFullscreen) {
+                    document.webkitExitFullscreen();
+                } else if (document.msExitFullscreen) {
+                    document.msExitFullscreen();
+                }
+                
+                // 显示所有UI元素
+                document.querySelectorAll('.panel').forEach(el => el.style.display = 'block');
+                document.querySelector('h1').style.display = 'block';
+                document.querySelectorAll('p').forEach(el => el.style.display = 'block');
+                document.querySelectorAll('.info').forEach(el => el.style.display = 'block');
+                document.querySelectorAll('.tool-btn').forEach(el => el.style.display = 'inline-block');
+                
+                // 恢复画布容器样式
+                const container = document.querySelector('.canvas-container');
+                container.style.position = 'relative';
+                container.style.top = 'auto';
+                container.style.left = 'auto';
+                container.style.width = '100%';
+                container.style.height = 'auto';
+                container.style.background = '#000';
+                container.style.padding = '10px';
+                container.style.zIndex = 'auto';
+                container.style.display = 'flex';
+                container.style.justifyContent = 'flex-start';
+                container.style.alignItems = 'flex-start';
+                
+                // 停止游戏循环
+                stopGameLoop();
+            }
+            
+            render();
+        }
+        
+        // 监听全屏退出事件
+        document.addEventListener('fullscreenchange', () => {
+            if (!document.fullscreenElement && isPreviewMode) {
+                togglePreviewMode();
+            }
+        });
+        document.addEventListener('webkitfullscreenchange', () => {
+            if (!document.webkitFullscreenElement && isPreviewMode) {
+                togglePreviewMode();
+            }
+        });
+        
+        // 组合选中的对象
+        function groupSelectedObjects() {
+            if (selectedObjects.length < 2) {
+                // 静默失败，不显示弹窗
+                return;
+            }
+            
+            // 计算组合对象的边界框
+            let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+            selectedObjects.forEach(obj => {
+                minX = Math.min(minX, obj.x);
+                minY = Math.min(minY, obj.y);
+                maxX = Math.max(maxX, obj.x + obj.width);
+                maxY = Math.max(maxY, obj.y + obj.height);
+            });
+            
+            // 创建组合对象
+            const groupObj = {
+                id: 'group-' + Date.now(),
+                isGroup: true,
+                layer: selectedObjects[0].layer,
+                x: minX,
+                y: minY,
+                width: maxX - minX,
+                height: maxY - minY,
+                rotation: 0,
+                collision: null,
+                children: selectedObjects.map(obj => ({
+                    ...obj,
+                    // 保存相对于组的位置
+                    relativeX: obj.x - minX,
+                    relativeY: obj.y - minY
+                }))
+            };
+            
+            // 如果有碰撞框，合并碰撞框
+            const collisions = selectedObjects.filter(obj => obj.collision);
+            if (collisions.length > 0) {
+                let cMinX = Infinity, cMinY = Infinity, cMaxX = -Infinity, cMaxY = -Infinity;
+                collisions.forEach(obj => {
+                    cMinX = Math.min(cMinX, obj.collision.x);
+                    cMinY = Math.min(cMinY, obj.collision.y);
+                    cMaxX = Math.max(cMaxX, obj.collision.x + obj.collision.width);
+                    cMaxY = Math.max(cMaxY, obj.collision.y + obj.collision.height);
+                });
+                groupObj.collision = {
+                    x: cMinX,
+                    y: cMinY,
+                    width: cMaxX - cMinX,
+                    height: cMaxY - cMinY
+                };
+            }
+            
+            // 从地图中移除原对象
+            selectedObjects.forEach(obj => {
+                const index = mapObjects.indexOf(obj);
+                if (index !== -1) {
+                    mapObjects.splice(index, 1);
+                }
+            });
+            
+            // 添加组合对象
+            mapObjects.push(groupObj);
+            
+            // 清空选择
+            selectedObjects = [];
+            selectedObject = groupObj;
+            
+            updateObjectProps();
+            render();
+        }
+        
+        // 解组选中的对象
+        function ungroupSelectedObject() {
+            if (!selectedObject || !selectedObject.isGroup) {
+                // 静默失败，不显示弹窗
+                return;
+            }
+            
+            const groupObj = selectedObject;
+            
+            // 将子对象还原到地图中
+            groupObj.children.forEach(child => {
+                const restoredObj = {
+                    ...child,
+                    x: groupObj.x + child.relativeX,
+                    y: groupObj.y + child.relativeY,
+                    // 移除相对位置属性
+                    relativeX: undefined,
+                    relativeY: undefined
+                };
+                mapObjects.push(restoredObj);
+            });
+            
+            // 从地图中移除组合对象
+            const index = mapObjects.indexOf(groupObj);
+            if (index !== -1) {
+                mapObjects.splice(index, 1);
+            }
+            
+            // 清空选择
+            selectedObject = null;
+            
+            updateObjectProps();
+            render();
+        }
+        
+        // 旋转选中的对象
+        function rotateSelectedObject() {
+            if (selectedObject) {
+                selectedObject.rotation = (selectedObject.rotation || 0) + 90;
+                if (selectedObject.rotation >= 360) selectedObject.rotation = 0;
+                
+                // 记住这个素材的旋转角度
+                if (!spriteSizes[selectedObject.spriteIndex]) {
+                    spriteSizes[selectedObject.spriteIndex] = {
+                        width: selectedObject.width,
+                        height: selectedObject.height
+                    };
+                }
+                spriteSizes[selectedObject.spriteIndex].rotation = selectedObject.rotation;
+                
+                updateObjectProps();
+                render();
+            } else if (selectedSprite !== null) {
+                // 如果没有选中对象，旋转当前素材模板
+                const sprite = sprites[selectedSprite];
+                if (!spriteSizes[selectedSprite]) {
+                    spriteSizes[selectedSprite] = {
+                        width: sprite.width,
+                        height: sprite.height,
+                        rotation: 0
+                    };
+                }
+                spriteSizes[selectedSprite].rotation = (spriteSizes[selectedSprite].rotation || 0) + 90;
+                if (spriteSizes[selectedSprite].rotation >= 360) {
+                    spriteSizes[selectedSprite].rotation = 0;
+                }
+                // 移除了alert弹窗
+            }
+        }
+        
+        // ========== 背景图管理 ==========
+        function loadBackgroundImage() {
+            const input = document.getElementById('bgImageInput');
+            const file = input.files[0];
+            
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => {
+                    console.log('背景图加载成功:', img.width, 'x', img.height);
+                    
+                    // 计算适配画布的尺寸
+                    let width = img.width;
+                    let height = img.height;
+                    
+                    // 如果图片太大，缩放到画布大小
+                    if (width > canvas.width || height > canvas.height) {
+                        const scaleX = canvas.width / width;
+                        const scaleY = canvas.height / height;
+                        const scale = Math.min(scaleX, scaleY);
+                        width = width * scale;
+                        height = height * scale;
+                    }
+                    
+                    // 创建一个特殊的背景图对象，添加到最底层（图层-1）
+                    const bgObj = {
+                        id: 'background-' + Date.now(),
+                        isBackground: true,
+                        image: img,
+                        imageData: e.target.result,
+                        layer: -1, // 最底层
+                        x: 0,
+                        y: 0,
+                        width: width,
+                        height: height,
+                        rotation: 0,
+                        collision: null
+                    };
+                    
+                    console.log('背景图对象:', bgObj);
+                    
+                    // 移除旧的背景图
+                    mapObjects = mapObjects.filter(obj => !obj.isBackground);
+                    
+                    // 添加新背景图
+                    mapObjects.push(bgObj);
+                    
+                    console.log('当前对象数量:', mapObjects.length);
+                    
+                    render();
+                };
+                img.onerror = () => {
+                    alert('图片加载失败');
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+        
+        // ========== 图层管理 ==========
+        function renderLayerList() {
+            const list = document.getElementById('layerList');
+            list.innerHTML = '';
+            
+            // 按序号排序显示（序号小的在下面，所以倒序显示）
+            const sortedLayers = [...layers].sort((a, b) => b.id - a.id);
+            
+            sortedLayers.forEach((layer, index) => {
+                const item = document.createElement('div');
+                item.className = 'layer-item' + (layer.id === currentLayer ? ' active' : '');
+                item.draggable = true;
+                item.dataset.layerId = layer.id;
+                
+                item.ondragstart = (e) => {
+                    e.dataTransfer.effectAllowed = 'move';
+                    e.dataTransfer.setData('text/plain', layer.id);
+                };
+                
+                item.ondragover = (e) => {
+                    e.preventDefault();
+                    e.dataTransfer.dropEffect = 'move';
+                };
+                
+                item.ondrop = (e) => {
+                    e.preventDefault();
+                    const draggedId = parseInt(e.dataTransfer.getData('text/plain'));
+                    const targetId = parseInt(item.dataset.layerId);
+                    if (draggedId !== targetId) {
+                        swapLayers(draggedId, targetId);
+                    }
+                };
+                
+                const info = document.createElement('div');
+                info.style.flex = '1';
+                info.innerHTML = `
+                    <strong>${layer.name}</strong><br>
+                    <span style="font-size: 10px; color: #999;">序号: ${layer.id}</span>
+                `;
+                info.onclick = () => selectLayer(layer.id);
+                
+                const controls = document.createElement('div');
+                controls.className = 'layer-controls';
+                controls.innerHTML = `
+                    <button onclick="toggleLayerVisibility(${layer.id}); event.stopPropagation();">${layer.visible ? '👁️' : '🚫'}</button>
+                    <button onclick="toggleLayerLock(${layer.id}); event.stopPropagation();">${layer.locked ? '🔒' : '🔓'}</button>
+                    <button onclick="deleteLayer(${layer.id}); event.stopPropagation();">🗑️</button>
+                `;
+                
+                item.appendChild(info);
+                item.appendChild(controls);
+                list.appendChild(item);
+            });
+        }
+        
+        function addLayer() {
+            const newId = Math.max(...layers.map(l => l.id)) + 1;
+            layers.push({
+                id: newId,
+                name: `图层 ${newId}`,
+                visible: true,
+                locked: false
+            });
+            currentLayer = newId;
+            renderLayerList();
+        }
+        
+        function selectLayer(id) {
+            currentLayer = id;
+            renderLayerList();
+        }
+        
+        function toggleLayerVisibility(id) {
+            const layer = layers.find(l => l.id === id);
+            if (layer) {
+                layer.visible = !layer.visible;
+                renderLayerList();
+                render();
+            }
+        }
+        
+        function toggleLayerLock(id) {
+            const layer = layers.find(l => l.id === id);
+            if (layer) {
+                layer.locked = !layer.locked;
+                renderLayerList();
+                render();
+            }
+        }
+        
+        function deleteLayer(id) {
+            if (layers.length === 1) {
+                alert('至少需要保留一个图层');
+                return;
+            }
+            
+            // 删除该图层的所有对象
+            mapObjects = mapObjects.filter(obj => obj.layer !== id);
+            
+            // 删除该图层的所有独立碰撞区域
+            collisionAreas = collisionAreas.filter(area => area.layer !== id);
+            
+            layers = layers.filter(l => l.id !== id);
+            
+            if (currentLayer === id) {
+                currentLayer = layers[0].id;
+            }
+            
+            renderLayerList();
+            render();
+        }
+        
+        function swapLayers(id1, id2) {
+            const layer1 = layers.find(l => l.id === id1);
+            const layer2 = layers.find(l => l.id === id2);
+            
+            if (layer1 && layer2) {
+                // 交换ID（序号）
+                const tempId = layer1.id;
+                layer1.id = layer2.id;
+                layer2.id = tempId;
+                
+                // 更新所有对象的图层ID
+                mapObjects.forEach(obj => {
+                    if (obj.layer === id1) obj.layer = layer2.id;
+                    else if (obj.layer === id2) obj.layer = layer1.id;
+                });
+                
+                // 更新所有独立碰撞区域的图层ID
+                collisionAreas.forEach(area => {
+                    if (area.layer === id1) area.layer = layer2.id;
+                    else if (area.layer === id2) area.layer = layer1.id;
+                });
+                
+                // 更新当前图层
+                if (currentLayer === id1) currentLayer = layer2.id;
+                else if (currentLayer === id2) currentLayer = layer1.id;
+                
+                renderLayerList();
+                render();
+            }
+        }
+        
+        // ========== 素材库配置 ==========
+        const spriteSets = {
+            // 城市瓦片集
+            urbanB: {
+                name: '城市建筑 (UrbanB)',
+                image: '/resource/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png',
+                gridMode: true,
+                tileWidth: 48,
+                tileHeight: 48,
+                columns: 8,
+                rows: 16
+            },
+            urbanA2: {
+                name: '城市地面 (Urban_A2)',
+                image: '/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png',
+                gridMode: true,
+                tileWidth: 48,
+                tileHeight: 48,
+                columns: 16,
+                rows: 6
+            },
+            urbanA5: {
+                name: '城市装饰 (Urban_A5)',
+                image: '/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A5.png',
+                gridMode: true,
+                tileWidth: 48,
+                tileHeight: 48,
+                columns: 8,
+                rows: 16
+            },
+            // 家具动画
+            bed: {
+                name: '床动画 (BD001)',
+                image: '/resource/CP_V1.1.0_nyknck/Animations/BD001.png',
+                gridMode: true,
+                tileWidth: 48,
+                tileHeight: 48,
+                columns: 8,
+                rows: 23
+            },
+            lamp: {
+                name: '灯动画 (BL001)',
+                image: '/resource/CP_V1.1.0_nyknck/Animations/BL001.png',
+                gridMode: true,
+                tileWidth: 48,
+                tileHeight: 48,
+                columns: 8,
+                rows: 8
+            },
+            shelf: {
+                name: '架子动画 (SL001)',
+                image: '/resource/CP_V1.1.0_nyknck/Animations/SL001.png',
+                gridMode: true,
+                tileWidth: 48,
+                tileHeight: 48,
+                columns: 8,
+                rows: 8
+            },
+            // 木质家具（单个文件）
+            woodenFurniture: {
+                name: '木质家具',
+                image: null, // 多个文件
+                sprites: [
+                    {path: '/resource/Wooden Furniture/Bed H.png', name: '床-横'},
+                    {path: '/resource/Wooden Furniture/Bed V.png', name: '床-竖'},
+                    {path: '/resource/Wooden Furniture/Chair H.png', name: '椅子-横'},
+                    {path: '/resource/Wooden Furniture/Chair V.png', name: '椅子-竖'},
+                    {path: '/resource/Wooden Furniture/Dresser H.png', name: '梳妆台-横'},
+                    {path: '/resource/Wooden Furniture/Dresser V.png', name: '梳妆台-竖'},
+                    {path: '/resource/Wooden Furniture/Long Table H.png', name: '长桌-横'},
+                    {path: '/resource/Wooden Furniture/Long Table V.png', name: '长桌-竖'},
+                    {path: '/resource/Wooden Furniture/Stool.png', name: '凳子'},
+                    {path: '/resource/Wooden Furniture/Wardrobe H.png', name: '衣柜-横'},
+                    {path: '/resource/Wooden Furniture/Wardrobe V.png', name: '衣柜-竖'}
+                ]
+            },
+            // 办公桌素材
+            deskEssentials: {
+                name: '办公桌物品',
+                image: '/resource/4dc7190bd20eb0ee/spritesheet.png',
+                gridMode: true,
+                tileWidth: 32,
+                tileHeight: 32,
+                columns: 10,
+                rows: 10
+            },
+            // 城市瓦片（Urban City Tileset）
+            urbanCity: {
+                name: '城市瓦片集',
+                image: '/resource/225525db3ab3e4a8/Urban City Tileset Free Demo version Dlou Saiyan/Urban City Tileset Free Demo version 30x30 Dlou Saiyan.png',
+                gridMode: true,
+                tileWidth: 30,
+                tileHeight: 30,
+                columns: 20,
+                rows: 20
+            }
+        };
+        
+        // ========== 素材加载 ==========
+        function loadSprites() {
+            const setId = document.getElementById('spriteSource').value;
+            if (!setId) return;
+            
+            currentSpriteSetId = setId; // 保存当前素材集ID
+            const set = spriteSets[setId];
+            if (!set) return;
+            
+            // 如果是多文件素材集（木质家具）
+            if (set.sprites && !set.image) {
+                loadMultiFileSprites(set);
+                return;
+            }
+            
+            // 单文件素材集
+            spriteImage = new Image();
+            spriteImage.crossOrigin = 'anonymous';
+            spriteImage.src = getResourceUrl(set.image);
+            
+            spriteImage.onload = () => {
+                if (set.gridMode) {
+                    // 网格模式：自动切分
+                    sprites = [];
+                    for (let row = 0; row < set.rows; row++) {
+                        for (let col = 0; col < set.columns; col++) {
+                            sprites.push({
+                                x: col * set.tileWidth,
+                                y: row * set.tileHeight,
+                                width: set.tileWidth,
+                                height: set.tileHeight,
+                                name: `${row}-${col}`
+                            });
+                        }
+                    }
+                } else {
+                    // 手动配置模式
+                    sprites = set.sprites.map(s => ({
+                        x: s.x,
+                        y: s.y,
+                        width: s.w,
+                        height: s.h,
+                        name: s.name
+                    }));
+                }
+                console.log(`加载了 ${sprites.length} 个素材`);
+                renderSpriteGrid();
+            };
+            
+            spriteImage.onerror = () => {
+                alert('素材加载失败: ' + set.image);
+            };
+        }
+        
+        // 加载多文件素材集
+        function loadMultiFileSprites(set) {
+            sprites = [];
+            const grid = document.getElementById('spriteGrid');
+            grid.innerHTML = '<div class="info">加载中...</div>';
+            
+            let loaded = 0;
+            set.sprites.forEach((sprite, index) => {
+                const img = new Image();
+                img.crossOrigin = 'anonymous';
+                img.src = getResourceUrl(sprite.path);
+                
+                img.onload = () => {
+                    sprites.push({
+                        image: img,
+                        x: 0,
+                        y: 0,
+                        width: img.width,
+                        height: img.height,
+                        name: sprite.name,
+                        isFullImage: true
+                    });
+                    
+                    loaded++;
+                    if (loaded === set.sprites.length) {
+                        console.log(`加载了 ${sprites.length} 个素材`);
+                        renderSpriteGrid();
+                    }
+                };
+                
+                img.onerror = () => {
+                    console.error('加载失败:', sprite.path);
+                    loaded++;
+                    if (loaded === set.sprites.length) {
+                        renderSpriteGrid();
+                    }
+                };
+            });
+        }
+        
+        function renderSpriteGrid() {
+            const grid = document.getElementById('spriteGrid');
+            grid.innerHTML = '';
+            
+            sprites.forEach((sprite, index) => {
+                const item = document.createElement('div');
+                item.className = 'sprite-item';
+                item.onclick = () => selectSprite(index);
+                
+                const canvas = document.createElement('canvas');
+                canvas.width = sprite.width;
+                canvas.height = sprite.height;
+                const ctx = canvas.getContext('2d');
+                
+                // 如果是完整图片素材
+                if (sprite.isFullImage) {
+                    ctx.drawImage(sprite.image, 0, 0);
+                } else {
+                    // 从瓦片集中裁剪
+                    ctx.drawImage(spriteImage, sprite.x, sprite.y, sprite.width, sprite.height, 0, 0, sprite.width, sprite.height);
+                }
+                
+                const label = document.createElement('div');
+                label.style.fontSize = '10px';
+                label.style.marginTop = '5px';
+                label.textContent = sprite.name || `#${index}`;
+                
+                item.appendChild(canvas);
+                item.appendChild(label);
+                grid.appendChild(item);
+            });
+        }
+        
+        function selectSprite(index) {
+            selectedSprite = index;
+            document.querySelectorAll('.sprite-item').forEach((item, i) => {
+                item.classList.toggle('selected', i === index);
+            });
+        }
+        
+        // ========== 地图渲染 ==========
+        function render() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#1a1a1a';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            ctx.save();
+            // 应用画布偏移
+            ctx.translate(canvasOffsetX, canvasOffsetY);
+            
+            // 绘制网格 - 预览模式下不显示
+            if (showGrid && !isPreviewMode) {
+                ctx.strokeStyle = 'rgba(100, 100, 100, 0.3)';
+                ctx.lineWidth = 1;
+                
+                // 计算可见区域
+                const startX = Math.floor(-canvasOffsetX / gridSize) * gridSize;
+                const startY = Math.floor(-canvasOffsetY / gridSize) * gridSize;
+                const endX = startX + canvas.width + gridSize;
+                const endY = startY + canvas.height + gridSize;
+                
+                for (let x = startX; x <= endX; x += gridSize) {
+                    ctx.beginPath();
+                    ctx.moveTo(x, startY);
+                    ctx.lineTo(x, endY);
+                    ctx.stroke();
+                }
+                
+                for (let y = startY; y <= endY; y += gridSize) {
+                    ctx.beginPath();
+                    ctx.moveTo(startX, y);
+                    ctx.lineTo(endX, y);
+                    ctx.stroke();
+                }
+            }
+            
+            // 按图层和Y坐标排序
+            // 1. 先按图层ID排序（小的在下面）
+            // 2. 同一图层内按Y坐标排序
+            const sorted = [...mapObjects]
+                .filter(obj => {
+                    // 背景图对象总是显示
+                    if (obj.isBackground) return true;
+                    
+                    // 其他对象检查图层可见性
+                    const layer = layers.find(l => l.id === obj.layer);
+                    return layer && layer.visible;
+                })
+                .sort((a, b) => {
+                    if (a.layer !== b.layer) {
+                        return a.layer - b.layer;
+                    }
+                    return (a.y + a.height) - (b.y + b.height);
+                });
+            
+            console.log('渲染对象数量:', sorted.length);
+            
+            sorted.forEach(obj => {
+                // 背景图对象
+                if (obj.isBackground) {
+                    ctx.save();
+                    
+                    // 非预览模式时，背景图添加半透明遮罩
+                    if (!isPreviewMode) {
+                        ctx.globalAlpha = 0.5;
+                    } else {
+                        ctx.globalAlpha = 1;
+                    }
+                    
+                    // 如果有旋转，应用旋转变换
+                    if (obj.rotation) {
+                        const centerX = obj.x + obj.width / 2;
+                        const centerY = obj.y + obj.height / 2;
+                        ctx.translate(centerX, centerY);
+                        ctx.rotate((obj.rotation * Math.PI) / 180);
+                        ctx.translate(-centerX, -centerY);
+                    }
+                    
+                    // 绘制背景图
+                    ctx.drawImage(obj.image, obj.x, obj.y, obj.width, obj.height);
+                    
+                    ctx.restore();
+                    
+                    // 预览模式下不显示选中状态
+                    if (!isPreviewMode && obj === selectedObject) {
+                        ctx.strokeStyle = '#00ff00';
+                        ctx.lineWidth = 2;
+                        ctx.strokeRect(obj.x, obj.y, obj.width, obj.height);
+                        
+                        // 绘制缩放手柄
+                        const handleSize = 8;
+                        const handles = [
+                            {x: obj.x, y: obj.y},
+                            {x: obj.x + obj.width, y: obj.y},
+                            {x: obj.x, y: obj.y + obj.height},
+                            {x: obj.x + obj.width, y: obj.y + obj.height}
+                        ];
+                        
+                        ctx.fillStyle = '#00ff00';
+                        handles.forEach(h => {
+                            ctx.fillRect(h.x - handleSize/2, h.y - handleSize/2, handleSize, handleSize);
+                        });
+                    }
+                    return;
+                }
+                
+                // 组合对象
+                if (obj.isGroup) {
+                    // 绘制组合对象的所有子对象
+                    obj.children.forEach(child => {
+                        const childObj = {
+                            ...child,
+                            x: obj.x + child.relativeX,
+                            y: obj.y + child.relativeY
+                        };
+                        
+                        const sprite = childObj.spriteData || sprites[childObj.spriteIndex];
+                        if (!sprite) return;
+                        
+                        // 获取对应的素材集图片
+                        let spriteImg = spriteImage;
+                        
+                        if (childObj.spriteData) {
+                            if (childObj.spriteData.isFullImage && childObj.spriteData.image) {
+                                spriteImg = childObj.spriteData.image;
+                            } else if (childObj.spriteData.spriteImageSrc) {
+                                if (!childObj.spriteData._cachedImage) {
+                                    childObj.spriteData._cachedImage = new Image();
+                                    childObj.spriteData._cachedImage.src = childObj.spriteData.spriteImageSrc;
+                                }
+                                spriteImg = childObj.spriteData._cachedImage;
+                            }
+                        }
+                        
+                        ctx.save();
+                        
+                        // 非当前图层显示半透明（仅在非预览模式下）
+                        if (!isPreviewMode && obj.layer !== currentLayer) {
+                            ctx.globalAlpha = 0.3;
+                        }
+                        
+                        // 如果有旋转，应用旋转变换
+                        if (childObj.rotation) {
+                            const centerX = childObj.x + childObj.width / 2;
+                            const centerY = childObj.y + childObj.height / 2;
+                            ctx.translate(centerX, centerY);
+                            ctx.rotate((childObj.rotation * Math.PI) / 180);
+                            ctx.translate(-centerX, -centerY);
+                        }
+                        
+                        // 绘制素材
+                        if (sprite.isFullImage && sprite.image) {
+                            if (sprite.image.complete && sprite.image.naturalWidth > 0) {
+                                ctx.drawImage(sprite.image, childObj.x, childObj.y, childObj.width, childObj.height);
+                            }
+                        } else {
+                            if (spriteImg && spriteImg.complete && spriteImg.naturalWidth > 0) {
+                                ctx.drawImage(
+                                    spriteImg,
+                                    sprite.x, sprite.y, sprite.width, sprite.height,
+                                    childObj.x, childObj.y, childObj.width, childObj.height
+                                );
+                            }
+                        }
+                        
+                        ctx.restore();
+                    });
+                    
+                    // 绘制组合对象的碰撞框（如果有）- 预览模式下不显示
+                    if (!isPreviewMode && obj.collision) {
+                        ctx.strokeStyle = 'rgba(255, 0, 0, 0.6)';
+                        ctx.lineWidth = 2;
+                        ctx.strokeRect(obj.collision.x, obj.collision.y, obj.collision.width, obj.collision.height);
+                    }
+                    
+                    // 绘制选中状态 - 预览模式下不显示
+                    if (!isPreviewMode && obj === selectedObject) {
+                        ctx.strokeStyle = '#00ff00';
+                        ctx.lineWidth = 2;
+                        ctx.strokeRect(obj.x, obj.y, obj.width, obj.height);
+                        
+                        // 绘制缩放手柄
+                        const handleSize = 8;
+                        const handles = [
+                            {x: obj.x, y: obj.y},
+                            {x: obj.x + obj.width, y: obj.y},
+                            {x: obj.x, y: obj.y + obj.height},
+                            {x: obj.x + obj.width, y: obj.y + obj.height}
+                        ];
+                        
+                        ctx.fillStyle = '#00ff00';
+                        handles.forEach(h => {
+                            ctx.fillRect(h.x - handleSize/2, h.y - handleSize/2, handleSize, handleSize);
+                        });
+                    }
+                    
+                    // 绘制多选状态 - 预览模式下不显示
+                    if (!isPreviewMode && selectedObjects.includes(obj)) {
+                        ctx.strokeStyle = '#00aaff';
+                        ctx.lineWidth = 2;
+                        ctx.strokeRect(obj.x, obj.y, obj.width, obj.height);
+                    }
+                    
+                    // 绘制对象属性标签 - 预览模式下不显示
+                    if (!isPreviewMode && obj.property) {
+                        const propertyLabels = {
+                            'office': '🏢',
+                            'apartment': '🏠',
+                            'shop': '🏪',
+                            'restaurant': '🍽️',
+                            'park': '🌳',
+                            'hospital': '🏥',
+                            'school': '🏫',
+                            'gym': '💪',
+                            'cafe': '☕',
+                            'library': '📚',
+                            'cinema': '🎬',
+                            'bank': '🏦',
+                            'station': '🚉'
+                        };
+                        
+                        const label = propertyLabels[obj.property] || '📍';
+                        const labelText = obj.customName ? `${label} ${obj.customName}` : label;
+                        
+                        ctx.save();
+                        ctx.font = '16px Arial';
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'bottom';
+                        
+                        // 绘制背景
+                        const textWidth = ctx.measureText(labelText).width;
+                        const padding = 4;
+                        const bgX = obj.x + obj.width / 2 - textWidth / 2 - padding;
+                        const bgY = obj.y - 24;
+                        const bgWidth = textWidth + padding * 2;
+                        const bgHeight = 20;
+                        
+                        ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+                        ctx.fillRect(bgX, bgY, bgWidth, bgHeight);
+                        
+                        // 绘制文字
+                        ctx.fillStyle = '#fff';
+                        ctx.fillText(labelText, obj.x + obj.width / 2, obj.y - 6);
+                        ctx.restore();
+                    }
+                    
+                    return;
+                }
+                
+                // 普通素材对象
+                // 使用对象保存的素材数据，如果没有则从当前素材集获取（向后兼容）
+                const sprite = obj.spriteData || sprites[obj.spriteIndex];
+                if (!sprite) return;
+                
+                // 获取对应的素材集图片
+                let spriteImg = spriteImage; // 默认使用当前素材集图片
+                
+                // 如果对象保存了素材数据，优先使用保存的图片
+                if (obj.spriteData) {
+                    if (obj.spriteData.isFullImage && obj.spriteData.image) {
+                        // 完整图片素材，直接使用保存的图片
+                        spriteImg = obj.spriteData.image;
+                    } else if (obj.spriteData.spriteImageSrc) {
+                        // 瓦片集素材，需要确保瓦片集图片已加载
+                        // 创建或获取缓存的图片
+                        if (!obj.spriteData._cachedImage) {
+                            obj.spriteData._cachedImage = new Image();
+                            obj.spriteData._cachedImage.src = obj.spriteData.spriteImageSrc;
+                        }
+                        spriteImg = obj.spriteData._cachedImage;
+                    }
+                }
+                
+                ctx.save();
+                
+                // 非当前图层显示半透明（仅在非预览模式下）
+                if (!isPreviewMode && obj.layer !== currentLayer) {
+                    ctx.globalAlpha = 0.3;
+                }
+                
+                // 如果有旋转，应用旋转变换
+                if (obj.rotation) {
+                    const centerX = obj.x + obj.width / 2;
+                    const centerY = obj.y + obj.height / 2;
+                    ctx.translate(centerX, centerY);
+                    ctx.rotate((obj.rotation * Math.PI) / 180);
+                    ctx.translate(-centerX, -centerY);
+                }
+                
+                // 绘制素材
+                if (sprite.isFullImage && sprite.image) {
+                    // 完整图片素材
+                    if (sprite.image.complete && sprite.image.naturalWidth > 0) {
+                        ctx.drawImage(sprite.image, obj.x, obj.y, obj.width, obj.height);
+                    }
+                } else {
+                    // 瓦片集素材
+                    if (spriteImg && spriteImg.complete && spriteImg.naturalWidth > 0) {
+                        ctx.drawImage(
+                            spriteImg,
+                            sprite.x, sprite.y, sprite.width, sprite.height,
+                            obj.x, obj.y, obj.width, obj.height
+                        );
+                    }
+                }
+                
+                ctx.restore();
+                
+                // 绘制碰撞框（如果有）- 预览模式下不显示
+                if (!isPreviewMode && obj.collision) {
+                    ctx.strokeStyle = 'rgba(255, 0, 0, 0.6)';
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(obj.collision.x, obj.collision.y, obj.collision.width, obj.collision.height);
+                }
+                
+                // 绘制选中状态 - 预览模式下不显示
+                if (!isPreviewMode && obj === selectedObject) {
+                    ctx.strokeStyle = '#00ff00';
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(obj.x, obj.y, obj.width, obj.height);
+                    
+                    // 绘制缩放手柄
+                    const handleSize = 8;
+                    const handles = [
+                        {x: obj.x, y: obj.y},
+                        {x: obj.x + obj.width, y: obj.y},
+                        {x: obj.x, y: obj.y + obj.height},
+                        {x: obj.x + obj.width, y: obj.y + obj.height}
+                    ];
+                    
+                    ctx.fillStyle = '#00ff00';
+                    handles.forEach(h => {
+                        ctx.fillRect(h.x - handleSize/2, h.y - handleSize/2, handleSize, handleSize);
+                    });
+                }
+                
+                // 绘制多选状态 - 预览模式下不显示
+                if (!isPreviewMode && selectedObjects.includes(obj)) {
+                    ctx.strokeStyle = '#00aaff';
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(obj.x, obj.y, obj.width, obj.height);
+                }
+            });
+            
+            // 绘制独立碰撞区域（空气墙）- 预览模式下不显示
+            if (!isPreviewMode) {
+                collisionAreas.forEach(area => {
+                    const layer = layers.find(l => l.id === area.layer);
+                    if (!layer || !layer.visible) return;
+                    
+                    ctx.save();
+                    
+                    // 非当前图层显示半透明
+                    if (area.layer !== currentLayer) {
+                        ctx.globalAlpha = 0.3;
+                    }
+                    
+                    // 绘制碰撞区域（黄色填充 + 红色边框）
+                    ctx.fillStyle = 'rgba(255, 255, 0, 0.2)';
+                    ctx.fillRect(area.x, area.y, area.width, area.height);
+                    ctx.strokeStyle = 'rgba(255, 200, 0, 0.8)';
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(area.x, area.y, area.width, area.height);
+                    
+                    // 绘制对角线标识
+                    ctx.strokeStyle = 'rgba(255, 200, 0, 0.5)';
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    ctx.moveTo(area.x, area.y);
+                    ctx.lineTo(area.x + area.width, area.y + area.height);
+                    ctx.moveTo(area.x + area.width, area.y);
+                    ctx.lineTo(area.x, area.y + area.height);
+                    ctx.stroke();
+                    
+                    ctx.restore();
+                    
+                    // 绘制选中状态
+                    if (area === selectedObject) {
+                        ctx.strokeStyle = '#00ff00';
+                        ctx.lineWidth = 3;
+                        ctx.strokeRect(area.x, area.y, area.width, area.height);
+                        
+                        // 绘制缩放手柄
+                        const handleSize = 8;
+                        const handles = [
+                            {x: area.x, y: area.y},
+                            {x: area.x + area.width, y: area.y},
+                            {x: area.x, y: area.y + area.height},
+                            {x: area.x + area.width, y: area.y + area.height}
+                        ];
+                        
+                        ctx.fillStyle = '#00ff00';
+                        handles.forEach(h => {
+                            ctx.fillRect(h.x - handleSize/2, h.y - handleSize/2, handleSize, handleSize);
+                        });
+                    }
+                    
+                    // 绘制多选状态
+                    if (selectedObjects.includes(area)) {
+                        ctx.strokeStyle = '#00aaff';
+                        ctx.lineWidth = 3;
+                        ctx.strokeRect(area.x, area.y, area.width, area.height);
+                    }
+                });
+            }
+            
+            // 绘制正在绘制的碰撞框 - 预览模式下不显示
+            if (!isPreviewMode && isDrawingCollision && collisionStart) {
+                const color = selectedObject && !selectedObject.isCollisionArea ? 'rgba(255, 0, 0, 0.8)' : 'rgba(255, 200, 0, 0.8)';
+                ctx.strokeStyle = color;
+                ctx.lineWidth = 2;
+                ctx.setLineDash([5, 5]);
+                const x1 = Math.min(collisionStart.x, dragStart.x);
+                const y1 = Math.min(collisionStart.y, dragStart.y);
+                const width = Math.abs(dragStart.x - collisionStart.x);
+                const height = Math.abs(dragStart.y - collisionStart.y);
+                ctx.strokeRect(x1, y1, width, height);
+                ctx.setLineDash([]);
+            }
+            
+            ctx.restore(); // 恢复画布变换
+            
+            // 预览模式下绘制所有对象和角色 - 使用Y轴深度排序
+            if (isPreviewMode) {
+                ctx.save();
+                ctx.translate(canvasOffsetX, canvasOffsetY);
+                
+                // 创建包含所有对象和角色的排序数组
+                const allRenderables = [];
+                
+                // 添加所有地图对象
+                sorted.forEach(obj => {
+                    let sortY;
+                    
+                    // 背景图和图层0的对象始终在最底层
+                    if (obj.isBackground || obj.layer === 0) {
+                        sortY = -1000 + obj.y; // 确保背景在最下面
+                    } else if (obj.isGroup) {
+                        // 组合对象：使用组合碰撞框或组合边界框的底部
+                        if (obj.collision) {
+                            sortY = obj.collision.y + 3;
+                        } else {
+                            sortY = obj.y + obj.height;
+                        }
+                    } else {
+                        // 其他对象使用碰撞框顶部作为排序点
+                        // 加上一个小偏移量（3像素），让角色需要稍微深入一点才会在树的前面
+                        if (obj.collision) {
+                            sortY = obj.collision.y + 15; // 碰撞框顶部加上3像素
+                        } else {
+                            sortY = obj.y + obj.height; // 没有碰撞框，使用对象底部
+                        }
+                    }
+                    
+                    allRenderables.push({
+                        type: 'object',
+                        obj: obj,
+                        sortY: sortY
+                    });
+                });
+                
+                // 添加角色（使用脚部碰撞框的底部）
+                // 角色脚部碰撞框：宽度缩小到一半，居中显示，位于角色下半部分
+                const footWidth = testCharacter.width / 2;
+                const footX = testCharacter.x + (testCharacter.width - footWidth) / 2;
+                const footY = testCharacter.y + testCharacter.height / 2; // 脚部开始位置
+                const footHeight = testCharacter.height / 2; // 脚部高度
+                const characterSortY = footY + footHeight; // 脚部碰撞框的底部
+                
+                allRenderables.push({
+                    type: 'character',
+                    sortY: characterSortY
+                });
+                
+                // 按Y坐标排序（sortY越小，越先绘制，在下层）
+                allRenderables.sort((a, b) => a.sortY - b.sortY);
+                
+                // 绘制所有对象
+                allRenderables.forEach(item => {
+                    if (item.type === 'character') {
+                        drawCharacter();
+                    } else {
+                        drawObject(item.obj);
+                    }
+                });
+                
+                // 辅助函数：绘制对象
+                function drawObject(obj) {
+                    // 组合对象
+                    if (obj.isGroup) {
+                        // 绘制组合对象的所有子对象
+                        obj.children.forEach(child => {
+                            drawSingleObject({
+                                ...child,
+                                x: obj.x + child.relativeX,
+                                y: obj.y + child.relativeY
+                            });
+                        });
+                        return;
+                    }
+                    
+                    drawSingleObject(obj);
+                }
+                
+                // 辅助函数：绘制单个对象
+                function drawSingleObject(obj) {
+                    // 背景图对象
+                    if (obj.isBackground) {
+                        ctx.save();
+                        ctx.globalAlpha = 1;
+                        
+                        if (obj.rotation) {
+                            const centerX = obj.x + obj.width / 2;
+                            const centerY = obj.y + obj.height / 2;
+                            ctx.translate(centerX, centerY);
+                            ctx.rotate((obj.rotation * Math.PI) / 180);
+                            ctx.translate(-centerX, -centerY);
+                        }
+                        
+                        if (obj.image && obj.image.complete) {
+                            ctx.drawImage(obj.image, obj.x, obj.y, obj.width, obj.height);
+                        }
+                        ctx.restore();
+                        return;
+                    }
+                    
+                    // 普通素材对象
+                    const sprite = obj.spriteData || sprites[obj.spriteIndex];
+                    if (!sprite) return;
+                    
+                    let spriteImg = spriteImage;
+                    
+                    if (obj.spriteData) {
+                        if (obj.spriteData.isFullImage && obj.spriteData.image) {
+                            spriteImg = obj.spriteData.image;
+                        } else if (obj.spriteData.spriteImageSrc && obj.spriteData._cachedImage) {
+                            spriteImg = obj.spriteData._cachedImage;
+                        }
+                    }
+                    
+                    ctx.save();
+                    
+                    if (obj.rotation) {
+                        const centerX = obj.x + obj.width / 2;
+                        const centerY = obj.y + obj.height / 2;
+                        ctx.translate(centerX, centerY);
+                        ctx.rotate((obj.rotation * Math.PI) / 180);
+                        ctx.translate(-centerX, -centerY);
+                    }
+                    
+                    if (sprite.isFullImage && sprite.image) {
+                        if (sprite.image.complete && sprite.image.naturalWidth > 0) {
+                            ctx.drawImage(sprite.image, obj.x, obj.y, obj.width, obj.height);
+                        }
+                    } else {
+                        if (spriteImg && spriteImg.complete && spriteImg.naturalWidth > 0) {
+                            ctx.drawImage(
+                                spriteImg,
+                                sprite.x, sprite.y, sprite.width, sprite.height,
+                                obj.x, obj.y, obj.width, obj.height
+                            );
+                        }
+                    }
+                    
+                    ctx.restore();
+                }
+                
+                // 辅助函数：绘制角色
+                function drawCharacter() {
+                    const directionLayers = testCharacter.images.walk[testCharacter.direction];
+                    const frameWidth = 32;
+                    const frameHeight = 32;
+                    const scale = 2;
+                    const frameX = testCharacter.frame * frameWidth;
+                    
+                    let hasImage = false;
+                    CHARACTER_LAYER_ORDER.forEach(layer => {
+                        if (layer === 'eyes' && testCharacter.direction === 'Back') {
+                            return;
+                        }
+                        
+                        const img = directionLayers[layer];
+                        if (img && img.complete && img.naturalWidth > 0) {
+                            hasImage = true;
+                            const frameY = testCharacter.appearance[layer] * frameHeight;
+                            
+                            ctx.drawImage(
+                                img,
+                                frameX, frameY, frameWidth, frameHeight,
+                                testCharacter.x, testCharacter.y, frameWidth * scale, frameHeight * scale
+                            );
+                        }
+                    });
+                    
+                    if (!hasImage) {
+                        ctx.fillStyle = '#4CAF50';
+                        ctx.fillRect(testCharacter.x, testCharacter.y, testCharacter.width, testCharacter.height - gridSize);
+                        
+                        ctx.fillStyle = '#2E7D32';
+                        ctx.fillRect(testCharacter.x, testCharacter.y + testCharacter.height - gridSize, testCharacter.width, gridSize);
+                        
+                        ctx.fillStyle = '#FFD700';
+                        ctx.beginPath();
+                        ctx.arc(testCharacter.x + testCharacter.width / 2, testCharacter.y + 16, 12, 0, Math.PI * 2);
+                        ctx.fill();
+                        
+                        ctx.fillStyle = '#000';
+                        ctx.beginPath();
+                        ctx.arc(testCharacter.x + testCharacter.width / 2 - 6, testCharacter.y + 14, 3, 0, Math.PI * 2);
+                        ctx.arc(testCharacter.x + testCharacter.width / 2 + 6, testCharacter.y + 14, 3, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                    
+                    // 绘制角色脚部碰撞框（调试用）
+                    ctx.strokeStyle = 'rgba(0, 255, 0, 0.8)';
+                    ctx.lineWidth = 2;
+                    const footWidth = testCharacter.width / 2;
+                    const footX = testCharacter.x + (testCharacter.width - footWidth) / 2;
+                    const footY = testCharacter.y + testCharacter.height / 2;
+                    const footHeight = testCharacter.height / 2;
+                    ctx.strokeRect(footX, footY, footWidth, footHeight);
+                }
+                
+                // 显示提示文字（始终在最上层）
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+                ctx.fillRect(10, 10, 400, 110);
+                ctx.fillStyle = '#fff';
+                ctx.font = '14px Arial';
+                ctx.fillText('方向键/WASD: 移动角色', 20, 30);
+                ctx.fillText('H键/ESC: 退出预览', 20, 50);
+                ctx.fillStyle = '#0f0';
+                ctx.fillText('绿框: 角色脚部碰撞区域', 20, 70);
+                ctx.fillStyle = '#ff0';
+                const charFootBottom = testCharacter.y + testCharacter.height;
+                ctx.fillText(`角色脚部底部Y: ${Math.round(charFootBottom)}`, 20, 90);
+                
+                // 显示最近的树的碰撞框底部Y坐标（调试用）
+                let nearestTree = null;
+                let minDist = Infinity;
+                sorted.forEach(obj => {
+                    if (obj.collision && obj.layer > 0) {
+                        const dist = Math.abs(obj.x - testCharacter.x) + Math.abs(obj.y - testCharacter.y);
+                        if (dist < minDist) {
+                            minDist = dist;
+                            nearestTree = obj;
+                        }
+                    }
+                });
+                if (nearestTree) {
+                    const treeSortY = nearestTree.collision.y + 3;
+                    ctx.fillText(`最近树的排序Y(顶部+3): ${Math.round(treeSortY)}`, 20, 110);
+                }
+                
+                ctx.restore();
+            }
+        }
+        
+        // ========== 游戏循环（预览模式）==========
+        let gameLoopId = null;
+        
+        function startGameLoop() {
+            if (gameLoopId) return;
+            
+            function loop() {
+                updateCharacter();
+                render();
+                gameLoopId = requestAnimationFrame(loop);
+            }
+            
+            gameLoopId = requestAnimationFrame(loop);
+        }
+        
+        function stopGameLoop() {
+            if (gameLoopId) {
+                cancelAnimationFrame(gameLoopId);
+                gameLoopId = null;
+            }
+        }
+        
+        function updateCharacter() {
+            let newX = testCharacter.x;
+            let newY = testCharacter.y;
+            
+            // 检查是否有按键按下
+            const isMoving = characterKeys.up || characterKeys.down || characterKeys.left || characterKeys.right;
+            testCharacter.moving = isMoving;
+            
+            // 根据按键更新位置和方向
+            if (characterKeys.up) {
+                newY -= testCharacter.speed;
+                testCharacter.direction = 'Back';
+            }
+            if (characterKeys.down) {
+                newY += testCharacter.speed;
+                testCharacter.direction = 'Front';
+            }
+            if (characterKeys.left) {
+                newX -= testCharacter.speed;
+                testCharacter.direction = 'Left';
+            }
+            if (characterKeys.right) {
+                newX += testCharacter.speed;
+                testCharacter.direction = 'Right';
+            }
+            
+            // 更新动画帧
+            if (isMoving) {
+                testCharacter.frameTimer++;
+                if (testCharacter.frameTimer >= testCharacter.frameDelay) {
+                    testCharacter.frameTimer = 0;
+                    testCharacter.frame = (testCharacter.frame + 1) % 4; // 4帧动画
+                }
+            } else {
+                testCharacter.frame = 0; // 静止时使用第一帧
+                testCharacter.frameTimer = 0;
+            }
+            
+            // 检查碰撞
+            if (!checkCollision(newX, newY)) {
+                testCharacter.x = newX;
+                testCharacter.y = newY;
+            } else {
+                // 尝试只在X轴移动
+                if (!checkCollision(newX, testCharacter.y)) {
+                    testCharacter.x = newX;
+                }
+                // 尝试只在Y轴移动
+                else if (!checkCollision(testCharacter.x, newY)) {
+                    testCharacter.y = newY;
+                }
+            }
+            
+            // 限制在画布内
+            testCharacter.x = Math.max(0, Math.min(canvas.width - testCharacter.width, testCharacter.x));
+            testCharacter.y = Math.max(0, Math.min(canvas.height - testCharacter.height, testCharacter.y));
+        }
+        
+        function checkCollision(x, y) {
+            // 角色脚部的碰撞框（底部一半高度，宽度缩小到一半并居中）
+            const footWidth = testCharacter.width / 2;
+            const footX = x + (testCharacter.width - footWidth) / 2;
+            const footY = y + testCharacter.height / 2;
+            const footHeight = testCharacter.height / 2;
+            
+            // 检查与独立碰撞区域的碰撞
+            for (const area of collisionAreas) {
+                const layer = layers.find(l => l.id === area.layer);
+                if (!layer || !layer.visible) continue;
+                
+                if (rectIntersects(
+                    footX, footY, footWidth, footHeight,
+                    area.x, area.y, area.width, area.height
+                )) {
+                    return true;
+                }
+            }
+            
+            // 检查与对象碰撞框的碰撞
+            for (const obj of mapObjects) {
+                if (!obj.collision) continue;
+                
+                const layer = layers.find(l => l.id === obj.layer);
+                if (!layer || !layer.visible) continue;
+                
+                if (rectIntersects(
+                    footX, footY, footWidth, footHeight,
+                    obj.collision.x, obj.collision.y, obj.collision.width, obj.collision.height
+                )) {
+                    return true;
+                }
+            }
+            
+            return false;
+        }
+        
+        function rectIntersects(x1, y1, w1, h1, x2, y2, w2, h2) {
+            return !(x1 + w1 <= x2 || x2 + w2 <= x1 || y1 + h1 <= y2 || y2 + h2 <= y1);
+        }
+        
+        // ========== 鼠标交互 ==========
+        canvas.onmousedown = (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+            
+            // 阻止Ctrl+点击的默认行为
+            if (e.ctrlKey || e.metaKey) {
+                e.preventDefault();
+            }
+            
+            // V键按下时，进入画布平移模式
+            if (isVKeyPressed) {
+                isPanning = true;
+                dragStart = {x: mouseX, y: mouseY};
+                canvas.style.cursor = 'grabbing';
+                return;
+            }
+            
+            // 转换为画布坐标（考虑偏移）
+            const x = mouseX - canvasOffsetX;
+            const y = mouseY - canvasOffsetY;
+            
+            if (currentTool === 'select') {
+                handleSelectMouseDown(x, y, e.ctrlKey || e.metaKey);
+            } else if (currentTool === 'collision') {
+                handleCollisionMouseDown(x, y);
+            } else if (currentTool === 'delete') {
+                isPainting = true;
+                handleDeleteClick(x, y);
+            } else if (currentTool === 'fill') {
+                handleFillClick(x, y);
+            }
+            
+            // 注意：不要在这里覆盖 dragStart，因为 handleSelectMouseDown 等函数已经正确设置了它
+        };
+        
+        canvas.onmousemove = (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+            
+            // 画布平移模式
+            if (isPanning) {
+                const dx = mouseX - dragStart.x;
+                const dy = mouseY - dragStart.y;
+                canvasOffsetX += dx;
+                canvasOffsetY += dy;
+                dragStart = {x: mouseX, y: mouseY};
+                render();
+                return;
+            }
+            
+            // 转换为画布坐标（考虑偏移）
+            const x = mouseX - canvasOffsetX;
+            const y = mouseY - canvasOffsetY;
+            
+            if (isDragging && selectedObject) {
+                selectedObject.x = x - dragStart.x;
+                selectedObject.y = y - dragStart.y;
+                render();
+            } else if (isResizing && selectedObject) {
+                handleResize(x, y);
+                render();
+            } else if (isDrawingCollision && collisionStart) {
+                dragStart = {x, y};
+                render();
+            } else if (isPainting) {
+                if (currentTool === 'select' && selectedSprite !== null) {
+                    // 画笔模式：连续填充
+                    paintAtPosition(x, y);
+                } else if (currentTool === 'delete') {
+                    // 橡皮擦模式：连续删除
+                    eraseAtPosition(x, y);
+                }
+            }
+        };
+        
+        canvas.onmouseup = () => {
+            if (isDrawingCollision && collisionStart) {
+                const x1 = Math.min(collisionStart.x, dragStart.x);
+                const y1 = Math.min(collisionStart.y, dragStart.y);
+                const x2 = Math.max(collisionStart.x, dragStart.x);
+                const y2 = Math.max(collisionStart.y, dragStart.y);
+                const width = x2 - x1;
+                const height = y2 - y1;
+                
+                // 如果有选中对象，为对象添加碰撞框
+                if (selectedObject && !selectedObject.isCollisionArea) {
+                    selectedObject.collision = {
+                        x: x1,
+                        y: y1,
+                        width: width,
+                        height: height
+                    };
+                    updateObjectProps();
+                } else if (width > 5 && height > 5) {
+                    // 否则创建独立碰撞区域（空气墙）
+                    const newArea = {
+                        id: 'collision-' + Date.now(),
+                        isCollisionArea: true,
+                        layer: currentLayer,
+                        x: x1,
+                        y: y1,
+                        width: width,
+                        height: height
+                    };
+                    collisionAreas.push(newArea);
+                    selectedObject = null;
+                    updateObjectProps();
+                }
+            }
+            
+            if (isPanning) {
+                canvas.style.cursor = isVKeyPressed ? 'grab' : 'crosshair';
+            }
+            
+            isDragging = false;
+            isResizing = false;
+            isDrawingCollision = false;
+            isPainting = false;
+            isPanning = false;
+            collisionStart = null;
+            render();
+        };
+        
+        // 双击事件：选中对象进入缩放模式
+        canvas.ondblclick = (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+            
+            // 转换为画布坐标（考虑偏移）
+            const x = mouseX - canvasOffsetX;
+            const y = mouseY - canvasOffsetY;
+            
+            if (currentTool === 'select') {
+                // 先检查独立碰撞区域
+                for (let i = collisionAreas.length - 1; i >= 0; i--) {
+                    const area = collisionAreas[i];
+                    if (area.layer === currentLayer &&
+                        x >= area.x && x <= area.x + area.width && 
+                        y >= area.y && y <= area.y + area.height) {
+                        selectedObject = area;
+                        selectedObjects = [];
+                        updateObjectProps();
+                        render();
+                        return;
+                    }
+                }
+                
+                // 检查是否双击了对象（包括组合对象）
+                for (let i = mapObjects.length - 1; i >= 0; i--) {
+                    const obj = mapObjects[i];
+                    // 只能选中当前图层的对象，或者背景图（图层-1或0）
+                    if ((obj.layer === currentLayer || obj.isBackground) &&
+                        x >= obj.x && x <= obj.x + obj.width && 
+                        y >= obj.y && y <= obj.y + obj.height) {
+                        selectedObject = obj;
+                        selectedObjects = [];
+                        updateObjectProps();
+                        render();
+                        return;
+                    }
+                }
+            }
+        };
+        
+        function handleSelectMouseDown(x, y, isCtrlPressed) {
+            const layer = layers.find(l => l.id === currentLayer);
+            if (layer && layer.locked) {
+                // 静默失败，不显示弹窗
+                return;
+            }
+            
+            // 检查是否点击了缩放手柄
+            if (selectedObject && !isCtrlPressed) {
+                const handle = getResizeHandle(selectedObject, x, y);
+                if (handle) {
+                    isResizing = true;
+                    resizeHandle = handle;
+                    dragStart = {x, y};
+                    return;
+                }
+            }
+            
+            // 检查是否点击了独立碰撞区域
+            for (let i = collisionAreas.length - 1; i >= 0; i--) {
+                const area = collisionAreas[i];
+                if (area.layer === currentLayer &&
+                    x >= area.x && x <= area.x + area.width && 
+                    y >= area.y && y <= area.y + area.height) {
+                    
+                    if (isCtrlPressed) {
+                        // Ctrl多选
+                        const index = selectedObjects.indexOf(area);
+                        if (index === -1) {
+                            selectedObjects.push(area);
+                        } else {
+                            selectedObjects.splice(index, 1);
+                        }
+                        selectedObject = null;
+                        updateObjectProps();
+                        render();
+                        return;
+                    }
+                    
+                    // 检查是否点击了缩放手柄
+                    const handle = getResizeHandle(area, x, y);
+                    if (handle) {
+                        selectedObject = area;
+                        selectedObjects = [];
+                        isResizing = true;
+                        resizeHandle = handle;
+                        dragStart = {x, y};
+                        updateObjectProps();
+                        render();
+                        return;
+                    }
+                    
+                    // 否则开始拖动
+                    selectedObject = area;
+                    selectedObjects = [];
+                    isDragging = true;
+                    dragStart = {x: x - area.x, y: y - area.y};
+                    updateObjectProps();
+                    render();
+                    return;
+                }
+            }
+            
+            // 检查是否点击了对象
+            let clickedCurrentLayerObject = false;
+            
+            // 先检查当前图层的对象
+            for (let i = mapObjects.length - 1; i >= 0; i--) {
+                const obj = mapObjects[i];
+                
+                if (obj.layer === currentLayer &&
+                    x >= obj.x && x <= obj.x + obj.width && 
+                    y >= obj.y && y <= obj.y + obj.height) {
+                    
+                    if (isCtrlPressed) {
+                        // Ctrl多选
+                        const index = selectedObjects.indexOf(obj);
+                        if (index === -1) {
+                            selectedObjects.push(obj);
+                        } else {
+                            selectedObjects.splice(index, 1);
+                        }
+                        selectedObject = null;
+                        updateObjectProps();
+                        render();
+                        return;
+                    }
+                    
+                    selectedObject = obj;
+                    selectedObjects = [];
+                    isDragging = true;
+                    dragStart = {x: x - obj.x, y: y - obj.y};
+                    updateObjectProps();
+                    render();
+                    clickedCurrentLayerObject = true;
+                    return;
+                }
+            }
+            
+            // 如果没有点击当前图层的对象，且当前图层是图层0，才允许选中背景图
+            if (!clickedCurrentLayerObject && currentLayer === 0) {
+                for (let i = mapObjects.length - 1; i >= 0; i--) {
+                    const obj = mapObjects[i];
+                    
+                    if (obj.isBackground &&
+                        x >= obj.x && x <= obj.x + obj.width && 
+                        y >= obj.y && y <= obj.y + obj.height) {
+                        selectedObject = obj;
+                        isDragging = true;
+                        dragStart = {x: x - obj.x, y: y - obj.y};
+                        updateObjectProps();
+                        render();
+                        return;
+                    }
+                }
+            }
+            
+            // 没有点击对象，开始画笔模式
+            if (selectedSprite !== null) {
+                isPainting = true;
+                paintAtPosition(x, y);
+            }
+        }
+        
+        // 画笔功能：在指定位置放置素材（网格对齐）
+        function paintAtPosition(x, y) {
+            if (selectedSprite === null) return;
+            
+            const layer = layers.find(l => l.id === currentLayer);
+            if (!layer || layer.locked) {
+                return; // 静默失败，不显示提示
+            }
+            
+            const sprite = sprites[selectedSprite];
+            if (!sprite) return;
+            
+            // 对齐到网格
+            const gridX = Math.floor(x / gridSize) * gridSize;
+            const gridY = Math.floor(y / gridSize) * gridSize;
+            
+            // 检查这个位置是否已经有相同素材
+            const exists = mapObjects.some(obj => 
+                obj.spriteIndex === selectedSprite && 
+                obj.x === gridX && 
+                obj.y === gridY &&
+                obj.layer === currentLayer
+            );
+            
+            if (!exists) {
+                // 使用记住的大小，如果没有则使用原始大小
+                const customSize = spriteSizes[selectedSprite];
+                const width = customSize ? customSize.width : sprite.width;
+                const height = customSize ? customSize.height : sprite.height;
+                const rotation = customSize ? (customSize.rotation || 0) : 0;
+                
+                // 深拷贝素材数据，保存图片引用
+                const spriteDataCopy = {
+                    x: sprite.x,
+                    y: sprite.y,
+                    width: sprite.width,
+                    height: sprite.height,
+                    name: sprite.name,
+                    isFullImage: sprite.isFullImage,
+                    image: sprite.image, // 保存图片引用（运行时使用）
+                    imageSrc: sprite.image ? sprite.image.src : null, // 保存图片源（用于导出/导入）
+                    spriteImageSrc: spriteImage ? spriteImage.src : null // 保存瓦片集图片源
+                };
+                
+                const newObj = {
+                    id: Date.now() + Math.random(),
+                    spriteSetId: currentSpriteSetId, // 保存素材集ID
+                    spriteIndex: selectedSprite,
+                    spriteData: spriteDataCopy, // 保存素材数据副本
+                    layer: currentLayer,
+                    x: gridX,
+                    y: gridY,
+                    width: width,
+                    height: height,
+                    rotation: rotation,
+                    collision: null
+                };
+                mapObjects.push(newObj);
+                render();
+            }
+        }
+        
+        // 橡皮擦功能：擦除指定位置的素材
+        function eraseAtPosition(x, y) {
+            const layer = layers.find(l => l.id === currentLayer);
+            if (!layer || layer.locked) return;
+            
+            // 先检查是否点击了独立碰撞区域
+            for (let i = collisionAreas.length - 1; i >= 0; i--) {
+                const area = collisionAreas[i];
+                if (area.layer === currentLayer &&
+                    x >= area.x && x <= area.x + area.width && 
+                    y >= area.y && y <= area.y + area.height) {
+                    collisionAreas.splice(i, 1);
+                    if (selectedObject === area) {
+                        selectedObject = null;
+                        updateObjectProps();
+                    }
+                    render();
+                    return;
+                }
+            }
+            
+            // 对齐到网格
+            const gridX = Math.floor(x / gridSize) * gridSize;
+            const gridY = Math.floor(y / gridSize) * gridSize;
+            
+            // 删除这个位置的对象
+            for (let i = mapObjects.length - 1; i >= 0; i--) {
+                const obj = mapObjects[i];
+                if (obj.layer === currentLayer && 
+                    Math.abs(obj.x - gridX) < gridSize / 2 && 
+                    Math.abs(obj.y - gridY) < gridSize / 2) {
+                    mapObjects.splice(i, 1);
+                    if (selectedObject === obj) {
+                        selectedObject = null;
+                        updateObjectProps();
+                    }
+                    render();
+                    return;
+                }
+            }
+        }
+        
+        // 填充工具：填充整个画布
+        function handleFillClick(x, y) {
+            if (selectedSprite === null) {
+                // 静默失败，不显示弹窗
+                return;
+            }
+            
+            const layer = layers.find(l => l.id === currentLayer);
+            if (!layer || layer.locked) {
+                // 静默失败，不显示弹窗
+                return;
+            }
+            
+            const sprite = sprites[selectedSprite];
+            if (!sprite) return;
+            
+            const customSize = spriteSizes[selectedSprite];
+            const width = customSize ? customSize.width : sprite.width;
+            const height = customSize ? customSize.height : sprite.height;
+            const rotation = customSize ? (customSize.rotation || 0) : 0;
+            
+            // 填充整个画布
+            for (let y = 0; y < canvas.height; y += gridSize) {
+                for (let x = 0; x < canvas.width; x += gridSize) {
+                    const exists = mapObjects.some(obj => 
+                        obj.spriteIndex === selectedSprite && 
+                        obj.x === x && 
+                        obj.y === y &&
+                        obj.layer === currentLayer
+                    );
+                    
+                    if (!exists) {
+                        // 深拷贝素材数据，保存图片引用
+                        const spriteDataCopy = {
+                            x: sprite.x,
+                            y: sprite.y,
+                            width: sprite.width,
+                            height: sprite.height,
+                            name: sprite.name,
+                            isFullImage: sprite.isFullImage,
+                            image: sprite.image, // 保存图片引用（运行时使用）
+                            imageSrc: sprite.image ? sprite.image.src : null, // 保存图片源（用于导出/导入）
+                            spriteImageSrc: spriteImage ? spriteImage.src : null // 保存瓦片集图片源
+                        };
+                        
+                        const newObj = {
+                            id: Date.now() + Math.random(),
+                            spriteSetId: currentSpriteSetId, // 保存素材集ID
+                            spriteIndex: selectedSprite,
+                            spriteData: spriteDataCopy, // 保存素材数据副本
+                            layer: currentLayer,
+                            x: x,
+                            y: y,
+                            width: width,
+                            height: height,
+                            rotation: rotation,
+                            collision: null
+                        };
+                        mapObjects.push(newObj);
+                    }
+                }
+            }
+            render();
+        }
+        
+        function handleCollisionMouseDown(x, y) {
+            const layer = layers.find(l => l.id === currentLayer);
+            if (layer && layer.locked) {
+                // 静默失败，不显示弹窗
+                return;
+            }
+            
+            // 检查是否点击了已有的独立碰撞区域（用于选中和编辑）
+            for (let i = collisionAreas.length - 1; i >= 0; i--) {
+                const area = collisionAreas[i];
+                if (area.layer === currentLayer &&
+                    x >= area.x && x <= area.x + area.width && 
+                    y >= area.y && y <= area.y + area.height) {
+                    selectedObject = area;
+                    isDragging = true;
+                    dragStart = {x: x - area.x, y: y - area.y};
+                    updateObjectProps();
+                    render();
+                    return;
+                }
+            }
+            
+            // 先检查是否点击了某个对象（只能选中当前图层的对象）
+            if (!selectedObject) {
+                for (let i = mapObjects.length - 1; i >= 0; i--) {
+                    const obj = mapObjects[i];
+                    if (obj.layer === currentLayer &&
+                        x >= obj.x && x <= obj.x + obj.width && 
+                        y >= obj.y && y <= obj.y + obj.height) {
+                        selectedObject = obj;
+                        updateObjectProps();
+                        render();
+                        break;
+                    }
+                }
+            }
+            
+            // 如果没有选中对象，开始绘制独立碰撞区域（空气墙）
+            if (!selectedObject) {
+                isDrawingCollision = true;
+                collisionStart = {x, y};
+                dragStart = {x, y};
+                return;
+            }
+            
+            // 如果选中了对象，为该对象绘制碰撞框
+            isDrawingCollision = true;
+            collisionStart = {x, y};
+            dragStart = {x, y};
+        }
+        
+        function handleDeleteClick(x, y) {
+            const layer = layers.find(l => l.id === currentLayer);
+            if (!layer || layer.locked) return;
+            
+            // 如果是画笔模式（拖动），使用网格对齐删除
+            if (isPainting) {
+                eraseAtPosition(x, y);
+                return;
+            }
+            
+            // 检查是否点击了独立碰撞区域
+            for (let i = collisionAreas.length - 1; i >= 0; i--) {
+                const area = collisionAreas[i];
+                if (area.layer === currentLayer &&
+                    x >= area.x && x <= area.x + area.width && 
+                    y >= area.y && y <= area.y + area.height) {
+                    collisionAreas.splice(i, 1);
+                    if (selectedObject === area) {
+                        selectedObject = null;
+                        updateObjectProps();
+                    }
+                    render();
+                    return;
+                }
+            }
+            
+            // 否则精确点击删除普通对象
+            for (let i = mapObjects.length - 1; i >= 0; i--) {
+                const obj = mapObjects[i];
+                if (obj.layer === currentLayer &&
+                    x >= obj.x && x <= obj.x + obj.width && 
+                    y >= obj.y && y <= obj.y + obj.height) {
+                    mapObjects.splice(i, 1);
+                    if (selectedObject === obj) {
+                        selectedObject = null;
+                        updateObjectProps();
+                    }
+                    render();
+                    return;
+                }
+            }
+        }
+        
+        function getResizeHandle(obj, x, y) {
+            const handleSize = 12;
+            const handles = {
+                'nw': {x: obj.x, y: obj.y},
+                'ne': {x: obj.x + obj.width, y: obj.y},
+                'sw': {x: obj.x, y: obj.y + obj.height},
+                'se': {x: obj.x + obj.width, y: obj.y + obj.height}
+            };
+            
+            for (const [name, pos] of Object.entries(handles)) {
+                if (Math.abs(x - pos.x) < handleSize && Math.abs(y - pos.y) < handleSize) {
+                    return name;
+                }
+            }
+            return null;
+        }
+        
+        function handleResize(x, y) {
+            const dx = x - dragStart.x;
+            const dy = y - dragStart.y;
+            
+            // 独立碰撞区域 - 自由拉伸
+            if (selectedObject.isCollisionArea) {
+                switch (resizeHandle) {
+                    case 'se':
+                        selectedObject.width = Math.max(10, selectedObject.width + dx);
+                        selectedObject.height = Math.max(10, selectedObject.height + dy);
+                        break;
+                    case 'nw':
+                        const newWidth = Math.max(10, selectedObject.width - dx);
+                        const newHeight = Math.max(10, selectedObject.height - dy);
+                        selectedObject.x += selectedObject.width - newWidth;
+                        selectedObject.y += selectedObject.height - newHeight;
+                        selectedObject.width = newWidth;
+                        selectedObject.height = newHeight;
+                        break;
+                    case 'ne':
+                        selectedObject.width = Math.max(10, selectedObject.width + dx);
+                        const h = Math.max(10, selectedObject.height - dy);
+                        selectedObject.y += selectedObject.height - h;
+                        selectedObject.height = h;
+                        break;
+                    case 'sw':
+                        const w = Math.max(10, selectedObject.width - dx);
+                        selectedObject.x += selectedObject.width - w;
+                        selectedObject.width = w;
+                        selectedObject.height = Math.max(10, selectedObject.height + dy);
+                        break;
+                }
+                
+                dragStart = {x, y};
+                return;
+            }
+            
+            // 背景图对象 - 自由拉伸，不保持宽高比
+            if (selectedObject.isBackground) {
+                switch (resizeHandle) {
+                    case 'se':
+                        selectedObject.width = Math.max(20, selectedObject.width + dx);
+                        selectedObject.height = Math.max(20, selectedObject.height + dy);
+                        break;
+                    case 'nw':
+                        const newWidth = Math.max(20, selectedObject.width - dx);
+                        const newHeight = Math.max(20, selectedObject.height - dy);
+                        selectedObject.x += selectedObject.width - newWidth;
+                        selectedObject.y += selectedObject.height - newHeight;
+                        selectedObject.width = newWidth;
+                        selectedObject.height = newHeight;
+                        break;
+                    case 'ne':
+                        selectedObject.width = Math.max(20, selectedObject.width + dx);
+                        const h = Math.max(20, selectedObject.height - dy);
+                        selectedObject.y += selectedObject.height - h;
+                        selectedObject.height = h;
+                        break;
+                    case 'sw':
+                        const w = Math.max(20, selectedObject.width - dx);
+                        selectedObject.x += selectedObject.width - w;
+                        selectedObject.width = w;
+                        selectedObject.height = Math.max(20, selectedObject.height + dy);
+                        break;
+                }
+                
+                dragStart = {x, y};
+                return;
+            }
+            
+            // 组合对象 - 按比例缩放所有子对象
+            if (selectedObject.isGroup) {
+                const oldWidth = selectedObject.width;
+                const oldHeight = selectedObject.height;
+                let newWidth = oldWidth;
+                let newHeight = oldHeight;
+                let newX = selectedObject.x;
+                let newY = selectedObject.y;
+                
+                switch (resizeHandle) {
+                    case 'se':
+                        newWidth = Math.max(20, oldWidth + dx);
+                        newHeight = Math.max(20, oldHeight + dy);
+                        break;
+                    case 'nw':
+                        newWidth = Math.max(20, oldWidth - dx);
+                        newHeight = Math.max(20, oldHeight - dy);
+                        newX = selectedObject.x + (oldWidth - newWidth);
+                        newY = selectedObject.y + (oldHeight - newHeight);
+                        break;
+                    case 'ne':
+                        newWidth = Math.max(20, oldWidth + dx);
+                        newHeight = Math.max(20, oldHeight - dy);
+                        newY = selectedObject.y + (oldHeight - newHeight);
+                        break;
+                    case 'sw':
+                        newWidth = Math.max(20, oldWidth - dx);
+                        newHeight = Math.max(20, oldHeight + dy);
+                        newX = selectedObject.x + (oldWidth - newWidth);
+                        break;
+                }
+                
+                // 计算缩放比例
+                const scaleX = newWidth / oldWidth;
+                const scaleY = newHeight / oldHeight;
+                
+                // 按比例缩放所有子对象
+                selectedObject.children.forEach(child => {
+                    child.relativeX *= scaleX;
+                    child.relativeY *= scaleY;
+                    child.width *= scaleX;
+                    child.height *= scaleY;
+                    
+                    // 如果子对象有碰撞框，也要缩放
+                    if (child.collision) {
+                        child.collision.x *= scaleX;
+                        child.collision.y *= scaleY;
+                        child.collision.width *= scaleX;
+                        child.collision.height *= scaleY;
+                    }
+                });
+                
+                // 如果组合对象有碰撞框，也要缩放
+                if (selectedObject.collision) {
+                    const collisionScaleX = newWidth / oldWidth;
+                    const collisionScaleY = newHeight / oldHeight;
+                    selectedObject.collision.width *= collisionScaleX;
+                    selectedObject.collision.height *= collisionScaleY;
+                }
+                
+                selectedObject.x = newX;
+                selectedObject.y = newY;
+                selectedObject.width = newWidth;
+                selectedObject.height = newHeight;
+                
+                dragStart = {x, y};
+                return;
+            }
+            
+            // 普通素材对象 - 保持宽高比
+            const sprite = selectedObject.spriteData || sprites[selectedObject.spriteIndex];
+            if (!sprite) {
+                // 如果没有素材数据，自由拉伸
+                switch (resizeHandle) {
+                    case 'se':
+                        selectedObject.width = Math.max(20, selectedObject.width + dx);
+                        selectedObject.height = Math.max(20, selectedObject.height + dy);
+                        break;
+                    case 'nw':
+                        const newWidth = Math.max(20, selectedObject.width - dx);
+                        const newHeight = Math.max(20, selectedObject.height - dy);
+                        selectedObject.x += selectedObject.width - newWidth;
+                        selectedObject.y += selectedObject.height - newHeight;
+                        selectedObject.width = newWidth;
+                        selectedObject.height = newHeight;
+                        break;
+                    case 'ne':
+                        selectedObject.width = Math.max(20, selectedObject.width + dx);
+                        const h = Math.max(20, selectedObject.height - dy);
+                        selectedObject.y += selectedObject.height - h;
+                        selectedObject.height = h;
+                        break;
+                    case 'sw':
+                        const w = Math.max(20, selectedObject.width - dx);
+                        selectedObject.x += selectedObject.width - w;
+                        selectedObject.width = w;
+                        selectedObject.height = Math.max(20, selectedObject.height + dy);
+                        break;
+                }
+                dragStart = {x, y};
+                return;
+            }
+            
+            const aspectRatio = sprite.width / sprite.height;
+            
+            switch (resizeHandle) {
+                case 'se':
+                    selectedObject.width = Math.max(20, selectedObject.width + dx);
+                    selectedObject.height = selectedObject.width / aspectRatio;
+                    break;
+                case 'nw':
+                    const newWidth = Math.max(20, selectedObject.width - dx);
+                    const newHeight = newWidth / aspectRatio;
+                    selectedObject.x += selectedObject.width - newWidth;
+                    selectedObject.y += selectedObject.height - newHeight;
+                    selectedObject.width = newWidth;
+                    selectedObject.height = newHeight;
+                    break;
+                case 'ne':
+                    selectedObject.width = Math.max(20, selectedObject.width + dx);
+                    const h = selectedObject.width / aspectRatio;
+                    selectedObject.y += selectedObject.height - h;
+                    selectedObject.height = h;
+                    break;
+                case 'sw':
+                    const w = Math.max(20, selectedObject.width - dx);
+                    selectedObject.x += selectedObject.width - w;
+                    selectedObject.width = w;
+                    selectedObject.height = w / aspectRatio;
+                    break;
+            }
+            
+            // 记住这个素材的自定义大小
+            if (selectedObject.spriteIndex !== undefined) {
+                spriteSizes[selectedObject.spriteIndex] = {
+                    width: selectedObject.width,
+                    height: selectedObject.height
+                };
+            }
+            
+            dragStart = {x, y};
+        }
+        
+        function updateObjectProps() {
+            const panel = document.getElementById('objectProps');
+            
+            // 显示多选对象信息
+            if (selectedObjects.length > 0) {
+                let html = `<div class="info">
+                    <strong>已选择 ${selectedObjects.length} 个对象</strong><br>
+                    按 G 键组合这些对象
+                </div>`;
+                
+                html += '<div style="max-height: 200px; overflow-y: auto; margin-top: 10px;">';
+                selectedObjects.forEach((obj, index) => {
+                    const type = obj.isCollisionArea ? '碰撞区域' : '素材对象';
+                    html += `
+                        <div class="info" style="margin: 4px 0; padding: 4px; font-size: 10px; border-left: 3px solid #00aaff;">
+                            <strong>#${index + 1}</strong> ${type}<br>
+                            图层: ${obj.layer}<br>
+                            位置: (${Math.round(obj.x)}, ${Math.round(obj.y)})<br>
+                            尺寸: ${Math.round(obj.width)} x ${Math.round(obj.height)}
+                        </div>
+                    `;
+                });
+                html += '</div>';
+                
+                panel.innerHTML = html;
+                return;
+            }
+            
+            if (!selectedObject) {
+                // 显示独立碰撞区域列表
+                const areaCount = collisionAreas.length;
+                let html = '<div class="info">未选中任何对象</div>';
+                
+                if (areaCount > 0) {
+                    html += `<h4 style="margin-top: 10px; font-size: 12px;">独立碰撞区域 (${areaCount})</h4>`;
+                    html += '<div style="max-height: 150px; overflow-y: auto;">';
+                    collisionAreas.forEach((area, index) => {
+                        html += `
+                            <div class="info" style="margin: 4px 0; padding: 4px; cursor: pointer; font-size: 10px;" 
+                                 onclick="selectCollisionArea(${index})">
+                                <strong>#${index + 1}</strong> 图层${area.layer}<br>
+                                位置: (${Math.round(area.x)}, ${Math.round(area.y)})<br>
+                                尺寸: ${Math.round(area.width)} x ${Math.round(area.height)}
+                            </div>
+                        `;
+                    });
+                    html += '</div>';
+                }
+                
+                panel.innerHTML = html;
+                return;
+            }
+            
+            // 独立碰撞区域
+            if (selectedObject.isCollisionArea) {
+                panel.innerHTML = `
+                    <div class="info">
+                        <strong>类型:</strong> 独立碰撞区域（空气墙）<br>
+                        <strong>ID:</strong> ${selectedObject.id}<br>
+                        <strong>图层:</strong> ${selectedObject.layer}<br>
+                        <strong>位置:</strong> (${Math.round(selectedObject.x)}, ${Math.round(selectedObject.y)})<br>
+                        <strong>尺寸:</strong> ${Math.round(selectedObject.width)} x ${Math.round(selectedObject.height)}
+                    </div>
+                    <button onclick="deleteSelectedCollisionArea()">🗑️ 删除碰撞区域</button>
+                `;
+                return;
+            }
+            
+            // 普通对象
+            const objType = selectedObject.isGroup ? '组合对象' : '素材对象';
+            const childrenInfo = selectedObject.isGroup ? `<strong>包含:</strong> ${selectedObject.children.length} 个子对象<br>` : '';
+            const ungroupButton = selectedObject.isGroup ? '<button onclick="ungroupSelectedObject()">📦 解组 (U)</button>' : '';
+            
+            // 对象属性选项
+            const propertyTypes = [
+                { value: '', label: '无属性' },
+                { value: 'office', label: '🏢 办公楼' },
+                { value: 'apartment', label: '🏠 公寓' },
+                { value: 'shop', label: '🏪 商店' },
+                { value: 'restaurant', label: '🍽️ 餐厅' },
+                { value: 'park', label: '🌳 公园' },
+                { value: 'hospital', label: '🏥 医院' },
+                { value: 'school', label: '🏫 学校' },
+                { value: 'gym', label: '💪 健身房' },
+                { value: 'cafe', label: '☕ 咖啡厅' },
+                { value: 'library', label: '📚 图书馆' },
+                { value: 'cinema', label: '🎬 电影院' },
+                { value: 'bank', label: '🏦 银行' },
+                { value: 'station', label: '🚉 车站' }
+            ];
+            
+            const currentProperty = selectedObject.property || '';
+            const propertyOptions = propertyTypes.map(pt => 
+                `<option value="${pt.value}" ${currentProperty === pt.value ? 'selected' : ''}>${pt.label}</option>`
+            ).join('');
+            
+            panel.innerHTML = `
+                <div class="info">
+                    <strong>类型:</strong> ${objType}<br>
+                    ${childrenInfo}
+                    <strong>ID:</strong> ${selectedObject.id}<br>
+                    <strong>图层:</strong> ${selectedObject.layer}<br>
+                    <strong>位置:</strong> (${Math.round(selectedObject.x)}, ${Math.round(selectedObject.y)})<br>
+                    <strong>尺寸:</strong> ${Math.round(selectedObject.width)} x ${Math.round(selectedObject.height)}<br>
+                    <strong>旋转:</strong> ${selectedObject.rotation || 0}°<br>
+                    <strong>碰撞:</strong> ${selectedObject.collision ? '已设置' : '未设置'}<br>
+                    ${selectedObject.property ? `<strong>属性:</strong> ${selectedObject.property}<br>` : ''}
+                    ${selectedObject.customName ? `<strong>名称:</strong> ${selectedObject.customName}<br>` : ''}
+                </div>
+                <label>对象属性：</label>
+                <select id="objectProperty" onchange="updateObjectProperty(this.value)">
+                    ${propertyOptions}
+                </select>
+                <input type="text" id="objectCustomName" placeholder="自定义名称（可选）" value="${selectedObject.customName || ''}" 
+                       onchange="updateObjectCustomName(this.value)" style="margin-top: 5px;">
+                <button onclick="rotateSelectedObject()">🔄 旋转 (R)</button>
+                ${ungroupButton}
+                <button onclick="removeCollision()">移除碰撞框</button>
+            `;
+        }
+        
+        function selectCollisionArea(index) {
+            if (index >= 0 && index < collisionAreas.length) {
+                selectedObject = collisionAreas[index];
+                currentLayer = selectedObject.layer;
+                renderLayerList();
+                updateObjectProps();
+                render();
+            }
+        }
+        
+        function deleteSelectedCollisionArea() {
+            if (selectedObject && selectedObject.isCollisionArea) {
+                const index = collisionAreas.indexOf(selectedObject);
+                if (index !== -1) {
+                    collisionAreas.splice(index, 1);
+                    selectedObject = null;
+                    updateObjectProps();
+                    render();
+                }
+            }
+        }
+        
+        function removeCollision() {
+            if (selectedObject) {
+                selectedObject.collision = null;
+                updateObjectProps();
+                render();
+            }
+        }
+        
+        function updateObjectProperty(value) {
+            if (selectedObject) {
+                selectedObject.property = value || undefined;
+                // 不需要重新渲染，只更新数据
+                console.log('对象属性已更新:', value);
+            }
+        }
+        
+        function updateObjectCustomName(value) {
+            if (selectedObject) {
+                selectedObject.customName = value || undefined;
+                console.log('对象名称已更新:', value);
+            }
+        }
+        
+        // ========== 导出/导入 ==========
+        function exportMap() {
+            // 处理对象，移除不能序列化的图片对象
+            const exportObjects = mapObjects.map(obj => {
+                if (obj.isBackground) {
+                    return {
+                        ...obj,
+                        image: undefined, // 移除image对象
+                        imageData: obj.imageData // 使用保存的base64数据
+                    };
+                }
+                
+                // 普通素材对象
+                const exportObj = {...obj};
+                
+                // 如果有spriteData，清理不能序列化的部分
+                if (exportObj.spriteData) {
+                    exportObj.spriteData = {
+                        ...exportObj.spriteData,
+                        image: undefined, // 移除运行时的图片对象
+                        _cachedImage: undefined // 移除缓存的图片对象
+                        // 保留 imageSrc 和 spriteImageSrc 用于重新加载
+                    };
+                }
+                
+                return exportObj;
+            });
+            
+            const data = {
+                gridSize: gridSize,
+                cols: Math.round(canvas.width / gridSize),
+                rows: Math.round(canvas.height / gridSize),
+                width: canvas.width,
+                height: canvas.height,
+                layers: layers,
+                objects: exportObjects,
+                collisionAreas: collisionAreas // 导出独立碰撞区域
+            };
+            document.getElementById('mapData').value = JSON.stringify(data, null, 2);
+        }
+        
+        function importMap() {
+            try {
+                const data = JSON.parse(document.getElementById('mapData').value);
+                
+                // 处理对象，将背景图的imageData转换回image，并重新加载瓦片集图片
+                const importObjects = [];
+                const loadPromises = [];
+                
+                // 辅助函数：收集对象的瓦片集图片URL
+                function collectSpriteUrls(obj, urlSet) {
+                    if (obj.spriteData && obj.spriteData.spriteImageSrc) {
+                        urlSet.add(obj.spriteData.spriteImageSrc);
+                    }
+                    // 如果是组合对象，递归处理子对象
+                    if (obj.isGroup && obj.children) {
+                        obj.children.forEach(child => collectSpriteUrls(child, urlSet));
+                    }
+                }
+                
+                // 辅助函数：为对象设置缓存的图片引用
+                function setCachedImages(obj, imageCache) {
+                    if (obj.spriteData && obj.spriteData.spriteImageSrc) {
+                        const cachedImg = imageCache[obj.spriteData.spriteImageSrc];
+                        if (cachedImg) {
+                            obj.spriteData._cachedImage = cachedImg;
+                        }
+                    }
+                    // 如果是组合对象，递归处理子对象
+                    if (obj.isGroup && obj.children) {
+                        obj.children.forEach(child => setCachedImages(child, imageCache));
+                    }
+                }
+                
+                // 收集所有需要加载的瓦片集图片URL（去重）
+                const spriteImageUrls = new Set();
+                (data.objects || []).forEach(obj => {
+                    collectSpriteUrls(obj, spriteImageUrls);
+                });
+                
+                // 预加载所有瓦片集图片
+                const spriteImageCache = {};
+                spriteImageUrls.forEach(url => {
+                    const promise = new Promise((resolve) => {
+                        const img = new Image();
+                        img.crossOrigin = 'anonymous';
+                        img.onload = () => {
+                            spriteImageCache[url] = img;
+                            console.log('✓ 加载瓦片集图片:', url);
+                            resolve();
+                        };
+                        img.onerror = () => {
+                            console.error('✗ 加载瓦片集图片失败:', url);
+                            resolve(); // 即使失败也继续
+                        };
+                        img.src = url;
+                    });
+                    loadPromises.push(promise);
+                });
+                
+                // 处理背景图
+                (data.objects || []).forEach(obj => {
+                    if (obj.isBackground && obj.imageData) {
+                        const promise = new Promise((resolve) => {
+                            const img = new Image();
+                            img.onload = () => {
+                                importObjects.push({
+                                    ...obj,
+                                    image: img,
+                                    imageData: obj.imageData
+                                });
+                                console.log('✓ 加载背景图');
+                                resolve();
+                            };
+                            img.onerror = () => {
+                                console.error('✗ 加载背景图失败');
+                                resolve();
+                            };
+                            img.src = obj.imageData;
+                        });
+                        loadPromises.push(promise);
+                    } else {
+                        // 确保所有对象都有图层属性
+                        if (obj.layer === undefined) {
+                            obj.layer = 0;
+                        }
+                        
+                        // 如果对象有瓦片集素材数据，恢复缓存的图片引用
+                        if (obj.spriteData && obj.spriteData.spriteImageSrc) {
+                            // 清理旧的空对象
+                            delete obj.spriteData._cachedImage;
+                        }
+                        
+                        // 如果是完整图片素材，需要重新加载图片
+                        if (obj.spriteData && obj.spriteData.isFullImage && obj.spriteData.imageSrc) {
+                            const promise = new Promise((resolve) => {
+                                const img = new Image();
+                                img.crossOrigin = 'anonymous';
+                                img.onload = () => {
+                                    obj.spriteData.image = img;
+                                    console.log('✓ 加载完整图片素材');
+                                    resolve();
+                                };
+                                img.onerror = () => {
+                                    console.error('✗ 加载完整图片素材失败');
+                                    resolve();
+                                };
+                                img.src = obj.spriteData.imageSrc;
+                            });
+                            loadPromises.push(promise);
+                        }
+                        
+                        importObjects.push(obj);
+                    }
+                });
+                
+                // 等待所有图片加载完成
+                Promise.all(loadPromises).then(() => {
+                    // 为所有对象设置缓存的图片引用（包括组合对象的子对象）
+                    importObjects.forEach(obj => {
+                        setCachedImages(obj, spriteImageCache);
+                    });
+                    
+                    mapObjects = importObjects;
+                    
+                    // 导入独立碰撞区域
+                    collisionAreas = data.collisionAreas || [];
+                    
+                    layers = data.layers || [{id: 0, name: '图层 0', visible: true, locked: false}];
+                    currentLayer = layers[0].id;
+                    
+                    // 优先使用格子数量，如果没有则使用像素尺寸
+                    if (data.gridSize) {
+                        gridSize = data.gridSize;
+                        document.getElementById('gridSize').value = gridSize;
+                    }
+                    
+                    if (data.cols && data.rows) {
+                        canvas.width = data.cols * gridSize;
+                        canvas.height = data.rows * gridSize;
+                        document.getElementById('mapCols').value = data.cols;
+                        document.getElementById('mapRows').value = data.rows;
+                    } else {
+                        canvas.width = data.width || 960;
+                        canvas.height = data.height || 704;
+                        document.getElementById('mapCols').value = Math.round(canvas.width / gridSize);
+                        document.getElementById('mapRows').value = Math.round(canvas.height / gridSize);
+                    }
+                    
+                    selectedObject = null;
+                    updateObjectProps();
+                    renderLayerList();
+                    render();
+                });
+            } catch (e) {
+                alert('导入失败：' + e.message);
+            }
+        }
+        
+        // ========== 云端保存/加载 ==========
+        async function saveMapToCloud() {
+            try {
+                // 获取地图名称
+                const mapNameInput = document.getElementById('mapName');
+                const mapName = mapNameInput.value.trim();
+                
+                if (!mapName) {
+                    alert('请输入地图名称');
+                    return;
+                }
+                
+                // 准备地图数据（与exportMap相同的逻辑）
+                const exportObjects = mapObjects.map(obj => {
+                    if (obj.isBackground) {
+                        return {
+                            ...obj,
+                            image: undefined,
+                            imageData: obj.imageData
+                        };
+                    }
+                    
+                    const exportObj = {...obj};
+                    
+                    if (exportObj.spriteData) {
+                        exportObj.spriteData = {
+                            ...exportObj.spriteData,
+                            image: undefined,
+                            _cachedImage: undefined
+                        };
+                    }
+                    
+                    return exportObj;
+                });
+                
+                const mapData = {
+                    gridSize: gridSize,
+                    cols: Math.round(canvas.width / gridSize),
+                    rows: Math.round(canvas.height / gridSize),
+                    width: canvas.width,
+                    height: canvas.height,
+                    layers: layers,
+                    objects: exportObjects,
+                    collisionAreas: collisionAreas
+                };
+                
+                // 发送到后端API
+                const response = await fetch('/api/map-editor/map', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        map: mapData,
+                        mapName: mapName,
+                        mapId: currentMapId // 如果有ID，则更新现有地图
+                    })
+                });
+                
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || '保存失败');
+                }
+                
+                const result = await response.json();
+                console.log('地图保存成功:', result);
+                
+                // 保存地图ID，下次保存时更新而不是创建新地图
+                currentMapId = result.mapId;
+                
+                // 在界面上显示成功提示（不用弹窗）
+                const toolInfo = document.getElementById('toolInfo');
+                const originalText = toolInfo.textContent;
+                toolInfo.textContent = '✅ 地图已保存到云端';
+                toolInfo.style.color = '#4CAF50';
+                setTimeout(() => {
+                    toolInfo.textContent = originalText;
+                    toolInfo.style.color = '';
+                }, 3000);
+                
+            } catch (error) {
+                console.error('保存地图失败:', error);
+                alert('保存失败：' + error.message);
+            }
+        }
+        
+        async function loadMapFromCloud() {
+            try {
+                // 获取地图列表
+                const listResponse = await fetch('/api/map-editor/list', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                if (!listResponse.ok) {
+                    const error = await listResponse.json();
+                    throw new Error(error.error || '获取地图列表失败');
+                }
+                
+                const listResult = await listResponse.json();
+                
+                if (!listResult.maps || listResult.maps.length === 0) {
+                    alert('云端没有保存的地图');
+                    return;
+                }
+                
+                // 显示地图列表供用户选择
+                let mapListHtml = '请选择要加载的地图：\n\n';
+                listResult.maps.forEach((map, index) => {
+                    const date = new Date(map.updatedAt || map.createdAt).toLocaleString('zh-CN');
+                    mapListHtml += `${index + 1}. ${map.name} (${date})\n`;
+                });
+                
+                const choice = prompt(mapListHtml + '\n请输入地图编号：');
+                if (!choice) return;
+                
+                const index = parseInt(choice) - 1;
+                if (index < 0 || index >= listResult.maps.length) {
+                    alert('无效的地图编号');
+                    return;
+                }
+                
+                const selectedMap = listResult.maps[index];
+                
+                // 加载选中的地图
+                const response = await fetch(`/api/map-editor/map?id=${selectedMap.id}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || '加载失败');
+                }
+                
+                const result = await response.json();
+                
+                if (!result.map) {
+                    throw new Error('地图数据为空');
+                }
+                
+                const data = result.map;
+                
+                // 保存当前地图ID和名称
+                currentMapId = result.mapId;
+                document.getElementById('mapName').value = result.mapName || '';
+                
+                // 辅助函数：收集对象的瓦片集图片URL
+                function collectSpriteUrls(obj, urlSet) {
+                    if (obj.spriteData && obj.spriteData.spriteImageSrc) {
+                        urlSet.add(obj.spriteData.spriteImageSrc);
+                    }
+                    // 如果是组合对象，递归处理子对象
+                    if (obj.isGroup && obj.children) {
+                        obj.children.forEach(child => collectSpriteUrls(child, urlSet));
+                    }
+                }
+                
+                // 辅助函数：为对象设置缓存的图片引用
+                function setCachedImages(obj, imageCache) {
+                    if (obj.spriteData && obj.spriteData.spriteImageSrc) {
+                        const cachedImg = imageCache[obj.spriteData.spriteImageSrc];
+                        if (cachedImg) {
+                            obj.spriteData._cachedImage = cachedImg;
+                        }
+                    }
+                    // 如果是组合对象，递归处理子对象
+                    if (obj.isGroup && obj.children) {
+                        obj.children.forEach(child => setCachedImages(child, imageCache));
+                    }
+                }
+                
+                // 处理对象，将背景图的imageData转换回image，并重新加载瓦片集图片
+                const importObjects = [];
+                const loadPromises = [];
+                
+                // 收集所有需要加载的瓦片集图片URL（去重）
+                const spriteImageUrls = new Set();
+                (data.objects || []).forEach(obj => {
+                    collectSpriteUrls(obj, spriteImageUrls);
+                });
+                
+                // 预加载所有瓦片集图片
+                const spriteImageCache = {};
+                spriteImageUrls.forEach(url => {
+                    const promise = new Promise((resolve) => {
+                        const img = new Image();
+                        img.crossOrigin = 'anonymous';
+                        img.onload = () => {
+                            spriteImageCache[url] = img;
+                            console.log('✓ 加载瓦片集图片:', url);
+                            resolve();
+                        };
+                        img.onerror = () => {
+                            console.error('✗ 加载瓦片集图片失败:', url);
+                            resolve();
+                        };
+                        img.src = url;
+                    });
+                    loadPromises.push(promise);
+                });
+                
+                // 处理背景图
+                (data.objects || []).forEach(obj => {
+                    if (obj.isBackground && obj.imageData) {
+                        const promise = new Promise((resolve) => {
+                            const img = new Image();
+                            img.onload = () => {
+                                importObjects.push({
+                                    ...obj,
+                                    image: img,
+                                    imageData: obj.imageData
+                                });
+                                console.log('✓ 加载背景图');
+                                resolve();
+                            };
+                            img.onerror = () => {
+                                console.error('✗ 加载背景图失败');
+                                resolve();
+                            };
+                            img.src = obj.imageData;
+                        });
+                        loadPromises.push(promise);
+                    } else {
+                        if (obj.layer === undefined) {
+                            obj.layer = 0;
+                        }
+                        
+                        if (obj.spriteData && obj.spriteData.spriteImageSrc) {
+                            delete obj.spriteData._cachedImage;
+                        }
+                        
+                        if (obj.spriteData && obj.spriteData.isFullImage && obj.spriteData.imageSrc) {
+                            const promise = new Promise((resolve) => {
+                                const img = new Image();
+                                img.crossOrigin = 'anonymous';
+                                img.onload = () => {
+                                    obj.spriteData.image = img;
+                                    console.log('✓ 加载完整图片素材');
+                                    resolve();
+                                };
+                                img.onerror = () => {
+                                    console.error('✗ 加载完整图片素材失败');
+                                    resolve();
+                                };
+                                img.src = obj.spriteData.imageSrc;
+                            });
+                            loadPromises.push(promise);
+                        }
+                        
+                        importObjects.push(obj);
+                    }
+                });
+                
+                // 等待所有图片加载完成
+                Promise.all(loadPromises).then(() => {
+                    importObjects.forEach(obj => {
+                        setCachedImages(obj, spriteImageCache);
+                    });
+                    
+                    mapObjects = importObjects;
+                    collisionAreas = data.collisionAreas || [];
+                    layers = data.layers || [{id: 0, name: '图层 0', visible: true, locked: false}];
+                    currentLayer = layers[0].id;
+                    
+                    if (data.gridSize) {
+                        gridSize = data.gridSize;
+                        document.getElementById('gridSize').value = gridSize;
+                    }
+                    
+                    if (data.cols && data.rows) {
+                        canvas.width = data.cols * gridSize;
+                        canvas.height = data.rows * gridSize;
+                        document.getElementById('mapCols').value = data.cols;
+                        document.getElementById('mapRows').value = data.rows;
+                    } else {
+                        canvas.width = data.width || 960;
+                        canvas.height = data.height || 704;
+                        document.getElementById('mapCols').value = Math.round(canvas.width / gridSize);
+                        document.getElementById('mapRows').value = Math.round(canvas.height / gridSize);
+                    }
+                    
+                    selectedObject = null;
+                    updateObjectProps();
+                    renderLayerList();
+                    render();
+                    
+                    // 显示成功提示
+                    const toolInfo = document.getElementById('toolInfo');
+                    const originalText = toolInfo.textContent;
+                    toolInfo.textContent = '✅ 地图已从云端加载';
+                    toolInfo.style.color = '#4CAF50';
+                    setTimeout(() => {
+                        toolInfo.textContent = originalText;
+                        toolInfo.style.color = '';
+                    }, 3000);
+                });
+                
+            } catch (error) {
+                console.error('加载地图失败:', error);
+                alert('加载失败：' + error.message);
+            }
+        }
+        
+        function resizeMap() {
+            const cols = parseInt(document.getElementById('mapCols').value) || 30;
+            const rows = parseInt(document.getElementById('mapRows').value) || 22;
+            canvas.width = cols * gridSize;
+            canvas.height = rows * gridSize;
+            render();
+        }
+        
+        async function setActiveMap() {
+            try {
+                if (!currentMapId) {
+                    alert('请先加载一个地图');
+                    return;
+                }
+                
+                const response = await fetch('/api/map-editor/active', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        id: currentMapId
+                    })
+                });
+                
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || '设置失败');
+                }
+                
+                // 显示成功提示
+                const toolInfo = document.getElementById('toolInfo');
+                const originalText = toolInfo.textContent;
+                toolInfo.textContent = '✅ 已设为激活地图';
+                toolInfo.style.color = '#4CAF50';
+                setTimeout(() => {
+                    toolInfo.textContent = originalText;
+                    toolInfo.style.color = '';
+                }, 3000);
+                
+            } catch (error) {
+                console.error('设置激活地图失败:', error);
+                alert('设置失败：' + error.message);
+            }
+        }
+        
+        function updateGridSize() {
+            const oldGridSize = gridSize;
+            gridSize = parseInt(document.getElementById('gridSize').value) || 32;
+            
+            // 重新计算画布大小
+            const cols = Math.round(canvas.width / oldGridSize);
+            const rows = Math.round(canvas.height / oldGridSize);
+            canvas.width = cols * gridSize;
+            canvas.height = rows * gridSize;
+            
+            // 更新输入框
+            document.getElementById('mapCols').value = cols;
+            document.getElementById('mapRows').value = rows;
+            
+            render();
+        }
+        
+        function toggleGrid() {
+            showGrid = document.getElementById('showGrid').checked;
+            render();
+        }
+        
+        // 初始化
+        renderLayerList();
+        render();
+        
+        // 默认加载第一个素材集
+        document.getElementById('spriteSource').value = 'urbanB';
+        loadSprites();
+    </script>
+</body>
+</html>
