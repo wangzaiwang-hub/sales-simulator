@@ -37,16 +37,27 @@ function resolveSecondMeId(profile: any) {
   );
 }
 
+function resolveFrontendUrl(req: Request) {
+  return process.env.FRONTEND_URL || `${req.protocol}://${req.get('host')}`;
+}
+
+function resolveBackendBaseUrl(req: Request) {
+  return process.env.BASE_URL || `${req.protocol}://${req.get('host')}`;
+}
+
 export const authController = {
   async secondmeCallback(req: Request, res: Response) {
     try {
       const { code, state } = req.query;
+      const frontendUrl = resolveFrontendUrl(req);
       
       if (!code || typeof code !== 'string') {
-        return res.redirect(`${process.env.FRONTEND_URL}/auth/login?error=no_code`);
+        return res.redirect(`${frontendUrl}/auth/login?error=no_code`);
       }
 
-      const redirectUri = 'https://capable-energy-production-bf2e.up.railway.app/auth/callback';
+      const redirectUri =
+        process.env.SECONDME_REDIRECT_URI ||
+        `${resolveBackendBaseUrl(req)}/api/auth/callback`;
       
       const tokenParams = new URLSearchParams({
         client_id: process.env.SECONDME_CLIENT_ID || '',
@@ -79,15 +90,14 @@ export const authController = {
       
       if (!tokenResponse.ok || !accessToken) {
         console.error('Token exchange failed:', tokenResponse.data);
-        return res.redirect(`${process.env.FRONTEND_URL}/auth/login?error=token_failed`);
+        return res.redirect(`${frontendUrl}/auth/login?error=token_failed`);
       }
 
       // 跳转到前端并带上token
-      const frontendUrl = process.env.FRONTEND_URL || 'https://sales-simulator-zeta-iota.vercel.app';
       return res.redirect(`${frontendUrl}/auth/callback?token=${accessToken}`);
     } catch (error) {
       console.error('OAuth callback error:', error);
-      const frontendUrl = process.env.FRONTEND_URL || 'https://sales-simulator-zeta-iota.vercel.app';
+      const frontendUrl = resolveFrontendUrl(req);
       return res.redirect(`${frontendUrl}/auth/login?error=callback_failed`);
     }
   },

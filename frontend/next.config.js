@@ -23,14 +23,6 @@ const nextConfig = {
         destination: `${backendUrl}/tools/tileset-editor`,
       },
       {
-        source: "/editor-runtime/map-editor",
-        destination: `${backendUrl}/tools/map-editor`,
-      },
-      {
-        source: "/map-editor.html",
-        destination: `${backendUrl}/tools/map-editor`,
-      },
-      {
         source: "/editor-runtime/map-test",
         destination: `${backendUrl}/tools/map-test`,
       },
