@@ -182,6 +182,7 @@
                 <button class="tool-btn" id="tool-delete" onclick="setTool('delete')">🗑️ 橡皮 (E)</button>
                 <button class="tool-btn" id="tool-fill" onclick="setTool('fill')">🪣 填充 (F)</button>
                 <button class="tool-btn" id="tool-collision" onclick="setTool('collision')">⬜ 碰撞 (P)</button>
+                <button class="tool-btn" id="tool-portal" onclick="setTool('portal')">🌀 传送门 (T)</button>
                 <label id="collisionToggleLabel" style="display: inline-flex; align-items: center; margin-left: 15px; cursor: pointer;">
                     <input type="checkbox" id="showCollisionCheckbox" onchange="toggleCollisionBoxes()" style="width: auto; margin-right: 5px; cursor: pointer;">
                     <span style="font-size: 12px;">显示碰撞框</span>
@@ -311,6 +312,18 @@
         
         // 独立碰撞区域列表
         let collisionAreas = [];
+        let portalAreas = [];
+
+        function getAreaCollection(area) {
+            return area && area.isPortalArea ? portalAreas : collisionAreas;
+        }
+
+        function getNextPortalCode() {
+            const numericCodes = portalAreas
+                .map(area => Number(area.portalCode))
+                .filter(code => Number.isFinite(code) && code > 0);
+            return numericCodes.length ? Math.max(...numericCodes) + 1 : 1;
+        }
         
         // 画布偏移
         let canvasOffsetX = 0;
@@ -433,7 +446,8 @@
                 'select': '画笔工具 (B) - 单击放置，拖动连续填充，双击选中对象可缩放',
                 'delete': '橡皮擦工具 (E) - 点击删除对象',
                 'fill': '填充工具 (F) - 点击填充整个区域',
-                'collision': '碰撞框工具 (P) - 选中对象后拖动绘制碰撞框，或直接拖动创建独立碰撞区域（空气墙）'
+                'collision': '碰撞框工具 (P) - 选中对象后拖动绘制碰撞框，或直接拖动创建独立碰撞区域（空气墙）',
+                'portal': '传送门工具 (T) - 拖动创建传送门区域，两个地图使用同号门即可互传'
             };
             document.getElementById('toolInfo').textContent = toolNames[tool];
             selectedObject = null;
@@ -500,6 +514,9 @@
                     break;
                 case 'p':
                     setTool('collision');
+                    break;
+                case 't':
+                    setTool('portal');
                     break;
                 case 'r':
                     rotateSelectedObject();
@@ -982,6 +999,7 @@
             
             // 删除该图层的所有独立碰撞区域
             collisionAreas = collisionAreas.filter(area => area.layer !== id);
+            portalAreas = portalAreas.filter(area => area.layer !== id);
             
             layers = layers.filter(l => l.id !== id);
             
@@ -1011,6 +1029,10 @@
                 
                 // 更新所有独立碰撞区域的图层ID
                 collisionAreas.forEach(area => {
+                    if (area.layer === id1) area.layer = layer2.id;
+                    else if (area.layer === id2) area.layer = layer1.id;
+                });
+                portalAreas.forEach(area => {
                     if (area.layer === id1) area.layer = layer2.id;
                     else if (area.layer === id2) area.layer = layer1.id;
                 });
@@ -1602,6 +1624,26 @@
             
             // 绘制独立碰撞区域（空气墙）- 预览模式下不显示
             if (!isPreviewMode) {
+                portalAreas.forEach(area => {
+                    const layer = layers.find(l => l.id === area.layer);
+                    if (!layer || !layer.visible) return;
+                    
+                    ctx.save();
+                    if (area.layer !== currentLayer) {
+                        ctx.globalAlpha = 0.3;
+                    }
+                    
+                    ctx.fillStyle = 'rgba(0, 200, 255, 0.18)';
+                    ctx.fillRect(area.x, area.y, area.width, area.height);
+                    ctx.strokeStyle = 'rgba(0, 200, 255, 0.95)';
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(area.x, area.y, area.width, area.height);
+                    ctx.fillStyle = '#8be9ff';
+                    ctx.font = '12px Arial';
+                    ctx.fillText(`门 ${area.portalCode || '?'}`, area.x + 6, area.y + 16);
+                    ctx.restore();
+                });
+
                 collisionAreas.forEach(area => {
                     const layer = layers.find(l => l.id === area.layer);
                     if (!layer || !layer.visible) return;
@@ -1743,6 +1785,20 @@
                 });
 
                 if (showCollisionBoxes) {
+                    portalAreas.forEach(area => {
+                        const layer = layers.find(l => l.id === area.layer);
+                        if (!layer || !layer.visible) return;
+
+                        ctx.fillStyle = 'rgba(0, 200, 255, 0.12)';
+                        ctx.fillRect(area.x, area.y, area.width, area.height);
+                        ctx.strokeStyle = 'rgba(0, 200, 255, 0.9)';
+                        ctx.lineWidth = 2;
+                        ctx.strokeRect(area.x, area.y, area.width, area.height);
+                        ctx.fillStyle = '#8be9ff';
+                        ctx.font = '12px Arial';
+                        ctx.fillText(`门 ${area.portalCode || '?'}`, area.x + 6, area.y + 16);
+                    });
+
                     collisionAreas.forEach(area => {
                         const layer = layers.find(l => l.id === area.layer);
                         if (!layer || !layer.visible) return;
@@ -2072,6 +2128,8 @@
                 handleSelectMouseDown(x, y, e.ctrlKey || e.metaKey);
             } else if (currentTool === 'collision') {
                 handleCollisionMouseDown(x, y);
+            } else if (currentTool === 'portal') {
+                handlePortalMouseDown(x, y);
             } else if (currentTool === 'delete') {
                 isPainting = true;
                 handleDeleteClick(x, y);
@@ -2133,7 +2191,7 @@
                 const height = y2 - y1;
                 
                 // 如果有选中对象，为对象添加碰撞框
-                if (selectedObject && !selectedObject.isCollisionArea) {
+                if (selectedObject && !selectedObject.isCollisionArea && !selectedObject.isPortalArea) {
                     selectedObject.collision = {
                         x: x1,
                         y: y1,
@@ -2142,18 +2200,33 @@
                     };
                     updateObjectProps();
                 } else if (width > 5 && height > 5) {
-                    // 否则创建独立碰撞区域（空气墙）
-                    const newArea = {
-                        id: 'collision-' + Date.now(),
-                        isCollisionArea: true,
-                        layer: currentLayer,
-                        x: x1,
-                        y: y1,
-                        width: width,
-                        height: height
-                    };
-                    collisionAreas.push(newArea);
-                    selectedObject = null;
+                    if (currentTool === 'portal') {
+                        const newArea = {
+                            id: 'portal-' + Date.now(),
+                            isPortalArea: true,
+                            layer: currentLayer,
+                            x: x1,
+                            y: y1,
+                            width: width,
+                            height: height,
+                            portalCode: getNextPortalCode()
+                        };
+                        portalAreas.push(newArea);
+                        selectedObject = newArea;
+                    } else {
+                        // 否则创建独立碰撞区域（空气墙）
+                        const newArea = {
+                            id: 'collision-' + Date.now(),
+                            isCollisionArea: true,
+                            layer: currentLayer,
+                            x: x1,
+                            y: y1,
+                            width: width,
+                            height: height
+                        };
+                        collisionAreas.push(newArea);
+                        selectedObject = null;
+                    }
                     updateObjectProps();
                 }
             }
@@ -2170,7 +2243,22 @@
             collisionStart = null;
             render();
         };
-        
+
+        function findAreaAtPosition(x, y, includeAllLayers = false) {
+            const areas = [...portalAreas, ...collisionAreas];
+            for (let i = areas.length - 1; i >= 0; i--) {
+                const area = areas[i];
+                if ((!includeAllLayers && area.layer !== currentLayer)) continue;
+                if (
+                    x >= area.x && x <= area.x + area.width &&
+                    y >= area.y && y <= area.y + area.height
+                ) {
+                    return area;
+                }
+            }
+            return null;
+        }
+
         // 双击事件：选中对象进入缩放模式
         canvas.ondblclick = (e) => {
             const rect = canvas.getBoundingClientRect();
@@ -2182,18 +2270,13 @@
             const y = mouseY - canvasOffsetY;
             
             if (currentTool === 'select') {
-                // 先检查独立碰撞区域
-                for (let i = collisionAreas.length - 1; i >= 0; i--) {
-                    const area = collisionAreas[i];
-                    if (area.layer === currentLayer &&
-                        x >= area.x && x <= area.x + area.width && 
-                        y >= area.y && y <= area.y + area.height) {
-                        selectedObject = area;
-                        selectedObjects = [];
-                        updateObjectProps();
-                        render();
-                        return;
-                    }
+                const area = findAreaAtPosition(x, y);
+                if (area) {
+                    selectedObject = area;
+                    selectedObjects = [];
+                    updateObjectProps();
+                    render();
+                    return;
                 }
                 
                 // 检查是否双击了对象（包括组合对象）
@@ -2231,49 +2314,40 @@
                 }
             }
             
-            // 检查是否点击了独立碰撞区域
-            for (let i = collisionAreas.length - 1; i >= 0; i--) {
-                const area = collisionAreas[i];
-                if (area.layer === currentLayer &&
-                    x >= area.x && x <= area.x + area.width && 
-                    y >= area.y && y <= area.y + area.height) {
-                    
-                    if (isCtrlPressed) {
-                        // Ctrl多选
-                        const index = selectedObjects.indexOf(area);
-                        if (index === -1) {
-                            selectedObjects.push(area);
-                        } else {
-                            selectedObjects.splice(index, 1);
-                        }
-                        selectedObject = null;
-                        updateObjectProps();
-                        render();
-                        return;
+            const area = findAreaAtPosition(x, y);
+            if (area) {
+                if (isCtrlPressed) {
+                    const index = selectedObjects.indexOf(area);
+                    if (index === -1) {
+                        selectedObjects.push(area);
+                    } else {
+                        selectedObjects.splice(index, 1);
                     }
-                    
-                    // 检查是否点击了缩放手柄
-                    const handle = getResizeHandle(area, x, y);
-                    if (handle) {
-                        selectedObject = area;
-                        selectedObjects = [];
-                        isResizing = true;
-                        resizeHandle = handle;
-                        dragStart = {x, y};
-                        updateObjectProps();
-                        render();
-                        return;
-                    }
-                    
-                    // 否则开始拖动
-                    selectedObject = area;
-                    selectedObjects = [];
-                    isDragging = true;
-                    dragStart = {x: x - area.x, y: y - area.y};
+                    selectedObject = null;
                     updateObjectProps();
                     render();
                     return;
                 }
+
+                const handle = getResizeHandle(area, x, y);
+                if (handle) {
+                    selectedObject = area;
+                    selectedObjects = [];
+                    isResizing = true;
+                    resizeHandle = handle;
+                    dragStart = {x, y};
+                    updateObjectProps();
+                    render();
+                    return;
+                }
+
+                selectedObject = area;
+                selectedObjects = [];
+                isDragging = true;
+                dragStart = {x: x - area.x, y: y - area.y};
+                updateObjectProps();
+                render();
+                return;
             }
             
             // 检查是否点击了对象
@@ -2404,20 +2478,19 @@
             const layer = layers.find(l => l.id === currentLayer);
             if (!layer || layer.locked) return;
             
-            // 先检查是否点击了独立碰撞区域
-            for (let i = collisionAreas.length - 1; i >= 0; i--) {
-                const area = collisionAreas[i];
-                if (area.layer === currentLayer &&
-                    x >= area.x && x <= area.x + area.width && 
-                    y >= area.y && y <= area.y + area.height) {
-                    collisionAreas.splice(i, 1);
-                    if (selectedObject === area) {
-                        selectedObject = null;
-                        updateObjectProps();
-                    }
-                    render();
-                    return;
+            const area = findAreaAtPosition(x, y);
+            if (area) {
+                const collection = getAreaCollection(area);
+                const index = collection.indexOf(area);
+                if (index !== -1) {
+                    collection.splice(index, 1);
                 }
+                if (selectedObject === area) {
+                    selectedObject = null;
+                    updateObjectProps();
+                }
+                render();
+                return;
             }
             
             // 对齐到网格
@@ -2556,6 +2629,37 @@
             collisionStart = {x, y};
             dragStart = {x, y};
         }
+
+        function handlePortalMouseDown(x, y) {
+            const layer = layers.find(l => l.id === currentLayer);
+            if (layer && layer.locked) {
+                return;
+            }
+
+            const area = portalAreas.findLast?.(area =>
+                area.layer === currentLayer &&
+                x >= area.x && x <= area.x + area.width &&
+                y >= area.y && y <= area.y + area.height
+            ) || [...portalAreas].reverse().find(area =>
+                area.layer === currentLayer &&
+                x >= area.x && x <= area.x + area.width &&
+                y >= area.y && y <= area.y + area.height
+            );
+
+            if (area) {
+                selectedObject = area;
+                isDragging = true;
+                dragStart = {x: x - area.x, y: y - area.y};
+                updateObjectProps();
+                render();
+                return;
+            }
+
+            selectedObject = null;
+            isDrawingCollision = true;
+            collisionStart = {x, y};
+            dragStart = {x, y};
+        }
         
         function handleDeleteClick(x, y) {
             const layer = layers.find(l => l.id === currentLayer);
@@ -2567,20 +2671,19 @@
                 return;
             }
             
-            // 检查是否点击了独立碰撞区域
-            for (let i = collisionAreas.length - 1; i >= 0; i--) {
-                const area = collisionAreas[i];
-                if (area.layer === currentLayer &&
-                    x >= area.x && x <= area.x + area.width && 
-                    y >= area.y && y <= area.y + area.height) {
-                    collisionAreas.splice(i, 1);
-                    if (selectedObject === area) {
-                        selectedObject = null;
-                        updateObjectProps();
-                    }
-                    render();
-                    return;
+            const area = findAreaAtPosition(x, y);
+            if (area) {
+                const collection = getAreaCollection(area);
+                const index = collection.indexOf(area);
+                if (index !== -1) {
+                    collection.splice(index, 1);
                 }
+                if (selectedObject === area) {
+                    selectedObject = null;
+                    updateObjectProps();
+                }
+                render();
+                return;
             }
             
             // 否则精确点击删除普通对象
@@ -2622,7 +2725,7 @@
             const dy = y - dragStart.y;
             
             // 独立碰撞区域 - 自由拉伸
-            if (selectedObject.isCollisionArea) {
+            if (selectedObject.isCollisionArea || selectedObject.isPortalArea) {
                 switch (resizeHandle) {
                     case 'se':
                         selectedObject.width = Math.max(10, selectedObject.width + dx);
@@ -2842,7 +2945,7 @@
                 
                 html += '<div style="max-height: 200px; overflow-y: auto; margin-top: 10px;">';
                 selectedObjects.forEach((obj, index) => {
-                    const type = obj.isCollisionArea ? '碰撞区域' : '素材对象';
+                    const type = obj.isPortalArea ? '传送门' : obj.isCollisionArea ? '碰撞区域' : '素材对象';
                     html += `
                         <div class="info" style="margin: 4px 0; padding: 4px; font-size: 10px; border-left: 3px solid #00aaff;">
                             <strong>#${index + 1}</strong> ${type}<br>
@@ -2861,7 +2964,24 @@
             if (!selectedObject) {
                 // 显示独立碰撞区域列表
                 const areaCount = collisionAreas.length;
+                const portalCount = portalAreas.length;
                 let html = '<div class="info">未选中任何对象</div>';
+
+                if (portalCount > 0) {
+                    html += `<h4 style="margin-top: 10px; font-size: 12px;">传送门 (${portalCount})</h4>`;
+                    html += '<div style="max-height: 150px; overflow-y: auto;">';
+                    portalAreas.forEach((area, index) => {
+                        html += `
+                            <div class="info" style="margin: 4px 0; padding: 4px; cursor: pointer; font-size: 10px; border-left: 3px solid #39d5ff;" 
+                                 onclick="selectPortalArea(${index})">
+                                <strong>门 ${area.portalCode || '?'}</strong> 图层${area.layer}<br>
+                                位置: (${Math.round(area.x)}, ${Math.round(area.y)})<br>
+                                尺寸: ${Math.round(area.width)} x ${Math.round(area.height)}
+                            </div>
+                        `;
+                    });
+                    html += '</div>';
+                }
                 
                 if (areaCount > 0) {
                     html += `<h4 style="margin-top: 10px; font-size: 12px;">独立碰撞区域 (${areaCount})</h4>`;
@@ -2884,6 +3004,23 @@
             }
             
             // 独立碰撞区域
+            if (selectedObject.isPortalArea) {
+                panel.innerHTML = `
+                    <div class="info">
+                        <strong>类型:</strong> 传送门区域<br>
+                        <strong>ID:</strong> ${selectedObject.id}<br>
+                        <strong>门号:</strong> ${selectedObject.portalCode || ''}<br>
+                        <strong>图层:</strong> ${selectedObject.layer}<br>
+                        <strong>位置:</strong> (${Math.round(selectedObject.x)}, ${Math.round(selectedObject.y)})<br>
+                        <strong>尺寸:</strong> ${Math.round(selectedObject.width)} x ${Math.round(selectedObject.height)}
+                    </div>
+                    <label>门号：</label>
+                    <input type="number" min="1" value="${selectedObject.portalCode || 1}" onchange="updatePortalCode(this.value)">
+                    <button onclick="deleteSelectedPortalArea()">🗑️ 删除传送门</button>
+                `;
+                return;
+            }
+
             if (selectedObject.isCollisionArea) {
                 panel.innerHTML = `
                     <div class="info">
@@ -2960,7 +3097,17 @@
                 render();
             }
         }
-        
+
+        function selectPortalArea(index) {
+            if (index >= 0 && index < portalAreas.length) {
+                selectedObject = portalAreas[index];
+                currentLayer = selectedObject.layer;
+                renderLayerList();
+                updateObjectProps();
+                render();
+            }
+        }
+
         function deleteSelectedCollisionArea() {
             if (selectedObject && selectedObject.isCollisionArea) {
                 const index = collisionAreas.indexOf(selectedObject);
@@ -2970,6 +3117,27 @@
                     updateObjectProps();
                     render();
                 }
+            }
+        }
+
+        function deleteSelectedPortalArea() {
+            if (selectedObject && selectedObject.isPortalArea) {
+                const index = portalAreas.indexOf(selectedObject);
+                if (index !== -1) {
+                    portalAreas.splice(index, 1);
+                    selectedObject = null;
+                    updateObjectProps();
+                    render();
+                }
+            }
+        }
+
+        function updatePortalCode(value) {
+            if (selectedObject && selectedObject.isPortalArea) {
+                const nextCode = Math.max(1, parseInt(value, 10) || 1);
+                selectedObject.portalCode = nextCode;
+                updateObjectProps();
+                render();
             }
         }
         
@@ -3024,16 +3192,17 @@
                 return exportObj;
             });
             
-            const data = {
-                gridSize: gridSize,
-                cols: Math.round(canvas.width / gridSize),
-                rows: Math.round(canvas.height / gridSize),
-                width: canvas.width,
-                height: canvas.height,
-                layers: layers,
-                objects: exportObjects,
-                collisionAreas: collisionAreas // 导出独立碰撞区域
-            };
+                const data = {
+                    gridSize: gridSize,
+                    cols: Math.round(canvas.width / gridSize),
+                    rows: Math.round(canvas.height / gridSize),
+                    width: canvas.width,
+                    height: canvas.height,
+                    layers: layers,
+                    objects: exportObjects,
+                    collisionAreas: collisionAreas, // 导出独立碰撞区域
+                    portalAreas: portalAreas
+                };
             document.getElementById('mapData').value = JSON.stringify(data, null, 2);
         }
         
@@ -3163,6 +3332,7 @@
                     
                     // 导入独立碰撞区域
                     collisionAreas = data.collisionAreas || [];
+                    portalAreas = data.portalAreas || [];
                     
                     layers = data.layers || [{id: 0, name: '图层 0', visible: true, locked: false}];
                     currentLayer = layers[0].id;
@@ -3243,7 +3413,8 @@
                     height: canvas.height,
                     layers: layers,
                     objects: exportObjects,
-                    collisionAreas: collisionAreas
+                    collisionAreas: collisionAreas,
+                    portalAreas: portalAreas
                 };
                 
                 // 发送到后端API
@@ -3478,6 +3649,7 @@
                     
                     mapObjects = importObjects;
                     collisionAreas = data.collisionAreas || [];
+                    portalAreas = data.portalAreas || [];
                     layers = data.layers || [{id: 0, name: '图层 0', visible: true, locked: false}];
                     currentLayer = layers[0].id;
                     

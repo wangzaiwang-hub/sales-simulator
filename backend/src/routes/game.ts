@@ -22,6 +22,9 @@ router.put('/progress', gameController.updateProgress);
 // 获取当前用户地图
 router.get('/map', gameController.getMap);
 
+// 根据传送门编号获取目标地图
+router.get('/portal-target', gameController.getPortalTarget);
+
 // 保存当前用户地图
 router.put('/map', gameController.saveMap);
 

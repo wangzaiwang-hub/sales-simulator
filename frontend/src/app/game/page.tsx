@@ -49,6 +49,14 @@ type MapData = {
   tileSize: number;
   tileset?: string;
   layers: Layer[];
+  portalAreas?: Array<{
+    id?: string;
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+    portalCode?: string | number;
+  }>;
 };
 
 type Progress = {
@@ -117,6 +125,7 @@ type NpcState = ActorState & {
 type MapResponse = {
   hasCustomMap: boolean;
   map: MapData | null;
+  mapId?: string | null;
   npcs?: NpcState[];
   error?: string;
 };
@@ -257,6 +266,9 @@ export default function GamePage() {
   const keysRef = useRef<Record<string, boolean>>({});
   const mapRef = useRef<MapData | null>(null);
   const saveTimerRef = useRef<number | null>(null);
+  const currentSharedMapIdRef = useRef<string | null>(null);
+  const portalLockRef = useRef<string | null>(null);
+  const teleportingRef = useRef(false);
   const [status, setStatus] = useState("正在加载游戏...");
   const [username, setUsername] = useState("");
   const [userId, setUserId] = useState(""); // Current user's ID
@@ -378,11 +390,12 @@ export default function GamePage() {
         }
 
         mapRef.current = mapPayload.map as MapData;
+        currentSharedMapIdRef.current = mapPayload.mapId ?? null;
         npcsRef.current = hydrateNpcRoster(
           mapPayload.npcs,
-          mapPayload.map.tileSize || 48,
-          mapPayload.map.width || 20,
-          mapPayload.map.height || 20,
+          (mapPayload.map as any).gridSize || mapPayload.map.tileSize || 48,
+          (mapPayload.map as any).cols || mapPayload.map.width || 20,
+          (mapPayload.map as any).rows || mapPayload.map.height || 20,
         );
         
         // 修复玩家与NPC重叠问题
@@ -514,24 +527,37 @@ export default function GamePage() {
       return;
     }
 
-    const map = mapRef.current;
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    // 兼容新旧地图格式
-    // 新格式：width/height是像素值，cols/rows是格子数，gridSize是格子大小
-    // 旧格式：width/height是格子数，tileSize是格子大小
-    const tileSize = (map as any).gridSize || map.tileSize || 48;
-    const mapCols = (map as any).cols || map.width || 20;
-    const mapRows = (map as any).rows || map.height || 15;
-    
-    canvas.width = mapCols * tileSize;
-    canvas.height = mapRows * tileSize;
-    ctx.imageSmoothingEnabled = false;
-
     const imageCache = new Map<string, HTMLImageElement>();
     let interactionFrame = 0;
+
+    const getCurrentMap = () => mapRef.current;
+
+    const getCurrentMapMetrics = (currentMap: MapData | null) => {
+      const tileSize = (currentMap as any)?.gridSize || currentMap?.tileSize || 48;
+      const mapCols = (currentMap as any)?.cols || currentMap?.width || 20;
+      const mapRows = (currentMap as any)?.rows || currentMap?.height || 15;
+      return { tileSize, mapCols, mapRows };
+    };
+
+    const syncCanvasToMap = (currentMap: MapData | null) => {
+      const { tileSize, mapCols, mapRows } = getCurrentMapMetrics(currentMap);
+      const nextWidth = mapCols * tileSize;
+      const nextHeight = mapRows * tileSize;
+      if (canvas.width !== nextWidth) {
+        canvas.width = nextWidth;
+      }
+      if (canvas.height !== nextHeight) {
+        canvas.height = nextHeight;
+      }
+      ctx.imageSmoothingEnabled = false;
+      return { tileSize, mapCols, mapRows };
+    };
+
+    syncCanvasToMap(getCurrentMap());
 
     const loadImage = (src: string) =>
       new Promise<void>((resolve) => {
@@ -563,16 +589,19 @@ export default function GamePage() {
     ) => a.x < b.x + b.width && a.x + a.width > b.x && a.y < b.y + b.height && a.y + a.height > b.y;
 
     const isBlockedByMap = (bounds: { x: number; y: number; width: number; height: number }) => {
+      const currentMap = getCurrentMap();
+      const { tileSize } = getCurrentMapMetrics(currentMap);
+
       if (bounds.x < 0 || bounds.y < 0 || bounds.x + bounds.width > canvas.width || bounds.y + bounds.height > canvas.height) {
         return true;
       }
 
       // 检查是否是新格式的地图
-      const isNewFormat = (map as any).objects && Array.isArray((map as any).objects);
+      const isNewFormat = (currentMap as any)?.objects && Array.isArray((currentMap as any)?.objects);
       
       if (isNewFormat) {
         // 新格式：检查对象的碰撞框和独立碰撞区域
-        const objects = (map as any).objects as Array<{
+        const objects = ((currentMap as any)?.objects || []) as Array<{
           x: number;
           y: number;
           width: number;
@@ -609,7 +638,7 @@ export default function GamePage() {
         }
         
         // 检查独立碰撞区域
-        const collisionAreas = (map as any).collisionAreas as Array<{
+        const collisionAreas = ((currentMap as any)?.collisionAreas || []) as Array<{
           x: number;
           y: number;
           width: number;
@@ -632,7 +661,7 @@ export default function GamePage() {
 
         for (let ty = tileY1; ty <= tileY2; ty += 1) {
           for (let tx = tileX1; tx <= tileX2; tx += 1) {
-            for (const layer of map.layers) {
+            for (const layer of currentMap?.layers || []) {
               if (!layer.visible) continue;
               const tile = layer.data?.[ty]?.[tx];
               if (tile?.collision && tile.x >= 0 && tile.y >= 0) {
@@ -649,7 +678,94 @@ export default function GamePage() {
     const isBlockedByNpcs = (bounds: { x: number; y: number; width: number; height: number }, ignoreId?: string) =>
       npcsRef.current.some((npc) => npc.id !== ignoreId && intersects(bounds, actorBounds(npc)));
 
-    const savePosition = () => {
+    const getIntersectingPortal = () => {
+      const currentMap = getCurrentMap();
+      const portals = Array.isArray((currentMap as any)?.portalAreas) ? (currentMap as any).portalAreas : [];
+      const playerBounds = actorBounds(playerRef.current);
+
+      return (
+        portals.find((portal: any) =>
+          intersects(playerBounds, {
+            x: portal.x,
+            y: portal.y,
+            width: portal.width,
+            height: portal.height,
+          }),
+        ) || null
+      );
+    };
+
+    const collectMapImageSources = (currentMap: MapData | null) => {
+      const sources: string[] = [];
+
+      if (!currentMap || typeof currentMap !== "object") {
+        return sources;
+      }
+
+      const isNewFormat = (currentMap as any).objects && Array.isArray((currentMap as any).objects);
+
+      if (isNewFormat) {
+        const objects = (currentMap as any).objects as Array<{
+          spriteData?: { spriteImageSrc?: string; imageSrc?: string; isFullImage?: boolean };
+          imageData?: string;
+          isBackground?: boolean;
+          isGroup?: boolean;
+          children?: any[];
+        }>;
+
+        const collectImages = (obj: any) => {
+          if (obj.isBackground && obj.imageData) {
+            sources.push(obj.imageData);
+          } else if (obj.spriteData?.isFullImage && obj.spriteData.imageSrc) {
+            sources.push(toAssetUrl(obj.spriteData.imageSrc));
+          } else if (obj.spriteData?.spriteImageSrc) {
+            sources.push(toAssetUrl(obj.spriteData.spriteImageSrc));
+          }
+
+          if (obj.isGroup && obj.children) {
+            obj.children.forEach((child: any) => collectImages(child));
+          }
+        };
+
+        objects.forEach((obj) => collectImages(obj));
+      } else if (currentMap.layers && Array.isArray(currentMap.layers)) {
+        sources.push(
+          ...currentMap.layers.map((layer) => layer.tileset).filter(Boolean).map((path) => toAssetUrl(path!)),
+        );
+      }
+
+      return sources;
+    };
+
+    const collectCharacterImageSources = () => {
+      const sources = [toAssetUrl(CGS_CHARACTER_SPRITE)];
+      const basePath = "/32x32%20Customizable%20Character%20Pack/Walk";
+      const directions = ["Front", "Back", "Left", "Right"];
+      const layerFiles = [
+        { folder: "Character", file: "Character_Walk" },
+        { folder: "Clothing", file: "Clothing_Shoes_Walk" },
+        { folder: "Clothing", file: "Clothing_Bottoms_Walk" },
+        { folder: "Clothing", file: "Clothing_Tops_Walk" },
+        { folder: "Hair", file: "Hair_Walk" },
+        { folder: "Eyes", file: "Eyes_Walk" },
+      ];
+
+      layerFiles.forEach((layer) => {
+        directions.forEach((direction) => {
+          if (layer.folder === "Eyes" && direction === "Back") return;
+          sources.push(toAssetUrl(`${basePath}/${layer.folder}/${layer.file}_${direction}-Sheet.png`));
+        });
+      });
+
+      return sources;
+    };
+
+    const preloadImageSources = async (sources: string[]) => {
+      const uniqueSources = [...new Set(sources.filter(Boolean))];
+      await Promise.all(uniqueSources.map((src) => loadImage(src)));
+    };
+
+    const saveCurrentLocation = (positionX: number, positionY: number) => {
       const token = localStorage.getItem(tokenKey);
       if (!token) return;
 
@@ -660,10 +776,77 @@ export default function GamePage() {
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          positionX: playerRef.current.x,
-          positionY: playerRef.current.y,
+          positionX,
+          positionY,
+          ...(currentSharedMapIdRef.current ? { currentMap: `shared:${currentSharedMapIdRef.current}` } : {}),
         }),
       }).catch(() => {});
+    };
+
+    const tryPortalTeleport = async () => {
+      const activePortal = getIntersectingPortal();
+
+      if (!activePortal) {
+        portalLockRef.current = null;
+        return;
+      }
+
+      const activePortalKey = `${currentSharedMapIdRef.current || "local"}:${activePortal.id || activePortal.portalCode}`;
+      if (portalLockRef.current === activePortalKey || teleportingRef.current) {
+        return;
+      }
+
+      if (!currentSharedMapIdRef.current || activePortal.portalCode === undefined || activePortal.portalCode === null) {
+        portalLockRef.current = activePortalKey;
+        return;
+      }
+
+      const token = localStorage.getItem(tokenKey);
+      if (!token) return;
+
+      teleportingRef.current = true;
+
+      try {
+        const response = await fetch(
+          `${apiUrl}/api/game/portal-target?fromMapId=${encodeURIComponent(currentSharedMapIdRef.current)}&portalCode=${encodeURIComponent(String(activePortal.portalCode))}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          },
+        );
+
+        const payload = await response.json();
+        if (!response.ok || !payload.map) {
+          throw new Error(payload.error || "传送失败");
+        }
+
+        const nextMap = payload.map as MapData;
+        await preloadImageSources([...collectMapImageSources(nextMap), ...collectCharacterImageSources()]);
+        mapRef.current = nextMap;
+        syncCanvasToMap(nextMap);
+        currentSharedMapIdRef.current = payload.mapId ?? null;
+        npcsRef.current = hydrateNpcRoster(
+          payload.npcs,
+          (nextMap as any).gridSize || nextMap.tileSize || 48,
+          (nextMap as any).cols || nextMap.width || 20,
+          (nextMap as any).rows || nextMap.height || 15,
+        );
+
+        playerRef.current.x = payload.spawn?.x ?? playerRef.current.x;
+        playerRef.current.y = payload.spawn?.y ?? playerRef.current.y;
+        fixPlayerNpcOverlap(playerRef.current, npcsRef.current);
+        portalLockRef.current = `${payload.mapId || "local"}:${payload.spawn?.portalId || payload.spawn?.portalCode || activePortal.portalCode}`;
+        saveCurrentLocation(playerRef.current.x, playerRef.current.y);
+      } catch (error) {
+        console.error("Portal teleport failed:", error);
+      } finally {
+        teleportingRef.current = false;
+      }
+    };
+
+    const savePosition = () => {
+      saveCurrentLocation(playerRef.current.x, playerRef.current.y);
     };
 
     const queueSave = () => {
@@ -984,10 +1167,13 @@ export default function GamePage() {
     };
 
     const drawMap = () => {
+      const currentMap = getCurrentMap();
+      const { tileSize, mapCols, mapRows } = syncCanvasToMap(currentMap);
+
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       // 检查地图是否存在
-      if (!map || typeof map !== 'object') {
+      if (!currentMap || typeof currentMap !== "object") {
         // 没有地图，绘制空白背景
         ctx.fillStyle = '#2d5016'; // 草地绿色
         ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -995,11 +1181,11 @@ export default function GamePage() {
       }
 
       // 检查是否是新格式的地图（使用objects而不是layers的瓦片数据）
-      const isNewFormat = (map as any).objects && Array.isArray((map as any).objects);
+      const isNewFormat = (currentMap as any).objects && Array.isArray((currentMap as any).objects);
       
       if (isNewFormat) {
         // 新格式：渲染对象
-        const objects = (map as any).objects as Array<{
+        const objects = (currentMap as any).objects as Array<{
           x: number;
           y: number;
           width: number;
@@ -1161,9 +1347,9 @@ export default function GamePage() {
             drawActorLabel(item.actor, item.label, item.npc);
           }
         });
-      } else if (map.layers && Array.isArray(map.layers)) {
+      } else if (currentMap.layers && Array.isArray(currentMap.layers)) {
         // 旧格式：渲染瓦片
-        for (const layer of map.layers) {
+        for (const layer of currentMap.layers) {
           if (!layer.visible || !layer.tileset) continue;
 
           const img = imageCache.get(toAssetUrl(layer.tileset));
@@ -1201,8 +1387,9 @@ export default function GamePage() {
       updatePlayer();
       updateNpcs();
       drawMap();
+      void tryPortalTeleport();
 
-      if (!((map as any).objects && Array.isArray((map as any).objects))) {
+      if (!((getCurrentMap() as any)?.objects && Array.isArray((getCurrentMap() as any)?.objects))) {
         for (const npc of npcsRef.current) {
           drawActorSprite(npc, npc.spriteColumnOffset, npc.characterRow, npc.name, npc);
         }
@@ -1224,75 +1411,7 @@ export default function GamePage() {
         ]);
       }
 
-      // 收集所有需要加载的图片
-      const sources: string[] = [];
-      
-      // 检查地图是否存在
-      if (map && typeof map === 'object') {
-        // 检查是否是新格式的地图
-        const isNewFormat = (map as any).objects && Array.isArray((map as any).objects);
-        
-        if (isNewFormat) {
-          // 新格式：收集对象的图片
-          const objects = (map as any).objects as Array<{
-            spriteData?: { spriteImageSrc?: string };
-            imageData?: string;
-            isBackground?: boolean;
-            isGroup?: boolean;
-            children?: any[];
-          }>;
-          
-          const collectImages = (obj: any) => {
-            if (obj.isBackground && obj.imageData) {
-              sources.push(obj.imageData);
-            } else if (obj.spriteData?.isFullImage && obj.spriteData.imageSrc) {
-              sources.push(toAssetUrl(obj.spriteData.imageSrc));
-            } else if (obj.spriteData && obj.spriteData.spriteImageSrc) {
-              sources.push(toAssetUrl(obj.spriteData.spriteImageSrc));
-            }
-            
-            if (obj.isGroup && obj.children) {
-              obj.children.forEach((child: any) => collectImages(child));
-            }
-          };
-          
-          objects.forEach(obj => collectImages(obj));
-        } else if (map.layers && Array.isArray(map.layers)) {
-          // 旧格式：收集图层的瓦片集
-          sources.push(
-            ...map.layers.map((layer) => layer.tileset).filter(Boolean).map((path) => toAssetUrl(path!))
-          );
-        }
-      }
-      
-      // 添加角色精灵图
-      sources.push(toAssetUrl(CGS_CHARACTER_SPRITE));
-      
-      // 添加角色图层精灵图
-      const basePath = '/32x32%20Customizable%20Character%20Pack/Walk';
-      const directions = ['Front', 'Back', 'Left', 'Right'];
-      const layerFiles = [
-        { folder: 'Character', file: 'Character_Walk', hasAllDirections: true },
-        { folder: 'Clothing', file: 'Clothing_Shoes_Walk', hasAllDirections: true },
-        { folder: 'Clothing', file: 'Clothing_Bottoms_Walk', hasAllDirections: true },
-        { folder: 'Clothing', file: 'Clothing_Tops_Walk', hasAllDirections: true },
-        { folder: 'Hair', file: 'Hair_Walk', hasAllDirections: true },
-        { folder: 'Eyes', file: 'Eyes_Walk', hasAllDirections: false }, // Eyes没有Back
-      ];
-      
-      layerFiles.forEach(layer => {
-        directions.forEach(direction => {
-          // Eyes没有Back方向，跳过
-          if (layer.folder === 'Eyes' && direction === 'Back') return;
-          
-          const imgPath = `${basePath}/${layer.folder}/${layer.file}_${direction}-Sheet.png`;
-          sources.push(toAssetUrl(imgPath));
-        });
-      });
-
-      // 去重
-      const uniqueSources = Array.from(new Set(sources));
-      await Promise.all(uniqueSources.map((src) => loadImage(src)));
+      await preloadImageSources([...collectMapImageSources(getCurrentMap()), ...collectCharacterImageSources()]);
       setStatus("游戏已加载，使用方向键或 WASD 移动角色。靠近 NPC 后按 C，或直接点击 NPC 对话。");
     };
 

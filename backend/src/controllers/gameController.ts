@@ -6,6 +6,14 @@ import { buildLocalNpcReply, requestSecondMeDirectReply, requestSecondMeNpcReply
 import { syncSecondMeAvatarApiKey } from '../lib/secondmeAvatar';
 
 type Row = Record<string, any>;
+type PortalArea = {
+  id?: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  portalCode?: string | number;
+};
 
 function parseStoredMap(currentMap: unknown) {
   try {
@@ -106,6 +114,61 @@ function getDefaultMap() {
   };
 }
 
+function getPortalAreas(map: any): PortalArea[] {
+  return Array.isArray(map?.portalAreas) ? map.portalAreas : [];
+}
+
+function getMapDimensions(map: any) {
+  const tileSize = map?.gridSize || map?.tileSize || 48;
+  const mapWidth = map?.cols || map?.width || 20;
+  const mapHeight = map?.rows || map?.height || 15;
+  return { tileSize, mapWidth, mapHeight };
+}
+
+async function buildMapNpcPayload(userId: string, map: any) {
+  const { tileSize, mapWidth, mapHeight } = getMapDimensions(map);
+  const users = await selectMany<{
+    id: string;
+    secondmeId?: string;
+    username: string;
+    avatar?: string | null;
+    profession?: string | null;
+    interests?: string[] | string | null;
+    personaSummary?: string | null;
+    npcBehavior?: string | null;
+    isNpcVisible?: boolean | null;
+    personalityTraits?: any;
+    currentMood?: string | null;
+    activityStatus?: string | null;
+  }>('User', {
+    select: 'id,secondmeId,username,avatar,profession,interests,personaSummary,npcBehavior,isNpcVisible,personalityTraits,currentMood,activityStatus',
+    order: order('createdAt', false),
+    limit: 20,
+  });
+  const userIds = users.map((user) => user.id);
+  const progressRows = userIds.length
+    ? await selectMany<Row>('GameProgress', {
+        select: 'userId,characterAppearance',
+        ...inList('userId', userIds),
+        limit: userIds.length,
+      })
+    : [];
+  const appearanceByUserId = new Map(
+    progressRows.map((progress) => [progress.userId, progress.characterAppearance]),
+  );
+
+  return buildMapNpcs(
+    tileSize,
+    mapWidth,
+    mapHeight,
+    userId,
+    users.map((user) => ({
+      ...user,
+      characterAppearance: appearanceByUserId.get(user.id) ?? null,
+    })) as any,
+  );
+}
+
 function parseStoredAppearance(characterAppearance: unknown) {
   if (!characterAppearance) {
     return null;
@@ -188,19 +251,36 @@ export const gameController = {
         return res.status(404).json({ error: 'Progress not found' });
       }
 
-      // 优先使用共享地图
-      const sharedMap = await selectOne<Row>('SharedMap', {
-        select: '*',
-        ...eq('isActive', true),
-        order: order('updatedAt', false),
-      });
+      const preferredSharedMapId =
+        typeof progress.currentMap === 'string' && progress.currentMap.startsWith('shared:')
+          ? progress.currentMap.slice('shared:'.length)
+          : null;
+
+      let sharedMap = null;
+      if (preferredSharedMapId) {
+        sharedMap = await selectOne<Row>('SharedMap', {
+          select: '*',
+          ...eq('id', preferredSharedMapId),
+        });
+      }
+
+      if (!sharedMap) {
+        // 优先使用激活的共享地图
+        sharedMap = await selectOne<Row>('SharedMap', {
+          select: '*',
+          ...eq('isActive', true),
+          order: order('updatedAt', false),
+        });
+      }
 
       let map = null;
       let isShared = false;
+      let mapId: string | null = null;
 
       if (sharedMap && sharedMap.mapData) {
         map = parseStoredMap(sharedMap.mapData);
         isShared = true;
+        mapId = sharedMap.id;
       } else {
         // 回退到用户个人地图
         map = parseStoredMap(progress.currentMap);
@@ -211,57 +291,76 @@ export const gameController = {
         map = getDefaultMap();
       }
 
-      const tileSize = map?.tileSize || 48;
-      const mapWidth = map?.width || 20;
-      const mapHeight = map?.height || 20;
-      const users = await selectMany<{
-        id: string;
-        secondmeId?: string;
-        username: string;
-        avatar?: string | null;
-        profession?: string | null;
-        interests?: string[] | string | null;
-        personaSummary?: string | null;
-        npcBehavior?: string | null;
-        isNpcVisible?: boolean | null;
-        personalityTraits?: any;
-        currentMood?: string | null;
-        activityStatus?: string | null;
-      }>('User', {
-        select: 'id,secondmeId,username,avatar,profession,interests,personaSummary,npcBehavior,isNpcVisible,personalityTraits,currentMood,activityStatus',
-        order: order('createdAt', false),
-        limit: 20,
-      });
-      const userIds = users.map((user) => user.id);
-      const progressRows = userIds.length
-        ? await selectMany<Row>('GameProgress', {
-            select: 'userId,characterAppearance',
-            ...inList('userId', userIds),
-            limit: userIds.length,
-          })
-        : [];
-      const appearanceByUserId = new Map(
-        progressRows.map((progress) => [progress.userId, progress.characterAppearance]),
-      );
-      const npcs = buildMapNpcs(
-        tileSize,
-        mapWidth,
-        mapHeight,
-        userId,
-        users.map((user) => ({
-          ...user,
-          characterAppearance: appearanceByUserId.get(user.id) ?? null,
-        })) as any,
-      );
+      const npcs = await buildMapNpcPayload(userId, map);
 
       res.json({
         hasCustomMap: Boolean(map),
         isShared,
+        mapId,
         map,
         npcs,
       });
     } catch (error) {
       res.status(500).json({ error: 'Failed to get map' });
+    }
+  },
+
+  async getPortalTarget(req: Request, res: Response) {
+    try {
+      const userId = (req as any).userId;
+      const fromMapId = typeof req.query.fromMapId === 'string' ? req.query.fromMapId : '';
+      const portalCode = typeof req.query.portalCode === 'string' ? req.query.portalCode.trim() : '';
+
+      if (!portalCode) {
+        return res.status(400).json({ error: 'portalCode is required' });
+      }
+
+      const sharedMaps = await selectMany<Row>('SharedMap', {
+        select: '*',
+        order: order('updatedAt', false),
+        limit: 100,
+      });
+
+      for (const sharedMap of sharedMaps) {
+        if (!sharedMap?.id || sharedMap.id === fromMapId || !sharedMap.mapData) {
+          continue;
+        }
+
+        const map = parseStoredMap(sharedMap.mapData);
+        if (!map) {
+          continue;
+        }
+
+        const destinationPortal = getPortalAreas(map).find(
+          (area) => String(area.portalCode ?? '') === portalCode,
+        );
+
+        if (!destinationPortal) {
+          continue;
+        }
+
+        const npcs = await buildMapNpcPayload(userId, map);
+        const spawnX = destinationPortal.x + destinationPortal.width / 2 - 24;
+        const spawnY = destinationPortal.y + destinationPortal.height - 48;
+
+        return res.json({
+          isShared: true,
+          mapId: sharedMap.id,
+          map,
+          npcs,
+          spawn: {
+            x: spawnX,
+            y: spawnY,
+            portalId: destinationPortal.id ?? null,
+            portalCode: destinationPortal.portalCode ?? portalCode,
+          },
+        });
+      }
+
+      return res.status(404).json({ error: 'No matching portal found' });
+    } catch (error) {
+      console.error('Get portal target error:', error);
+      return res.status(500).json({ error: 'Failed to resolve portal target' });
     }
   },
 
