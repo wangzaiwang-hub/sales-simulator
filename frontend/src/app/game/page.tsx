@@ -1138,7 +1138,6 @@ export default function GamePage() {
         });
 
         renderables.sort((a, b) => {
-          if (a.layer !== b.layer) return a.layer - b.layer;
           return a.sortY - b.sortY;
         });
 
