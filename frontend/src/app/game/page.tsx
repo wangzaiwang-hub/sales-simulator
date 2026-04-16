@@ -735,21 +735,13 @@ export default function GamePage() {
       ctx.restore();
     };
 
-    const drawActorSprite = (
+    const drawActorVisual = (
       actor: ActorState, 
-      spriteColumnOffset: number, 
-      characterRow: number, 
-      label: string,
+      spriteColumnOffset: number,
+      characterRow: number,
       npc?: NpcState,
       playerAppearanceOverride?: CharacterAppearance | null
     ) => {
-      const directionMap: Record<Direction, number> = {
-        Front: 0,
-        Left: 1,
-        Right: 2,
-        Back: 3,
-      };
-
       ctx.save();
       ctx.fillStyle = "rgba(0, 0, 0, 0.25)";
       ctx.beginPath();
@@ -765,6 +757,12 @@ export default function GamePage() {
         // 使用旧的精灵图渲染
         const sprite = imageCache.get(toAssetUrl(CGS_CHARACTER_SPRITE));
         if (sprite) {
+          const directionMap: Record<Direction, number> = {
+            Front: 0,
+            Left: 1,
+            Right: 2,
+            Back: 3,
+          };
           const row = characterRow + directionMap[actor.direction];
           const srcX = (spriteColumnOffset + actor.currentFrame) * 32;
           const srcY = row * 48;
@@ -774,7 +772,13 @@ export default function GamePage() {
           ctx.fillRect(actor.x, actor.y, actor.width, actor.height);
         }
       }
+    };
 
+    const drawActorLabel = (
+      actor: ActorState,
+      label: string,
+      npc?: NpcState,
+    ) => {
       // 获取NPC状态文本和颜色
       let statusText: string | undefined;
       let statusColor: string | undefined;
@@ -785,6 +789,18 @@ export default function GamePage() {
       }
 
       drawLabel(label, actor.x + actor.width / 2, actor.y - 6, statusText, statusColor);
+    };
+
+    const drawActorSprite = (
+      actor: ActorState, 
+      spriteColumnOffset: number, 
+      characterRow: number, 
+      label: string,
+      npc?: NpcState,
+      playerAppearanceOverride?: CharacterAppearance | null
+    ) => {
+      drawActorVisual(actor, spriteColumnOffset, characterRow, npc, playerAppearanceOverride);
+      drawActorLabel(actor, label, npc);
     };
 
     // 绘制图层组合角色
@@ -1003,12 +1019,6 @@ export default function GamePage() {
           children?: any[];
         }>;
         
-        // 按图层和Y坐标排序
-        const sortedObjects = [...objects].sort((a, b) => {
-          if (a.layer !== b.layer) return a.layer - b.layer;
-          return a.y - b.y;
-        });
-        
         // 递归绘制对象（支持组合对象）
         const drawObject = (obj: any, offsetX = 0, offsetY = 0) => {
           if (obj.isGroup && obj.children) {
@@ -1062,8 +1072,96 @@ export default function GamePage() {
             ctx.restore();
           }
         };
-        
-        sortedObjects.forEach(obj => drawObject(obj));
+
+        const objectSortY = (obj: any) => {
+          if (obj.isBackground || obj.layer === 0) {
+            return -1000 + (obj.y || 0);
+          }
+
+          if (obj.isGroup) {
+            return obj.collision ? obj.collision.y + 3 : obj.y + obj.height;
+          }
+
+          return obj.collision ? obj.collision.y + 15 : obj.y + obj.height;
+        };
+
+        const actorSortY = (actor: ActorState) =>
+          actor.y + actor.collisionOffsetY + actor.collisionHeight;
+
+        const renderables: Array<
+          | { type: "object"; sortY: number; layer: number; obj: any }
+          | {
+              type: "actor";
+              sortY: number;
+              layer: number;
+              actor: ActorState;
+              spriteColumnOffset: number;
+              characterRow: number;
+              label: string;
+              npc?: NpcState;
+              appearance?: CharacterAppearance | null;
+            }
+        > = [];
+
+        objects.forEach((obj) => {
+          renderables.push({
+            type: "object",
+            obj,
+            layer: obj.layer ?? 0,
+            sortY: objectSortY(obj),
+          });
+        });
+
+        npcsRef.current.forEach((npc) => {
+          renderables.push({
+            type: "actor",
+            actor: npc,
+            label: npc.name,
+            npc,
+            appearance: npc.appearance,
+            spriteColumnOffset: npc.spriteColumnOffset,
+            characterRow: npc.characterRow,
+            layer: 1,
+            sortY: actorSortY(npc),
+          });
+        });
+
+        renderables.push({
+          type: "actor",
+          actor: playerRef.current,
+          label: username || "玩家",
+          appearance: playerAppearance,
+          spriteColumnOffset: PLAYER_SPRITE_COLUMN_OFFSET,
+          characterRow: PLAYER_CHARACTER_ROW,
+          layer: 1,
+          sortY: actorSortY(playerRef.current),
+        });
+
+        renderables.sort((a, b) => {
+          if (a.layer !== b.layer) return a.layer - b.layer;
+          return a.sortY - b.sortY;
+        });
+
+        renderables.forEach((item) => {
+          if (item.type === "object") {
+            drawObject(item.obj);
+            return;
+          }
+
+          drawActorVisual(
+            item.actor,
+            item.spriteColumnOffset,
+            item.characterRow,
+            item.npc,
+            item.appearance,
+          );
+        });
+
+        renderables.forEach((item) => {
+          if (item.type === "actor") {
+            drawActorLabel(item.actor, item.label, item.npc);
+          }
+        });
       } else if (map.layers && Array.isArray(map.layers)) {
         // 旧格式：渲染瓦片
         for (const layer of map.layers) {
@@ -1105,11 +1203,13 @@ export default function GamePage() {
       updateNpcs();
       drawMap();
 
-      for (const npc of npcsRef.current) {
-        drawActorSprite(npc, npc.spriteColumnOffset, npc.characterRow, npc.name, npc);
-      }
+      if (!((map as any).objects && Array.isArray((map as any).objects))) {
+        for (const npc of npcsRef.current) {
+          drawActorSprite(npc, npc.spriteColumnOffset, npc.characterRow, npc.name, npc);
+        }
 
-      drawActorSprite(playerRef.current, PLAYER_SPRITE_COLUMN_OFFSET, PLAYER_CHARACTER_ROW, username || "玩家", undefined, playerAppearance);
+        drawActorSprite(playerRef.current, PLAYER_SPRITE_COLUMN_OFFSET, PLAYER_CHARACTER_ROW, username || "玩家", undefined, playerAppearance);
+      }
       interactionFrame += 1;
       if (interactionFrame % 15 === 0) {
         setPresenceTick((value) => value + 1);
