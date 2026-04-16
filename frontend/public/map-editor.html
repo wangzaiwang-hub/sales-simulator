@@ -182,6 +182,10 @@
                 <button class="tool-btn" id="tool-delete" onclick="setTool('delete')">🗑️ 橡皮 (E)</button>
                 <button class="tool-btn" id="tool-fill" onclick="setTool('fill')">🪣 填充 (F)</button>
                 <button class="tool-btn" id="tool-collision" onclick="setTool('collision')">⬜ 碰撞 (P)</button>
+                <label id="collisionToggleLabel" style="display: inline-flex; align-items: center; margin-left: 15px; cursor: pointer;">
+                    <input type="checkbox" id="showCollisionCheckbox" onchange="toggleCollisionBoxes()" style="width: auto; margin-right: 5px; cursor: pointer;">
+                    <span style="font-size: 12px;">显示碰撞框</span>
+                </label>
             </div>
             <canvas id="mapCanvas" width="960" height="720"></canvas>
             <div class="info" style="margin-top: 8px; font-size: 10px;">
@@ -226,6 +230,9 @@
             <button onclick="saveMapToCloud()">☁️ 保存到云端</button>
             <button onclick="loadMapFromCloud()">☁️ 从云端加载</button>
             <button onclick="setActiveMap()">✅ 设为激活地图</button>
+            <div id="saveStatus" class="info" style="margin-top: 8px; color: #9fb3c8;">
+                当前未保存
+            </div>
             <button onclick="exportMap()">📋 导出JSON</button>
             <button onclick="importMap()">📥 导入JSON</button>
             <textarea id="mapData" style="width:100%; height:100px; margin-top:10px; background:#333; color:#fff; border:1px solid #555; border-radius:4px; padding:8px;" placeholder="JSON数据"></textarea>
@@ -243,8 +250,13 @@
 
         // ========== 资源URL处理 ==========
         function getResourceUrl(relativePath) {
-            // 在云端部署时，资源通过前端public目录提供
-            // 在本地开发时，也使用相对路径
+            if (!relativePath) return relativePath;
+
+            // 历史版本使用 /resource/*，现在资源直接托管在 frontend/public 根目录。
+            if (relativePath.startsWith('/resource/')) {
+                return relativePath.replace('/resource/', '/');
+            }
+
             return relativePath;
         }
         
@@ -295,13 +307,14 @@
         
         // 预览模式
         let isPreviewMode = false;
+        let showCollisionBoxes = false;
         
         // 测试角色
         let testCharacter = {
             x: 100,
             y: 100,
-            width: 64,  // 2格宽（32像素放大2倍）
-            height: 64, // 2格高（32像素放大2倍）
+            width: 32,
+            height: 32,
             speed: 3,
             appearance: {
                 character: 1,
@@ -555,6 +568,18 @@
                 document.querySelectorAll('p').forEach(el => el.style.display = 'none');
                 document.querySelectorAll('.info').forEach(el => el.style.display = 'none');
                 document.querySelectorAll('.tool-btn').forEach(el => el.style.display = 'none');
+                const collisionToggleLabel = document.getElementById('collisionToggleLabel');
+                if (collisionToggleLabel) {
+                    collisionToggleLabel.style.display = 'inline-flex';
+                    collisionToggleLabel.style.position = 'fixed';
+                    collisionToggleLabel.style.top = '16px';
+                    collisionToggleLabel.style.left = '16px';
+                    collisionToggleLabel.style.zIndex = '10000';
+                    collisionToggleLabel.style.color = '#fff';
+                    collisionToggleLabel.style.background = 'rgba(0, 0, 0, 0.55)';
+                    collisionToggleLabel.style.padding = '6px 10px';
+                    collisionToggleLabel.style.borderRadius = '8px';
+                }
                 
                 // 画布容器全屏样式
                 const container = document.querySelector('.canvas-container');
@@ -591,6 +616,18 @@
                 document.querySelectorAll('p').forEach(el => el.style.display = 'block');
                 document.querySelectorAll('.info').forEach(el => el.style.display = 'block');
                 document.querySelectorAll('.tool-btn').forEach(el => el.style.display = 'inline-block');
+                const collisionToggleLabel = document.getElementById('collisionToggleLabel');
+                if (collisionToggleLabel) {
+                    collisionToggleLabel.style.display = 'inline-flex';
+                    collisionToggleLabel.style.position = 'static';
+                    collisionToggleLabel.style.top = 'auto';
+                    collisionToggleLabel.style.left = 'auto';
+                    collisionToggleLabel.style.zIndex = 'auto';
+                    collisionToggleLabel.style.color = '';
+                    collisionToggleLabel.style.background = '';
+                    collisionToggleLabel.style.padding = '';
+                    collisionToggleLabel.style.borderRadius = '';
+                }
                 
                 // 恢复画布容器样式
                 const container = document.querySelector('.canvas-container');
@@ -1688,6 +1725,19 @@
                         drawObject(item.obj);
                     }
                 });
+
+                if (showCollisionBoxes) {
+                    collisionAreas.forEach(area => {
+                        const layer = layers.find(l => l.id === area.layer);
+                        if (!layer || !layer.visible) return;
+
+                        ctx.fillStyle = 'rgba(255, 255, 0, 0.16)';
+                        ctx.fillRect(area.x, area.y, area.width, area.height);
+                        ctx.strokeStyle = 'rgba(255, 200, 0, 0.9)';
+                        ctx.lineWidth = 2;
+                        ctx.strokeRect(area.x, area.y, area.width, area.height);
+                    });
+                }
                 
                 // 辅助函数：绘制对象
                 function drawObject(obj) {
@@ -1768,6 +1818,12 @@
                     }
                     
                     ctx.restore();
+
+                    if (showCollisionBoxes && obj.collision) {
+                        ctx.strokeStyle = 'rgba(255, 0, 0, 0.85)';
+                        ctx.lineWidth = 2;
+                        ctx.strokeRect(obj.collision.x, obj.collision.y, obj.collision.width, obj.collision.height);
+                    }
                 }
                 
                 // 辅助函数：绘制角色
@@ -1775,7 +1831,7 @@
                     const directionLayers = testCharacter.images.walk[testCharacter.direction];
                     const frameWidth = 32;
                     const frameHeight = 32;
-                    const scale = 2;
+                    const scale = 1;
                     const frameX = testCharacter.frame * frameWidth;
                     
                     let hasImage = false;
@@ -1816,44 +1872,30 @@
                         ctx.fill();
                     }
                     
-                    // 绘制角色脚部碰撞框（调试用）
-                    ctx.strokeStyle = 'rgba(0, 255, 0, 0.8)';
-                    ctx.lineWidth = 2;
-                    const footWidth = testCharacter.width / 2;
-                    const footX = testCharacter.x + (testCharacter.width - footWidth) / 2;
-                    const footY = testCharacter.y + testCharacter.height / 2;
-                    const footHeight = testCharacter.height / 2;
-                    ctx.strokeRect(footX, footY, footWidth, footHeight);
+                    if (showCollisionBoxes) {
+                        ctx.strokeStyle = 'rgba(0, 255, 0, 0.85)';
+                        ctx.lineWidth = 2;
+                        const footWidth = testCharacter.width / 2;
+                        const footX = testCharacter.x + (testCharacter.width - footWidth) / 2;
+                        const footY = testCharacter.y + testCharacter.height / 2;
+                        const footHeight = testCharacter.height / 2;
+                        ctx.strokeRect(footX, footY, footWidth, footHeight);
+                    }
                 }
                 
                 // 显示提示文字（始终在最上层）
                 ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-                ctx.fillRect(10, 10, 400, 110);
+                ctx.fillRect(10, 10, 400, showCollisionBoxes ? 110 : 70);
                 ctx.fillStyle = '#fff';
                 ctx.font = '14px Arial';
                 ctx.fillText('方向键/WASD: 移动角色', 20, 30);
                 ctx.fillText('H键/ESC: 退出预览', 20, 50);
-                ctx.fillStyle = '#0f0';
-                ctx.fillText('绿框: 角色脚部碰撞区域', 20, 70);
-                ctx.fillStyle = '#ff0';
-                const charFootBottom = testCharacter.y + testCharacter.height;
-                ctx.fillText(`角色脚部底部Y: ${Math.round(charFootBottom)}`, 20, 90);
-                
-                // 显示最近的树的碰撞框底部Y坐标（调试用）
-                let nearestTree = null;
-                let minDist = Infinity;
-                sorted.forEach(obj => {
-                    if (obj.collision && obj.layer > 0) {
-                        const dist = Math.abs(obj.x - testCharacter.x) + Math.abs(obj.y - testCharacter.y);
-                        if (dist < minDist) {
-                            minDist = dist;
-                            nearestTree = obj;
-                        }
-                    }
-                });
-                if (nearestTree) {
-                    const treeSortY = nearestTree.collision.y + 3;
-                    ctx.fillText(`最近树的排序Y(顶部+3): ${Math.round(treeSortY)}`, 20, 110);
+                if (showCollisionBoxes) {
+                    ctx.fillStyle = '#0f0';
+                    ctx.fillText('绿框: 角色脚部碰撞区域', 20, 70);
+                    ctx.fillStyle = '#ff0';
+                    const charFootBottom = testCharacter.y + testCharacter.height;
+                    ctx.fillText(`角色脚部底部Y: ${Math.round(charFootBottom)}`, 20, 90);
                 }
                 
                 ctx.restore();
@@ -1980,6 +2022,11 @@
         
         function rectIntersects(x1, y1, w1, h1, x2, y2, w2, h2) {
             return !(x1 + w1 <= x2 || x2 + w2 <= x1 || y1 + h1 <= y2 || y2 + h2 <= y1);
+        }
+
+        function toggleCollisionBoxes() {
+            showCollisionBoxes = document.getElementById('showCollisionCheckbox').checked;
+            render();
         }
         
         // ========== 鼠标交互 ==========
@@ -3135,6 +3182,8 @@
         // ========== 云端保存/加载 ==========
         async function saveMapToCloud() {
             try {
+                const saveStatus = document.getElementById('saveStatus');
+
                 // 获取地图名称
                 const mapNameInput = document.getElementById('mapName');
                 const mapName = mapNameInput.value.trim();
@@ -3143,6 +3192,9 @@
                     alert('请输入地图名称');
                     return;
                 }
+
+                saveStatus.textContent = '正在保存...';
+                saveStatus.style.color = '#f7d774';
                 
                 // 准备地图数据（与exportMap相同的逻辑）
                 const exportObjects = mapObjects.map(obj => {
@@ -3201,6 +3253,12 @@
                 
                 // 保存地图ID，下次保存时更新而不是创建新地图
                 currentMapId = result.mapId;
+
+                const savedAt = new Date().toLocaleTimeString('zh-CN', {
+                    hour12: false
+                });
+                saveStatus.innerHTML = `✅ 已保存<br>地图ID: ${result.mapId}<br>时间: ${savedAt}`;
+                saveStatus.style.color = '#7CFC98';
                 
                 // 在界面上显示成功提示（不用弹窗）
                 const toolInfo = document.getElementById('toolInfo');
@@ -3214,6 +3272,9 @@
                 
             } catch (error) {
                 console.error('保存地图失败:', error);
+                const saveStatus = document.getElementById('saveStatus');
+                saveStatus.textContent = '❌ 保存失败：' + error.message;
+                saveStatus.style.color = '#ff8a8a';
                 alert('保存失败：' + error.message);
             }
         }
@@ -3282,6 +3343,9 @@
                 // 保存当前地图ID和名称
                 currentMapId = result.mapId;
                 document.getElementById('mapName').value = result.mapName || '';
+                const saveStatus = document.getElementById('saveStatus');
+                saveStatus.innerHTML = `📥 已加载<br>地图ID: ${result.mapId}<br>名称: ${result.mapName || '未命名地图'}`;
+                saveStatus.style.color = '#8fd3ff';
                 
                 // 辅助函数：收集对象的瓦片集图片URL
                 function collectSpriteUrls(obj, urlSet) {
