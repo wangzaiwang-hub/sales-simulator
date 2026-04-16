@@ -188,11 +188,6 @@ app.post('/api/game/save-map-temp', async (req, res) => {
   }
 });
 
-// 提供工具页面（HTML文件）
-app.get('/tools/tileset-editor', (req, res) => {
-  res.sendFile(path.join(toolsDir, 'tileset-editor.html'));
-});
-
 app.get('/tools/map-test', (req, res) => {
   res.sendFile(path.join(toolsDir, 'map-test.html'));
 });

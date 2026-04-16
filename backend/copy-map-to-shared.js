@@ -80,7 +80,7 @@ async function copyMapToShared() {
 
   if (!userWithMap) {
     console.log('   ❌ 没有找到有效的地图数据');
-    console.log('   💡 请先在 tileset-editor.html 中创建并保存地图');
+    console.log('   💡 请先在地图编辑器中创建并保存地图');
     return;
   }
 

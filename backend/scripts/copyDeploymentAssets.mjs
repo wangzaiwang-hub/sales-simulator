@@ -5,7 +5,6 @@ const projectRoot = path.resolve(process.cwd(), '..');
 const backendRoot = process.cwd();
 
 const copyTargets = [
-  ['backend/tileset-editor.html', 'tileset-editor.html'],
   ['backend/map-editor.html', 'map-editor.html'],
   ['backend/map-test.html', 'map-test.html'],
   ['character-editor.html', 'character-editor.html'],

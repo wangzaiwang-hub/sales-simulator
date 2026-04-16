@@ -361,7 +361,7 @@ export default function GamePage() {
 
         if (!mapPayload.map) {
           setHasMap(false);
-          setStatus("数据库里还没有地图，请先在 tileset-editor.html 保存地图。");
+          setStatus("数据库里还没有地图，请先在地图编辑器中创建并保存地图。");
           return;
         }
 

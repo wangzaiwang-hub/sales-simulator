@@ -19,10 +19,6 @@ const nextConfig = {
         destination: `${backendUrl}/api/:path*`,
       },
       {
-        source: "/editor-runtime/tileset-editor",
-        destination: `${backendUrl}/tools/tileset-editor`,
-      },
-      {
         source: "/editor-runtime/map-test",
         destination: `${backendUrl}/tools/map-test`,
       },
