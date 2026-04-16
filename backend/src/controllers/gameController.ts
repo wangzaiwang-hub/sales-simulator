@@ -8,17 +8,17 @@ import { syncSecondMeAvatarApiKey } from '../lib/secondmeAvatar';
 type Row = Record<string, any>;
 
 function parseStoredMap(currentMap: unknown) {
-  if (typeof currentMap !== 'string') {
-    return null;
-  }
-
-  const trimmed = currentMap.trim();
-  if (!trimmed.startsWith('{')) {
-    return null;
-  }
-
   try {
-    const parsed = JSON.parse(trimmed);
+    const parsed =
+      typeof currentMap === 'string'
+        ? (() => {
+            const trimmed = currentMap.trim();
+            if (!trimmed.startsWith('{')) {
+              return null;
+            }
+            return JSON.parse(trimmed);
+          })()
+        : currentMap;
     
     // 验证地图数据的基本结构
     if (!parsed || typeof parsed !== 'object') {
@@ -32,10 +32,28 @@ function parseStoredMap(currentMap: unknown) {
       return null;
     }
     
-    // 如果是新格式的地图（对象格式），返回 null 让它使用默认地图
+    // 新格式地图：对象列表 + 碰撞区，允许直接进入游戏
     if (parsed.objects && Array.isArray(parsed.objects)) {
-      console.log('检测到新格式地图（对象格式），使用默认地图');
-      return null;
+      const hasInvalidObjectAsset = parsed.objects.some((obj: any) => {
+        const spritePath = obj?.spriteData?.spriteImageSrc;
+        if (typeof spritePath !== 'string') {
+          return false;
+        }
+
+        return (
+          spritePath.includes('/tools/') ||
+          spritePath.includes('tileset-editor') ||
+          spritePath.startsWith('http://localhost')
+        );
+      });
+
+      if (hasInvalidObjectAsset) {
+        console.log('新格式地图包含无效对象素材路径，使用默认地图');
+        return null;
+      }
+
+      console.log('成功解析新格式地图');
+      return parsed;
     }
     
     // 验证旧格式地图的必需字段
