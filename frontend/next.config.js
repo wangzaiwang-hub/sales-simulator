@@ -24,10 +24,6 @@ const nextConfig = {
         source: "/api/:path*",
         destination: `${backendUrl}/api/:path*`,
       },
-      {
-        source: "/editor-runtime/map-test",
-        destination: `${backendUrl}/tools/map-test`,
-      },
     ];
   },
 };

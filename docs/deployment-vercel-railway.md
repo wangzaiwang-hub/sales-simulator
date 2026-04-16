@@ -68,7 +68,7 @@ NEXT_PUBLIC_SECONDME_REDIRECT_URI=https://your-frontend.vercel.app/auth/callback
 说明：
 
 - `BACKEND_URL` 用于 Next rewrites，把 `/api/*` 统一转发到 Railway
-- 当前代码里请求默认走同域路径，所以 `NEXT_PUBLIC_API_URL` 可以留空
+- 当前代码里生产环境默认走同域路径，所以 `NEXT_PUBLIC_API_URL` 只在本地开发时可选使用
 
 ## 4. 部署后验收
 
@@ -76,9 +76,8 @@ NEXT_PUBLIC_SECONDME_REDIRECT_URI=https://your-frontend.vercel.app/auth/callback
 
 - `https://your-backend.up.railway.app/health`
 - `https://your-backend.up.railway.app/api/map-editor/list`
-- `https://your-backend.up.railway.app/tools/map-editor`
 
-这三个必须都通，再去部署前端。
+前两个必须都通，再去部署前端。
 
 前端部署完成后，再检查：
 
@@ -88,7 +87,7 @@ NEXT_PUBLIC_SECONDME_REDIRECT_URI=https://your-frontend.vercel.app/auth/callback
 ## 5. 推荐上线顺序
 
 1. 删除旧的 Railway 服务，重新建一个只跑 `backend` 的服务
-2. 确认 Railway 的 `/health`、`/api/map-editor/list`、`/tools/map-editor` 正常
+2. 确认 Railway 的 `/health`、`/api/map-editor/list` 正常
 3. 删除旧的 Vercel 项目，重新建一个只跑 `frontend` 的项目
 4. 在 Vercel 填入新的 `BACKEND_URL`
 5. 再回填 Railway 的 `FRONTEND_URL`、`CORS_ORIGIN`、`SECONDME_REDIRECT_URI`

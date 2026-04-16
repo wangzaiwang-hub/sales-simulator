@@ -98,7 +98,7 @@ export function isValidAppearance(appearance: CharacterAppearance): boolean {
  * 获取角色外观的精灵图路径配置
  */
 export function getAppearanceSpritePaths(appearance: CharacterAppearance) {
-  const basePath = '/resource/32x32%20Customizable%20Character%20Pack/Walk';
+  const basePath = '/32x32%20Customizable%20Character%20Pack/Walk';
   
   return {
     character: {

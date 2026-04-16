@@ -251,13 +251,7 @@
         // ========== 资源URL处理 ==========
         function getResourceUrl(relativePath) {
             if (!relativePath) return relativePath;
-
-            // 历史版本使用 /resource/*，现在资源直接托管在 frontend/public 根目录。
-            if (relativePath.startsWith('/resource/')) {
-                return relativePath.replace('/resource/', '/');
-            }
-
-            return relativePath;
+            return relativePath.startsWith('/') ? relativePath : `/${relativePath}`;
         }
 
         async function readJsonResponse(response, fallbackMessage) {
@@ -365,7 +359,7 @@
         
         // 角色图层顺序
         const CHARACTER_LAYER_ORDER = ['character', 'shoes', 'bottoms', 'tops', 'hair', 'eyes'];
-        const CHARACTER_BASE_PATH = '/resource/32x32 Customizable Character Pack/Walk';
+        const CHARACTER_BASE_PATH = '/32x32 Customizable Character Pack/Walk';
         
         const CHARACTER_LAYER_FILES = {
             character: 'Character_Walk',
@@ -1035,7 +1029,7 @@
             // 城市瓦片集
             urbanB: {
                 name: '城市建筑 (UrbanB)',
-                image: '/resource/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png',
+                image: '/CGS_RU_HouseFree/img/tilesets/CGS_UrbanB.png',
                 gridMode: true,
                 tileWidth: 48,
                 tileHeight: 48,
@@ -1044,7 +1038,7 @@
             },
             urbanA2: {
                 name: '城市地面 (Urban_A2)',
-                image: '/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png',
+                image: '/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A2.png',
                 gridMode: true,
                 tileWidth: 48,
                 tileHeight: 48,
@@ -1053,7 +1047,7 @@
             },
             urbanA5: {
                 name: '城市装饰 (Urban_A5)',
-                image: '/resource/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A5.png',
+                image: '/CGS_RU_HouseFree/img/tilesets/CGS_Urban_A5.png',
                 gridMode: true,
                 tileWidth: 48,
                 tileHeight: 48,
@@ -1063,7 +1057,7 @@
             // 家具动画
             bed: {
                 name: '床动画 (BD001)',
-                image: '/resource/CP_V1.1.0_nyknck/Animations/BD001.png',
+                image: '/CP_V1.1.0_nyknck/Animations/BD001.png',
                 gridMode: true,
                 tileWidth: 48,
                 tileHeight: 48,
@@ -1072,7 +1066,7 @@
             },
             lamp: {
                 name: '灯动画 (BL001)',
-                image: '/resource/CP_V1.1.0_nyknck/Animations/BL001.png',
+                image: '/CP_V1.1.0_nyknck/Animations/BL001.png',
                 gridMode: true,
                 tileWidth: 48,
                 tileHeight: 48,
@@ -1081,7 +1075,7 @@
             },
             shelf: {
                 name: '架子动画 (SL001)',
-                image: '/resource/CP_V1.1.0_nyknck/Animations/SL001.png',
+                image: '/CP_V1.1.0_nyknck/Animations/SL001.png',
                 gridMode: true,
                 tileWidth: 48,
                 tileHeight: 48,
@@ -1093,23 +1087,23 @@
                 name: '木质家具',
                 image: null, // 多个文件
                 sprites: [
-                    {path: '/resource/Wooden Furniture/Bed H.png', name: '床-横'},
-                    {path: '/resource/Wooden Furniture/Bed V.png', name: '床-竖'},
-                    {path: '/resource/Wooden Furniture/Chair H.png', name: '椅子-横'},
-                    {path: '/resource/Wooden Furniture/Chair V.png', name: '椅子-竖'},
-                    {path: '/resource/Wooden Furniture/Dresser H.png', name: '梳妆台-横'},
-                    {path: '/resource/Wooden Furniture/Dresser V.png', name: '梳妆台-竖'},
-                    {path: '/resource/Wooden Furniture/Long Table H.png', name: '长桌-横'},
-                    {path: '/resource/Wooden Furniture/Long Table V.png', name: '长桌-竖'},
-                    {path: '/resource/Wooden Furniture/Stool.png', name: '凳子'},
-                    {path: '/resource/Wooden Furniture/Wardrobe H.png', name: '衣柜-横'},
-                    {path: '/resource/Wooden Furniture/Wardrobe V.png', name: '衣柜-竖'}
+                    {path: '/Wooden Furniture/Bed H.png', name: '床-横'},
+                    {path: '/Wooden Furniture/Bed V.png', name: '床-竖'},
+                    {path: '/Wooden Furniture/Chair H.png', name: '椅子-横'},
+                    {path: '/Wooden Furniture/Chair V.png', name: '椅子-竖'},
+                    {path: '/Wooden Furniture/Dresser H.png', name: '梳妆台-横'},
+                    {path: '/Wooden Furniture/Dresser V.png', name: '梳妆台-竖'},
+                    {path: '/Wooden Furniture/Long Table H.png', name: '长桌-横'},
+                    {path: '/Wooden Furniture/Long Table V.png', name: '长桌-竖'},
+                    {path: '/Wooden Furniture/Stool.png', name: '凳子'},
+                    {path: '/Wooden Furniture/Wardrobe H.png', name: '衣柜-横'},
+                    {path: '/Wooden Furniture/Wardrobe V.png', name: '衣柜-竖'}
                 ]
             },
             // 办公桌素材
             deskEssentials: {
                 name: '办公桌物品',
-                image: '/resource/4dc7190bd20eb0ee/spritesheet.png',
+                image: '/4dc7190bd20eb0ee/spritesheet.png',
                 gridMode: true,
                 tileWidth: 32,
                 tileHeight: 32,
@@ -1119,7 +1113,7 @@
             // 城市瓦片（Urban City Tileset）
             urbanCity: {
                 name: '城市瓦片集',
-                image: '/resource/225525db3ab3e4a8/Urban City Tileset Free Demo version Dlou Saiyan/Urban City Tileset Free Demo version 30x30 Dlou Saiyan.png',
+                image: '/225525db3ab3e4a8/Urban City Tileset Free Demo version Dlou Saiyan/Urban City Tileset Free Demo version 30x30 Dlou Saiyan.png',
                 gridMode: true,
                 tileWidth: 30,
                 tileHeight: 30,

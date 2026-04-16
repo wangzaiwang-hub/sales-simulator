@@ -1,9 +1,10 @@
 "use client";
 
 export default function DebugEnvPage() {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
   const clientId = process.env.NEXT_PUBLIC_SECONDME_CLIENT_ID;
   const redirectUri = process.env.NEXT_PUBLIC_SECONDME_REDIRECT_URI;
+  const assetUrl =
+    typeof window !== "undefined" ? `${window.location.origin}/shouye.gif` : "/shouye.gif";
 
   return (
     <div style={{ padding: "20px", fontFamily: "monospace" }}>
@@ -11,7 +12,7 @@ export default function DebugEnvPage() {
       <div style={{ marginTop: "20px" }}>
         <h2>NEXT_PUBLIC_API_URL:</h2>
         <pre style={{ background: "#f0f0f0", padding: "10px" }}>
-          {apiUrl || "未设置"}
+          已改为同域 /api rewrite
         </pre>
 
         <h2>NEXT_PUBLIC_SECONDME_CLIENT_ID:</h2>
@@ -26,9 +27,7 @@ export default function DebugEnvPage() {
 
         <h2>测试资源URL:</h2>
         <pre style={{ background: "#f0f0f0", padding: "10px" }}>
-          {apiUrl
-            ? `${apiUrl}/resource/test.png`
-            : "API URL 未设置，将使用本地路径"}
+          {assetUrl}
         </pre>
       </div>
     </div>

@@ -8,13 +8,13 @@
 - **状态**: ⚠️ 需要数据库密码
 
 ### SecondMe OAuth
-- **Client ID**: 3fd385c8-95d8-4ec9-a547-16e104da067f
+- **Client ID**: 已配置
 - **Client Secret**: 已配置
 - **Redirect URI**: http://localhost:3000/auth/callback
 - **状态**: ✅ 已配置
 
 ### JWT
-- **Secret**: 已生成（b31cbe4bd01966349ce974320bacb76f082afb8ee03ac9e469d0c134225ed27d）
+- **Secret**: 已生成
 - **状态**: ✅ 已配置
 
 ## ⚠️ 待完成
@@ -76,10 +76,10 @@ npm run dev
 PORT=3001
 NODE_ENV=development
 DATABASE_URL="postgresql://postgres.mfcgydquomrdgajuwwkg:[YOUR-PASSWORD]@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres?pgbouncer=true"
-JWT_SECRET=b31cbe4bd01966349ce974320bacb76f082afb8ee03ac9e469d0c134225ed27d
+JWT_SECRET=your_jwt_secret_here
 JWT_EXPIRES_IN=7d
-SECONDME_CLIENT_ID=3fd385c8-95d8-4ec9-a547-16e104da067f
-SECONDME_CLIENT_SECRET=10dd6507faab29eed394f9c095605d6f071af832652bf6c35d08e3fd569d68c3
+SECONDME_CLIENT_ID=your_secondme_client_id
+SECONDME_CLIENT_SECRET=your_secondme_client_secret
 SECONDME_REDIRECT_URI=http://localhost:3000/auth/callback
 CORS_ORIGIN=http://localhost:3000
 ```
@@ -87,12 +87,15 @@ CORS_ORIGIN=http://localhost:3000
 ### frontend/.env.local
 ```env
 NEXT_PUBLIC_API_URL=http://localhost:3001
-NEXT_PUBLIC_SECONDME_CLIENT_ID=3fd385c8-95d8-4ec9-a547-16e104da067f
+NEXT_PUBLIC_SECONDME_CLIENT_ID=your_secondme_client_id
 NEXT_PUBLIC_SECONDME_REDIRECT_URI=http://localhost:3000/auth/callback
 ```
+
+生产环境推荐改用 Vercel 的 `BACKEND_URL` + 同域 `/api` rewrite，`NEXT_PUBLIC_API_URL` 主要用于本地开发。
 
 ## 🔐 安全提醒
 
 - ⚠️ 不要将 `.env` 文件提交到Git
 - ⚠️ Service Role Key 只能在服务端使用
+- ⚠️ 如果 Client Secret 或 JWT Secret 曾经出现在仓库里，请立刻在对应平台轮换
 - ⚠️ 生产环境需要更新所有URL和密钥

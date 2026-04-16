@@ -1,7 +1,6 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import path from 'path';
 import authRoutes from './routes/auth';
 import gameRoutes from './routes/game';
 import shopRoutes from './routes/shop';
@@ -14,10 +13,6 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 
 const corsOrigin = process.env.CORS_ORIGIN || process.env.FRONTEND_URL || 'https://sales-simulator-zeta.vercel.app';
-
-const toolsDir = path.resolve(__dirname, '../');
-
-console.log('Tools directory:', toolsDir);
 console.log('CORS origin:', corsOrigin);
 
 app.use(cors({
@@ -186,26 +181,6 @@ app.post('/api/game/save-map-temp', async (req, res) => {
     console.error('Save map error:', error);
     res.status(500).json({ error: error instanceof Error ? error.message : 'Failed to save map' });
   }
-});
-
-app.get('/tools/map-test', (req, res) => {
-  res.sendFile(path.join(toolsDir, 'map-test.html'));
-});
-
-app.get('/tools/map-editor', (req, res) => {
-  res.sendFile(path.join(toolsDir, 'map-editor.html'));
-});
-
-app.get('/tools/character-creator', (req, res) => {
-  res.sendFile(path.join(toolsDir, 'character-creator.html'));
-});
-
-app.get('/tools/character-customizer', (req, res) => {
-  res.sendFile(path.join(toolsDir, 'character-customizer.html'));
-});
-
-app.get('/tools/character-editor', (req, res) => {
-  res.sendFile(path.join(toolsDir, 'character-editor.html'));
 });
 
 app.use('/api/auth', authRoutes);

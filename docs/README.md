@@ -29,7 +29,6 @@
 sales-simulator/
 ├── frontend/          # Next.js前端应用
 ├── backend/           # Express后端API
-├── resource/          # 游戏素材资源
 └── docs/             # 文档
 ```
 
@@ -83,7 +82,7 @@ npm install
 cp .env.example .env.local
 
 # 编辑.env.local文件
-# - NEXT_PUBLIC_API_URL: 后端API地址
+# - BACKEND_URL: Railway后端地址（生产部署）
 # - NEXT_PUBLIC_SECONDME_CLIENT_ID: SecondMe客户端ID
 
 # 启动开发服务器
@@ -99,7 +98,7 @@ npm run dev
 1. 在Vercel中导入项目
 2. 设置根目录为 `frontend`
 3. 配置环境变量：
-   - `NEXT_PUBLIC_API_URL`
+   - `BACKEND_URL`
    - `NEXT_PUBLIC_SECONDME_CLIENT_ID`
    - `NEXT_PUBLIC_SECONDME_REDIRECT_URI`
 4. 部署
@@ -177,7 +176,7 @@ VALUES (
 
 ### 游戏素材
 
-游戏素材位于 `resource/` 目录，包括：
+游戏素材统一放在 `frontend/public/`，包括：
 - 角色精灵图
 - 地图瓦片
 - UI图标

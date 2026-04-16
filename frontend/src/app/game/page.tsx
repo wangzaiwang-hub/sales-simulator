@@ -143,12 +143,8 @@ type ChatMessage = {
 function toAssetUrl(path?: string) {
   if (!path) return "";
   if (/^https?:\/\//.test(path)) return path;
-  
-  // 移除resource/前缀（如果存在）
-  const cleanPath = path.replace(/^resource\//, '').replace(/^\//, '');
-  
-  // 直接使用前端 public 目录的相对路径
-  // Vercel 会自动处理 public 目录的静态资源
+
+  const cleanPath = path.replace(/^resource\//, "").replace(/^\/+/, "");
   return `/${cleanPath}`;
 }
 
