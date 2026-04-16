@@ -142,9 +142,25 @@ type ChatMessage = {
 
 function toAssetUrl(path?: string) {
   if (!path) return "";
-  if (/^https?:\/\//.test(path)) return path;
+  if (/^data:|^blob:/.test(path)) return path;
 
-  const cleanPath = path.replace(/^resource\//, "").replace(/^\/+/, "");
+  let normalizedPath = path;
+
+  if (/^https?:\/\//.test(normalizedPath)) {
+    try {
+      const url = new URL(normalizedPath);
+      normalizedPath = `${url.pathname}${url.search}`;
+    } catch {
+      return normalizedPath;
+    }
+  }
+
+  const cleanPath = normalizedPath
+    .replace(/^resource\//, "")
+    .replace(/^\/+/, "")
+    .split("/")
+    .map((segment) => encodeURIComponent(decodeURIComponent(segment)))
+    .join("/");
   return `/${cleanPath}`;
 }
 
@@ -792,7 +808,8 @@ export default function GamePage() {
         { folder: 'Hair', file: 'Hair_Walk', row: appearance.hair },
         { folder: 'Eyes', file: 'Eyes_Walk', row: appearance.eyes },
       ];
-      
+      let hasLayerImage = false;
+
       layers.forEach(layer => {
         // Eyes没有Back方向，使用Front代替
         const layerDirection = (layer.folder === 'Eyes' && direction === 'Back') ? 'Front' : direction;
@@ -800,6 +817,7 @@ export default function GamePage() {
         const img = imageCache.get(toAssetUrl(imgPath));
         
         if (img) {
+          hasLayerImage = true;
           // 从精灵图的对应行读取当前帧
           const srcX = actor.currentFrame * 32;
           const srcY = layer.row * 32;
@@ -810,6 +828,21 @@ export default function GamePage() {
           );
         }
       });
+
+      if (!hasLayerImage) {
+        const sprite = imageCache.get(toAssetUrl(CGS_CHARACTER_SPRITE));
+        if (sprite) {
+          const directionRowMap: Record<Direction, number> = {
+            Front: 0,
+            Left: 1,
+            Right: 2,
+            Back: 3,
+          };
+          const srcX = actor.currentFrame * 32;
+          const srcY = (PLAYER_CHARACTER_ROW + directionRowMap[actor.direction]) * 48;
+          ctx.drawImage(sprite, srcX, srcY, 32, 48, actor.x, actor.y, actor.width, actor.height);
+        }
+      }
     };
 
     const updatePlayer = () => {
@@ -999,6 +1032,11 @@ export default function GamePage() {
               if (img) {
                 ctx.drawImage(img, -obj.width / 2, -obj.height / 2, obj.width, obj.height);
               }
+            } else if (obj.spriteData?.isFullImage && obj.spriteData.imageSrc) {
+              const img = imageCache.get(toAssetUrl(obj.spriteData.imageSrc));
+              if (img) {
+                ctx.drawImage(img, -obj.width / 2, -obj.height / 2, obj.width, obj.height);
+              }
             } else if (obj.spriteData && obj.spriteData.spriteImageSrc) {
               // 瓦片集素材
               const img = imageCache.get(toAssetUrl(obj.spriteData.spriteImageSrc));
@@ -1104,6 +1142,8 @@ export default function GamePage() {
           const collectImages = (obj: any) => {
             if (obj.isBackground && obj.imageData) {
               sources.push(obj.imageData);
+            } else if (obj.spriteData?.isFullImage && obj.spriteData.imageSrc) {
+              sources.push(toAssetUrl(obj.spriteData.imageSrc));
             } else if (obj.spriteData && obj.spriteData.spriteImageSrc) {
               sources.push(toAssetUrl(obj.spriteData.spriteImageSrc));
             }
