@@ -1860,7 +1860,12 @@
                     if (obj.spriteData) {
                         if (obj.spriteData.isFullImage && obj.spriteData.image) {
                             spriteImg = obj.spriteData.image;
-                        } else if (obj.spriteData.spriteImageSrc && obj.spriteData._cachedImage) {
+                        } else if (obj.spriteData.spriteImageSrc) {
+                            if (!obj.spriteData._cachedImage) {
+                                obj.spriteData._cachedImage = new Image();
+                                obj.spriteData._cachedImage.onload = () => render();
+                                obj.spriteData._cachedImage.src = obj.spriteData.spriteImageSrc;
+                            }
                             spriteImg = obj.spriteData._cachedImage;
                         }
                     }
