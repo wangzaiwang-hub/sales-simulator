@@ -1803,15 +1803,6 @@ export default function GamePage() {
                     {closestNpc ? closestNpc.name : "暂无目标"}
                   </div>
                 </button>
-
-                <button
-                  type="button"
-                  onClick={() => setImmersiveMode(false)}
-                  className="min-h-[56px] rounded-[18px] border-4 border-[#6de9ff]/40 bg-[rgba(13,22,42,0.82)] px-4 py-2 text-left text-[#e9f8ff] shadow-[0_12px_24px_rgba(0,0,0,0.28)] active:scale-95"
-                >
-                  <div className="font-game-display text-[13px]">菜单</div>
-                  <div className="font-game-ui mt-1 text-[10px] tracking-[0.08em] text-[#b7cce8]">查看工坊与返回入口</div>
-                </button>
               </div>
             </div>
           )}
