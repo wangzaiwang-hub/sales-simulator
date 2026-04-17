@@ -20,7 +20,7 @@ import { persistAuthSession } from "@/lib/auth-storage";
 type Status = "loading" | "success" | "error";
 type Stage = "validate" | "identity" | "appearance" | "route";
 
-const apiUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3001";
+const apiUrl = process.env.NEXT_PUBLIC_API_URL || "";
 const SECONDME_OAUTH_STATE_KEY = "secondme-oauth-state";
 const SECONDME_OAUTH_CONTEXT_KEY = "secondme-oauth-context";
 const SECONDME_OAUTH_STATE_PREFIX = "ss1.";
