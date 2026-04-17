@@ -1,3 +1,6 @@
+import { URLSearchParams } from 'url';
+import { secondMeJsonRequest } from './secondmeHttp';
+
 type NpcBehavior = 'wander' | 'patrol' | 'socialize' | 'shopkeep' | 'guard';
 
 export type ChatNpcProfile = {
@@ -12,6 +15,8 @@ export type ChatNpcProfile = {
   secondmeAccessToken?: string | null;
   secondmeApiKey?: string | null;
 };
+
+let cachedAppAccessToken: { token: string; expiresAt: number } | null = null;
 
 export function normalizeInterestList(value: ChatNpcProfile['interests']) {
   if (Array.isArray(value)) {
@@ -41,6 +46,72 @@ function buildSystemPrompt(npc: ChatNpcProfile) {
   ]
     .filter(Boolean)
     .join('\n');
+}
+
+function env(name: string) {
+  return process.env[name]?.trim() || '';
+}
+
+async function getSecondMeAppAccessToken() {
+  if (cachedAppAccessToken && cachedAppAccessToken.expiresAt > Date.now() + 60_000) {
+    return cachedAppAccessToken.token;
+  }
+
+  const clientId = env('SECONDME_CLIENT_ID');
+  const clientSecret = env('SECONDME_CLIENT_SECRET');
+
+  if (!clientId || !clientSecret) {
+    throw new Error('Missing SECONDME_CLIENT_ID or SECONDME_CLIENT_SECRET');
+  }
+
+  const tokenParams = new URLSearchParams({
+    client_id: clientId,
+    client_secret: clientSecret,
+    grant_type: 'client_credentials',
+    scope: 'chat.write',
+  });
+
+  const tokenResponse = await secondMeJsonRequest<{
+    code?: number;
+    message?: string;
+    data?: {
+      accessToken?: string;
+      expiresIn?: number | string;
+      expires_in?: number | string;
+    };
+  }>({
+    url: 'https://api.mindverse.com/gate/lab/api/oauth/token/client',
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: tokenParams.toString(),
+    timeoutMs: 30000,
+  });
+
+  const accessToken = tokenResponse.data?.data?.accessToken;
+  const expiresInSeconds = Number(
+    tokenResponse.data?.data?.expiresIn || tokenResponse.data?.data?.expires_in || 7 * 24 * 60 * 60,
+  );
+
+  if (!tokenResponse.ok || !accessToken) {
+    throw new Error(tokenResponse.bodyText || tokenResponse.data?.message || 'Failed to get app access token');
+  }
+
+  cachedAppAccessToken = {
+    token: accessToken,
+    expiresAt: Date.now() + expiresInSeconds * 1000,
+  };
+
+  return accessToken;
+}
+
+async function resolveSecondMeAccessToken(preferredToken?: string | null) {
+  if (preferredToken) {
+    return preferredToken;
+  }
+
+  return getSecondMeAppAccessToken();
 }
 
 function waitForVisitorReply(wsUrl: string) {
@@ -106,9 +177,7 @@ export async function requestSecondMeDirectReply(
   userMessage: string,
   chatHistory?: Array<{ role: string; content: string; createdAt: string }>
 ) {
-  if (!npc.secondmeAccessToken) {
-    throw new Error('NPC 未保存 SecondMe access token');
-  }
+  const accessToken = await resolveSecondMeAccessToken(npc.secondmeAccessToken);
 
   // 导入上下文管理器
   const { buildContextFromHistory, buildFullContext } = await import('./contextManager');
@@ -127,7 +196,7 @@ export async function requestSecondMeDirectReply(
       historyMessages,
       userMessage,
       2000, // 最大token数
-      npc.secondmeAccessToken
+      accessToken
     );
   } else {
     // 没有历史记录，使用简单上下文
@@ -140,7 +209,7 @@ export async function requestSecondMeDirectReply(
   const response = await fetch('https://api.mindverse.com/gate/lab/api/secondme/chat/stream', {
     method: 'POST',
     headers: {
-      Authorization: `Bearer ${npc.secondmeAccessToken}`,
+      Authorization: `Bearer ${accessToken}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
@@ -204,18 +273,16 @@ export async function requestSecondMeNpcReply(
   visitorName?: string,
   chatHistory?: Array<{ role: string; content: string; createdAt: string }>
 ) {
-  if (!npc.secondmeAccessToken) {
-    throw new Error('NPC 未保存 SecondMe access token');
-  }
-
   if (!npc.secondmeApiKey) {
     throw new Error('NPC 未配置 SecondMe avatar api key');
   }
 
+  const accessToken = await resolveSecondMeAccessToken(npc.secondmeAccessToken);
+
   const initResponse = await fetch('https://api.mindverse.com/gate/lab/api/secondme/visitor-chat/init', {
     method: 'POST',
     headers: {
-      Authorization: `Bearer ${npc.secondmeAccessToken}`,
+      Authorization: `Bearer ${accessToken}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
@@ -256,7 +323,7 @@ export async function requestSecondMeNpcReply(
     const historyMessages = buildContextFromHistory(chatHistory, 15);
     
     // 压缩上下文
-    const compressed = await compressContext(historyMessages, 1500, npc.secondmeAccessToken);
+    const compressed = await compressContext(historyMessages, 1500, accessToken);
     
     // 构建上下文字符串
     let contextStr = '';
@@ -281,7 +348,7 @@ export async function requestSecondMeNpcReply(
   const sendResponse = await fetch('https://api.mindverse.com/gate/lab/api/secondme/visitor-chat/send', {
     method: 'POST',
     headers: {
-      Authorization: `Bearer ${npc.secondmeAccessToken}`,
+      Authorization: `Bearer ${accessToken}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
