@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
 import { useRouter } from "next/navigation";
 import type { PersonalityTraits, Mood, ActivityStatus } from "@/types/npc-emotions";
 import { getStatusDisplayText, getStatusColor } from "@/types/npc-emotions";
@@ -149,6 +149,12 @@ type ChatMessage = {
   };
 };
 
+type JoystickState = {
+  active: boolean;
+  x: number;
+  y: number;
+};
+
 function toAssetUrl(path?: string) {
   if (!path) return "";
   if (/^data:|^blob:/.test(path)) return path;
@@ -290,7 +296,11 @@ export default function GamePage() {
   const [chatMessages, setChatMessages] = useState<Record<string, ChatMessage[]>>({});
   const [presenceTick, setPresenceTick] = useState(0);
   const [immersiveMode, setImmersiveMode] = useState(true);
+  const [isTouchControlsEnabled, setIsTouchControlsEnabled] = useState(false);
+  const [joystick, setJoystick] = useState<JoystickState>({ active: false, x: 0, y: 0 });
   const chatScrollRef = useRef<HTMLDivElement>(null);
+  const joystickVectorRef = useRef({ x: 0, y: 0 });
+  const joystickPointerIdRef = useRef<number | null>(null);
 
   const selectedNpc = npcsRef.current.find((npc) => npc.id === selectedNpcId) || null;
 
@@ -529,6 +539,22 @@ export default function GamePage() {
 
     void loadChatHistory();
   }, [selectedNpcId]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const mediaQuery = window.matchMedia("(pointer: coarse)");
+    const updateTouchControls = () => {
+      setIsTouchControlsEnabled(mediaQuery.matches);
+    };
+
+    updateTouchControls();
+    mediaQuery.addEventListener("change", updateTouchControls);
+
+    return () => {
+      mediaQuery.removeEventListener("change", updateTouchControls);
+    };
+  }, []);
 
   useEffect(() => {
     if (!hasMap || !mapRef.current || !canvasRef.current) {
@@ -1053,13 +1079,27 @@ export default function GamePage() {
     };
 
     const updatePlayer = () => {
+      let inputX = 0;
+      let inputY = 0;
+
+      if (keysRef.current.ArrowUp || keysRef.current.w) inputY -= 1;
+      if (keysRef.current.ArrowDown || keysRef.current.s) inputY += 1;
+      if (keysRef.current.ArrowLeft || keysRef.current.a) inputX -= 1;
+      if (keysRef.current.ArrowRight || keysRef.current.d) inputX += 1;
+
+      inputX += joystickVectorRef.current.x;
+      inputY += joystickVectorRef.current.y;
+
+      const magnitude = Math.hypot(inputX, inputY);
       let dx = 0;
       let dy = 0;
 
-      if (keysRef.current.ArrowUp || keysRef.current.w) dy -= playerRef.current.speed;
-      if (keysRef.current.ArrowDown || keysRef.current.s) dy += playerRef.current.speed;
-      if (keysRef.current.ArrowLeft || keysRef.current.a) dx -= playerRef.current.speed;
-      if (keysRef.current.ArrowRight || keysRef.current.d) dx += playerRef.current.speed;
+      if (magnitude > 0) {
+        const normalizedX = magnitude > 1 ? inputX / magnitude : inputX;
+        const normalizedY = magnitude > 1 ? inputY / magnitude : inputY;
+        dx = normalizedX * playerRef.current.speed;
+        dy = normalizedY * playerRef.current.speed;
+      }
 
       if (dy < 0) playerRef.current.direction = "Back";
       else if (dy > 0) playerRef.current.direction = "Front";
@@ -1542,6 +1582,58 @@ export default function GamePage() {
     }
   };
 
+  const updateJoystickFromPoint = (clientX: number, clientY: number, rect: DOMRect) => {
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    const maxRadius = rect.width * 0.34;
+    const rawX = clientX - centerX;
+    const rawY = clientY - centerY;
+    const distance = Math.hypot(rawX, rawY);
+    const limitedDistance = Math.min(distance, maxRadius);
+    const angle = distance ? Math.atan2(rawY, rawX) : 0;
+    const knobX = Math.cos(angle) * limitedDistance;
+    const knobY = Math.sin(angle) * limitedDistance;
+
+    joystickVectorRef.current = {
+      x: maxRadius ? knobX / maxRadius : 0,
+      y: maxRadius ? knobY / maxRadius : 0,
+    };
+    setJoystick({ active: true, x: knobX, y: knobY });
+  };
+
+  const releaseJoystick = () => {
+    joystickPointerIdRef.current = null;
+    joystickVectorRef.current = { x: 0, y: 0 };
+    setJoystick({ active: false, x: 0, y: 0 });
+  };
+
+  const handleJoystickPointerDown = (event: ReactPointerEvent<HTMLDivElement>) => {
+    joystickPointerIdRef.current = event.pointerId;
+    event.currentTarget.setPointerCapture(event.pointerId);
+    updateJoystickFromPoint(event.clientX, event.clientY, event.currentTarget.getBoundingClientRect());
+  };
+
+  const handleJoystickPointerMove = (event: ReactPointerEvent<HTMLDivElement>) => {
+    if (joystickPointerIdRef.current !== event.pointerId) return;
+    updateJoystickFromPoint(event.clientX, event.clientY, event.currentTarget.getBoundingClientRect());
+  };
+
+  const handleJoystickPointerEnd = (event: ReactPointerEvent<HTMLDivElement>) => {
+    if (joystickPointerIdRef.current !== event.pointerId) return;
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+    releaseJoystick();
+  };
+
+  const handleMobileInteract = () => {
+    if (!closestNpc) return;
+    if ("vibrate" in navigator) {
+      navigator.vibrate(12);
+    }
+    setSelectedNpcId(closestNpc.id);
+  };
+
   void presenceTick;
 
   const nearbyNpcs = npcsRef.current
@@ -1588,7 +1680,7 @@ export default function GamePage() {
       {immersiveMode && hasMap && (
         <>
           {closestNpc && (
-            <div className="pointer-events-none absolute bottom-6 left-1/2 z-20 -translate-x-1/2">
+            <div className="pointer-events-none absolute bottom-6 left-1/2 z-20 hidden -translate-x-1/2 md:block">
               <RpgPromptPanel className="w-[620px] drop-shadow-[0_16px_42px_rgba(0,0,0,0.34)]">
                 <div className="font-game-ui flex w-full flex-wrap items-center justify-center gap-x-3 gap-y-1 text-[13px] leading-7 text-[#4a2a58] md:flex-nowrap">
                   <span>靠近 {closestNpc.name} 后按</span>
@@ -1596,6 +1688,74 @@ export default function GamePage() {
                   <span>对话，或直接点击 TA</span>
                 </div>
               </RpgPromptPanel>
+            </div>
+          )}
+
+          {isTouchControlsEnabled && (
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 flex items-end justify-between px-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
+              <div className="pointer-events-auto flex flex-col gap-2">
+                {closestNpc ? (
+                  <div className="w-[160px] rounded-[18px] border-2 border-[#4af2ff]/45 bg-[rgba(11,18,35,0.78)] px-3 py-2 shadow-[0_10px_24px_rgba(0,0,0,0.28)] backdrop-blur-sm">
+                    <div className="font-game-display text-[12px] text-[#fff2b8]">附近有人</div>
+                    <div className="font-game-ui mt-1 text-[11px] leading-5 text-[#d9f4ff]">
+                      靠近 {closestNpc.name} 后点右侧按钮对话
+                    </div>
+                  </div>
+                ) : (
+                  <div className="w-[160px] rounded-[18px] border-2 border-white/10 bg-[rgba(11,18,35,0.72)] px-3 py-2 shadow-[0_10px_24px_rgba(0,0,0,0.24)] backdrop-blur-sm">
+                    <div className="font-game-display text-[12px] text-[#fff2b8]">移动模式</div>
+                    <div className="font-game-ui mt-1 text-[11px] leading-5 text-[#c8d5f0]">
+                      左手拖动摇杆探索地图
+                    </div>
+                  </div>
+                )}
+
+                <div
+                  className="relative h-[132px] w-[132px] touch-none rounded-full border-4 border-[#3e567e] bg-[radial-gradient(circle_at_50%_38%,_rgba(105,237,255,0.18),_rgba(13,23,43,0.92)_72%)] shadow-[0_18px_40px_rgba(0,0,0,0.35)]"
+                  onPointerDown={handleJoystickPointerDown}
+                  onPointerMove={handleJoystickPointerMove}
+                  onPointerUp={handleJoystickPointerEnd}
+                  onPointerCancel={handleJoystickPointerEnd}
+                >
+                  <div className="absolute inset-[18px] rounded-full border border-dashed border-white/10" />
+                  <div className="absolute left-1/2 top-1/2 h-[76px] w-[76px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-[#8ef7ff]/35 bg-[rgba(255,255,255,0.04)]" />
+                  <div
+                    className={`absolute left-1/2 top-1/2 flex h-[54px] w-[54px] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border-4 border-[#fff0be] bg-[radial-gradient(circle_at_35%_30%,_#fff8dc,_#ffd265_58%,_#f58f23)] shadow-[0_10px_18px_rgba(0,0,0,0.32)] transition-transform ${
+                      joystick.active ? "scale-95" : ""
+                    }`}
+                    style={{ transform: `translate(calc(-50% + ${joystick.x}px), calc(-50% + ${joystick.y}px))` }}
+                  >
+                    <div className="h-4 w-4 rounded-full bg-[rgba(83,42,12,0.82)]" />
+                  </div>
+                </div>
+              </div>
+
+              <div className="pointer-events-auto flex flex-col items-end gap-3">
+                <button
+                  type="button"
+                  onClick={handleMobileInteract}
+                  disabled={!closestNpc}
+                  className={`min-h-[72px] min-w-[72px] rounded-[22px] border-4 px-4 py-3 shadow-[0_14px_30px_rgba(0,0,0,0.32)] transition active:scale-95 ${
+                    closestNpc
+                      ? "border-[#ffe8a6] bg-[linear-gradient(180deg,_#fff0bd,_#ffb547)] text-[#4a2a10]"
+                      : "border-white/10 bg-[rgba(25,34,57,0.78)] text-[#7f90b6]"
+                  }`}
+                >
+                  <div className="font-game-display text-[16px]">对话</div>
+                  <div className="font-game-ui mt-1 text-[10px] tracking-[0.08em]">
+                    {closestNpc ? closestNpc.name : "暂无目标"}
+                  </div>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setImmersiveMode(false)}
+                  className="min-h-[56px] rounded-[18px] border-4 border-[#6de9ff]/40 bg-[rgba(13,22,42,0.82)] px-4 py-2 text-left text-[#e9f8ff] shadow-[0_12px_24px_rgba(0,0,0,0.28)] active:scale-95"
+                >
+                  <div className="font-game-display text-[13px]">菜单</div>
+                  <div className="font-game-ui mt-1 text-[10px] tracking-[0.08em] text-[#b7cce8]">查看工坊与返回入口</div>
+                </button>
+              </div>
             </div>
           )}
         </>
