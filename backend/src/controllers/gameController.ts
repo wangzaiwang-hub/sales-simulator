@@ -15,6 +15,37 @@ type PortalArea = {
   portalCode?: string | number;
 };
 
+function normalizeTraitValue(value: unknown, fallback = 50) {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) {
+    return fallback;
+  }
+  return Math.max(0, Math.min(100, numeric));
+}
+
+function normalizePersonalityTraits(raw: unknown) {
+  const parsed =
+    typeof raw === 'string'
+      ? (() => {
+          try {
+            return JSON.parse(raw);
+          } catch {
+            return null;
+          }
+        })()
+      : raw;
+
+  const source = parsed && typeof parsed === 'object' ? (parsed as Record<string, unknown>) : {};
+
+  return {
+    openness: normalizeTraitValue(source.openness),
+    conscientiousness: normalizeTraitValue(source.conscientiousness),
+    extraversion: normalizeTraitValue(source.extraversion),
+    agreeableness: normalizeTraitValue(source.agreeableness),
+    neuroticism: normalizeTraitValue(source.neuroticism),
+  };
+}
+
 function parseStoredMap(currentMap: unknown) {
   try {
     const parsed =
@@ -658,13 +689,8 @@ export const gameController = {
         // 如果是第一次见面，创建关系
         if (isFirstMeeting) {
           // 解析性格特征
-          const npcTraits = typeof userNpc.personalityTraits === 'string' 
-            ? JSON.parse(userNpc.personalityTraits)
-            : userNpc.personalityTraits || { openness: 50, conscientiousness: 50, extraversion: 50, agreeableness: 50, neuroticism: 50 };
-          
-          const visitorTraits = typeof visitorUser?.personalityTraits === 'string'
-            ? JSON.parse(visitorUser.personalityTraits)
-            : visitorUser?.personalityTraits || { openness: 50, conscientiousness: 50, extraversion: 50, agreeableness: 50, neuroticism: 50 };
+          const npcTraits = normalizePersonalityTraits(userNpc.personalityTraits);
+          const visitorTraits = normalizePersonalityTraits(visitorUser?.personalityTraits);
 
           const { calculateInitialAffinity, determineRelationshipType } = await import('../lib/relationshipSystem');
           
@@ -693,9 +719,7 @@ export const gameController = {
         // 判断是否接受互动
         const { shouldAcceptInteraction } = await import('../lib/relationshipSystem');
         
-        const npcTraits = typeof userNpc.personalityTraits === 'string'
-          ? JSON.parse(userNpc.personalityTraits)
-          : userNpc.personalityTraits || { openness: 50, conscientiousness: 50, extraversion: 50, agreeableness: 50, neuroticism: 50 };
+        const npcTraits = normalizePersonalityTraits(userNpc.personalityTraits);
 
         const acceptResult = shouldAcceptInteraction(
           npcTraits,
@@ -846,9 +870,7 @@ export const gameController = {
         const { determineRelationshipType } = await import('../lib/relationshipSystem');
         const { buildEvaluationPrompt, evaluateWithAI, fallbackEvaluation } = await import('../lib/aiRelationshipEvaluator');
         
-        const visitorTraits = typeof visitorUser?.personalityTraits === 'string'
-          ? JSON.parse(visitorUser.personalityTraits)
-          : visitorUser?.personalityTraits || { openness: 50, conscientiousness: 50, extraversion: 50, agreeableness: 50, neuroticism: 50 };
+        const visitorTraits = normalizePersonalityTraits(visitorUser?.personalityTraits);
 
         // 构建AI评估提示（现在有完整的对话内容）
         const evaluationPrompt = buildEvaluationPrompt(
