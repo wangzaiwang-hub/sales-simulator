@@ -156,7 +156,7 @@ function getMapDimensions(map: any) {
   return { tileSize, mapWidth, mapHeight };
 }
 
-async function buildMapNpcPayload(userId: string, map: any) {
+async function buildMapNpcPayload(userId: string, map: any, viewedMapKey: string) {
   const { tileSize, mapWidth, mapHeight } = getMapDimensions(map);
   const users = await selectMany<{
     id: string;
@@ -180,13 +180,13 @@ async function buildMapNpcPayload(userId: string, map: any) {
   const userIds = users.map((user) => user.id);
   const progressRows = userIds.length
     ? await selectMany<Row>('GameProgress', {
-        select: 'userId,characterAppearance',
+        select: 'userId,characterAppearance,currentMap,positionX,positionY',
         ...inList('userId', userIds),
         limit: userIds.length,
       })
     : [];
-  const appearanceByUserId = new Map(
-    progressRows.map((progress) => [progress.userId, progress.characterAppearance]),
+  const progressByUserId = new Map(
+    progressRows.map((progress) => [progress.userId, progress]),
   );
 
   return buildMapNpcs(
@@ -194,9 +194,13 @@ async function buildMapNpcPayload(userId: string, map: any) {
     mapWidth,
     mapHeight,
     userId,
+    viewedMapKey,
     users.map((user) => ({
       ...user,
-      characterAppearance: appearanceByUserId.get(user.id) ?? null,
+      characterAppearance: progressByUserId.get(user.id)?.characterAppearance ?? null,
+      currentMap: progressByUserId.get(user.id)?.currentMap ?? 'main',
+      positionX: progressByUserId.get(user.id)?.positionX ?? null,
+      positionY: progressByUserId.get(user.id)?.positionY ?? null,
     })) as any,
   );
 }
@@ -343,11 +347,13 @@ export const gameController = {
       let map = null;
       let isShared = false;
       let mapId: string | null = null;
+      let viewedMapKey = 'main';
 
       if (sharedMap && sharedMap.mapData) {
         map = parseStoredMap(sharedMap.mapData);
         isShared = true;
         mapId = sharedMap.id;
+        viewedMapKey = `shared:${sharedMap.id}`;
 
         if (sharedMap.id !== preferredSharedMapId) {
           await updateRows<Row>(
@@ -359,6 +365,10 @@ export const gameController = {
       } else {
         // 回退到用户个人地图
         map = parseStoredMap(progress.currentMap);
+        viewedMapKey =
+          typeof progress.currentMap === 'string' && progress.currentMap
+            ? progress.currentMap
+            : 'main';
       }
       
       // 如果没有有效的地图数据，使用默认地图
@@ -366,7 +376,7 @@ export const gameController = {
         map = getDefaultMap();
       }
 
-      const npcs = await buildMapNpcPayload(userId, map);
+      const npcs = await buildMapNpcPayload(userId, map, viewedMapKey);
 
       res.json({
         hasCustomMap: Boolean(map),
@@ -449,7 +459,7 @@ export const gameController = {
           destinationPortalId: destinationPortal.id ?? null,
         });
 
-        const npcs = await buildMapNpcPayload(userId, map);
+        const npcs = await buildMapNpcPayload(userId, map, `shared:${sharedMap.id}`);
         const spawnX = destinationPortal.x + destinationPortal.width / 2 - 24;
         const spawnY = destinationPortal.y + destinationPortal.height - 48;
 

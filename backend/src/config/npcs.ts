@@ -88,6 +88,9 @@ type UserRecord = {
   currentMood?: Mood | null;
   activityStatus?: ActivityStatus | null;
   characterAppearance?: CharacterAppearance | string | null;
+  currentMap?: string | null;
+  positionX?: number | null;
+  positionY?: number | null;
 };
 
 function resolveAvatarUrl(user: UserRecord) {
@@ -231,7 +234,7 @@ function createNpcFromSeed(seed: NpcSeed, tileSize: number, mapWidth: number, ma
   };
 }
 
-function buildDynamicUserSeed(user: UserRecord, index: number, total: number): NpcSeed {
+function buildDynamicUserSeed(user: UserRecord): NpcSeed {
   const base = hashString(user.secondmeId || user.id || user.username);
   const sprite = USER_SPRITES[base % USER_SPRITES.length];
   const profession = user.profession || USER_PROFESSIONS[base % USER_PROFESSIONS.length];
@@ -242,8 +245,7 @@ function buildDynamicUserSeed(user: UserRecord, index: number, total: number): N
         USER_INTEREST_POOL[base % USER_INTEREST_POOL.length],
         USER_INTEREST_POOL[(base + 3) % USER_INTEREST_POOL.length],
       ];
-  const spread = total <= 1 ? 0.5 : index / Math.max(total - 1, 1);
-  
+
   // 解析性格特征
   let personality: PersonalityTraits;
   if (user.personalityTraits) {
@@ -278,8 +280,8 @@ function buildDynamicUserSeed(user: UserRecord, index: number, total: number): N
     characterRow: sprite.characterRow,
     direction: ['Front', 'Left', 'Right', 'Back'][base % 4] as Direction,
     behavior: (user.npcBehavior as NpcBehavior) || behavior,
-    anchorXRatio: 0.2 + 0.6 * spread,
-    anchorYRatio: 0.58 + 0.16 * ((base % 5) / 4),
+    anchorXRatio: 0.12 + 0.76 * ((base % 1000) / 999),
+    anchorYRatio: 0.16 + 0.68 * (((base >>> 8) % 1000) / 999),
     roamRadiusTiles: 3 + (base % 3),
     idleChance: 0.32 + ((base % 3) * 0.08),
     moveIntervalMin: 60,
@@ -295,19 +297,37 @@ export function buildMapNpcs(
   mapWidth: number,
   mapHeight: number,
   currentUserId: string,
+  viewedMapKey: string,
   users: UserRecord[],
 ) {
   const dynamicUsers = users
     .filter((user) => user.id !== currentUserId && user.isNpcVisible !== false)
+    .filter((user) => (user.currentMap || 'main') === viewedMapKey)
     .slice(0, 8)
-    .map((user, index, list) => {
+    .map((user) => {
+      const seed = buildDynamicUserSeed(user);
       const npc = createNpcFromSeed(
-        buildDynamicUserSeed(user, index, list.length),
+        seed,
         tileSize,
         mapWidth,
         mapHeight,
-        index + 101,
+        hashString(user.id) + 101,
       );
+
+      const hasStoredPosition =
+        Number.isFinite(Number(user.positionX)) &&
+        Number.isFinite(Number(user.positionY));
+
+      if (hasStoredPosition) {
+        const maxX = Math.max(0, mapWidth * tileSize - npc.width);
+        const maxY = Math.max(0, mapHeight * tileSize - npc.height);
+        const clampedX = Math.max(0, Math.min(maxX, Number(user.positionX)));
+        const clampedY = Math.max(0, Math.min(maxY, Number(user.positionY)));
+        npc.x = clampedX;
+        npc.y = clampedY;
+        npc.anchorX = clampedX;
+        npc.anchorY = clampedY;
+      }
 
       return {
         ...npc,
