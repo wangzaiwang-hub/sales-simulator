@@ -20,6 +20,7 @@ type Status = "loading" | "success" | "error";
 type Stage = "validate" | "identity" | "appearance" | "route";
 
 const apiUrl = "";
+const SECONDME_OAUTH_STATE_KEY = "secondme-oauth-state";
 
 const stageLabels: Record<Stage, string> = {
   validate: "校验授权",
@@ -96,7 +97,9 @@ function AuthCallbackContent() {
     const code = searchParams.get("code");
     const error = searchParams.get("error");
     const state = searchParams.get("state");
-    const expectedState = window.sessionStorage.getItem("secondme-oauth-state");
+    const expectedState =
+      window.sessionStorage.getItem(SECONDME_OAUTH_STATE_KEY) ||
+      window.localStorage.getItem(SECONDME_OAUTH_STATE_KEY);
 
     if (error) {
       setStatus("error");
@@ -158,7 +161,8 @@ function AuthCallbackContent() {
 
         localStorage.setItem("sales-simulator-token", data.token);
         localStorage.setItem("sales-simulator-user", JSON.stringify(data.user));
-        window.sessionStorage.removeItem("secondme-oauth-state");
+        window.sessionStorage.removeItem(SECONDME_OAUTH_STATE_KEY);
+        window.localStorage.removeItem(SECONDME_OAUTH_STATE_KEY);
 
         setStage("appearance");
         setMessage("正在写入角色外观...");

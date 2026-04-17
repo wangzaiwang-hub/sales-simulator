@@ -18,6 +18,7 @@ import {
 
 const rawClientId = process.env.NEXT_PUBLIC_SECONDME_CLIENT_ID;
 const SECONDME_AUTHORIZE_URL = "https://go.second-me.cn/oauth/";
+const SECONDME_OAUTH_STATE_KEY = "secondme-oauth-state";
 
 const townSignals = [
   {
@@ -114,7 +115,8 @@ export default function LoginPage() {
     }
 
     const state = crypto.randomUUID();
-    window.sessionStorage.setItem("secondme-oauth-state", state);
+    window.sessionStorage.setItem(SECONDME_OAUTH_STATE_KEY, state);
+    window.localStorage.setItem(SECONDME_OAUTH_STATE_KEY, state);
 
     const params = new URLSearchParams({
       client_id: clientId,
