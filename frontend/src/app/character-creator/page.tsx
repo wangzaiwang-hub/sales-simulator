@@ -8,9 +8,9 @@ import {
   AssetWindow,
 } from "@/components/game/mobile-casual-ui";
 import { RpgChip } from "@/components/game/rpg-ui";
+import { getStoredAuthToken } from "@/lib/auth-storage";
 
 const apiUrl = "";
-const tokenKey = "sales-simulator-token";
 
 type CharacterAppearance = {
   character: number;
@@ -81,7 +81,7 @@ export default function CharacterCreatorPage() {
   // 加载已保存的外观
   useEffect(() => {
     const loadSavedAppearance = async () => {
-      const token = localStorage.getItem(tokenKey);
+      const token = getStoredAuthToken();
       if (!token) {
         router.replace("/auth/login");
         return;
@@ -361,7 +361,7 @@ export default function CharacterCreatorPage() {
   };
 
   const saveAndContinue = async () => {
-    const token = localStorage.getItem(tokenKey);
+    const token = getStoredAuthToken();
     if (!token) {
       alert("请先登录！");
       router.replace("/auth/login");

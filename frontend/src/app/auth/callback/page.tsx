@@ -15,6 +15,7 @@ import {
   normalizeAppearance,
   type CharacterAppearance,
 } from "@/lib/character-appearance";
+import { persistAuthSession } from "@/lib/auth-storage";
 
 type Status = "loading" | "success" | "error";
 type Stage = "validate" | "identity" | "appearance" | "route";
@@ -176,8 +177,7 @@ function AuthCallbackContent() {
           );
         }
 
-        localStorage.setItem("sales-simulator-token", data.token);
-        localStorage.setItem("sales-simulator-user", JSON.stringify(data.user));
+        persistAuthSession(data.token, data.user);
         window.sessionStorage.removeItem(SECONDME_OAUTH_STATE_KEY);
         window.localStorage.removeItem(SECONDME_OAUTH_STATE_KEY);
         if (state) {

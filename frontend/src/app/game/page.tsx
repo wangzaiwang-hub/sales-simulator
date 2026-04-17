@@ -7,9 +7,9 @@ import { getStatusDisplayText, getStatusColor } from "@/types/npc-emotions";
 import { getRelationshipText, getAffinityText, getAffinityColor, getFamiliarityText } from "@/utils/relationship";
 import { AssetCounter, AssetIconButton } from "@/components/game/mobile-casual-ui";
 import { RpgButton, RpgKeyBadge, RpgLinkButton, RpgPromptPanel } from "@/components/game/rpg-ui";
+import { getStoredAuthToken } from "@/lib/auth-storage";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "";
-const tokenKey = "sales-simulator-token";
 const CGS_CHARACTER_SPRITE = "CGS_RU_HouseFree/img/characters/CGS_Char_1.png";
 const PLAYER_SPRITE_COLUMN_OFFSET = 0;
 const PLAYER_CHARACTER_ROW = 4;
@@ -308,7 +308,7 @@ export default function GamePage() {
 
   // 定期更新NPC状态（每30秒）
   useEffect(() => {
-    const token = localStorage.getItem(tokenKey);
+    const token = getStoredAuthToken();
     if (!token || !hasMap) return;
 
     const updateNpcStates = async () => {
@@ -356,7 +356,7 @@ export default function GamePage() {
   }, [chatMessages, selectedNpcId]);
 
   useEffect(() => {
-    const token = localStorage.getItem(tokenKey);
+    const token = getStoredAuthToken();
 
     if (!token) {
       router.replace("/auth/login");
@@ -457,7 +457,7 @@ export default function GamePage() {
     }
 
     const loadChatHistory = async () => {
-      const token = localStorage.getItem(tokenKey);
+      const token = getStoredAuthToken();
       if (!token) return;
 
       console.log(`🔵 前端：开始加载聊天历史，NPC ID: ${selectedNpcId}`);
@@ -856,7 +856,7 @@ export default function GamePage() {
     };
 
     const saveCurrentLocation = (positionX: number, positionY: number) => {
-      const token = localStorage.getItem(tokenKey);
+      const token = getStoredAuthToken();
       if (!token) return;
 
       fetch(`${apiUrl}/api/game/progress`, {
@@ -891,7 +891,7 @@ export default function GamePage() {
         return;
       }
 
-      const token = localStorage.getItem(tokenKey);
+      const token = getStoredAuthToken();
       if (!token) return;
 
       teleportingRef.current = true;
@@ -1583,7 +1583,7 @@ export default function GamePage() {
   }, [hasMap, username]);
 
   const sendNpcMessage = async () => {
-    const token = localStorage.getItem(tokenKey);
+    const token = getStoredAuthToken();
     const message = chatInput.trim();
     if (!token || !selectedNpc || !message || chatLoading) return;
 
