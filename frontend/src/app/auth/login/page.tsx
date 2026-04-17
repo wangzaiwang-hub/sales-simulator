@@ -20,6 +20,15 @@ const rawClientId = process.env.NEXT_PUBLIC_SECONDME_CLIENT_ID;
 const SECONDME_AUTHORIZE_URL = "https://go.second-me.cn/oauth/";
 const SECONDME_OAUTH_STATE_KEY = "secondme-oauth-state";
 const SECONDME_OAUTH_CONTEXT_KEY = "secondme-oauth-context";
+const SECONDME_OAUTH_STATE_PREFIX = "ss1.";
+
+type OAuthStatePayload = {
+  nonce: string;
+  roleId: string;
+  appearance: CharacterAppearance;
+  redirectUri: string;
+  createdAt: number;
+};
 
 function createOAuthState() {
   if (typeof window !== "undefined" && window.crypto?.randomUUID) {
@@ -27,6 +36,14 @@ function createOAuthState() {
   }
 
   return `oauth-${Date.now()}-${Math.random().toString(36).slice(2, 12)}`;
+}
+
+function encodeOAuthState(payload: OAuthStatePayload) {
+  const json = JSON.stringify(payload);
+  const utf8 = encodeURIComponent(json).replace(/%([0-9A-F]{2})/g, (_, hex: string) =>
+    String.fromCharCode(Number.parseInt(hex, 16)),
+  );
+  return `${SECONDME_OAUTH_STATE_PREFIX}${btoa(utf8)}`;
 }
 
 const townSignals = [
@@ -147,19 +164,26 @@ export default function LoginPage() {
       return;
     }
 
-    const state = createOAuthState();
+    const nonce = createOAuthState();
     const oauthContext = {
-      state,
+      state: nonce,
       roleId: selectedRole?.id ?? "custom",
       appearance,
       redirectUri,
       createdAt: Date.now(),
     };
+    const state = encodeOAuthState({
+      nonce,
+      roleId: oauthContext.roleId,
+      appearance,
+      redirectUri,
+      createdAt: oauthContext.createdAt,
+    });
 
-    window.sessionStorage.setItem(SECONDME_OAUTH_STATE_KEY, state);
-    window.localStorage.setItem(SECONDME_OAUTH_STATE_KEY, state);
+    window.sessionStorage.setItem(SECONDME_OAUTH_STATE_KEY, nonce);
+    window.localStorage.setItem(SECONDME_OAUTH_STATE_KEY, nonce);
     window.localStorage.setItem(
-      `${SECONDME_OAUTH_CONTEXT_KEY}:${state}`,
+      `${SECONDME_OAUTH_CONTEXT_KEY}:${nonce}`,
       JSON.stringify(oauthContext),
     );
 
@@ -178,14 +202,21 @@ export default function LoginPage() {
     const redirectUri =
       process.env.NEXT_PUBLIC_SECONDME_REDIRECT_URI?.trim() ||
       `${window.location.origin}/auth/callback`;
-    const state = createOAuthState();
+    const nonce = createOAuthState();
     const oauthContext = {
-      state,
+      state: nonce,
       roleId: selectedRole?.id ?? "custom",
       appearance,
       redirectUri,
       createdAt: Date.now(),
     };
+    const state = encodeOAuthState({
+      nonce,
+      roleId: oauthContext.roleId,
+      appearance,
+      redirectUri,
+      createdAt: oauthContext.createdAt,
+    });
 
     window.sessionStorage.setItem(
       CHARACTER_APPEARANCE_STORAGE_KEY,
@@ -203,10 +234,10 @@ export default function LoginPage() {
       CHARACTER_ROLE_STORAGE_KEY,
       selectedRole?.id ?? "custom",
     );
-    window.sessionStorage.setItem(SECONDME_OAUTH_STATE_KEY, state);
-    window.localStorage.setItem(SECONDME_OAUTH_STATE_KEY, state);
+    window.sessionStorage.setItem(SECONDME_OAUTH_STATE_KEY, nonce);
+    window.localStorage.setItem(SECONDME_OAUTH_STATE_KEY, nonce);
     window.localStorage.setItem(
-      `${SECONDME_OAUTH_CONTEXT_KEY}:${state}`,
+      `${SECONDME_OAUTH_CONTEXT_KEY}:${nonce}`,
       JSON.stringify(oauthContext),
     );
 

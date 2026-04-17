@@ -23,6 +23,40 @@ type Stage = "validate" | "identity" | "appearance" | "route";
 const apiUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3001";
 const SECONDME_OAUTH_STATE_KEY = "secondme-oauth-state";
 const SECONDME_OAUTH_CONTEXT_KEY = "secondme-oauth-context";
+const SECONDME_OAUTH_STATE_PREFIX = "ss1.";
+const SECONDME_OAUTH_STATE_MAX_AGE_MS = 15 * 60 * 1000;
+
+type OAuthStatePayload = {
+  nonce: string;
+  roleId: string;
+  appearance: CharacterAppearance;
+  redirectUri: string;
+  createdAt: number;
+};
+
+function decodeOAuthState(state: string | null) {
+  if (!state?.startsWith(SECONDME_OAUTH_STATE_PREFIX)) {
+    return null;
+  }
+
+  try {
+    const encoded = state.slice(SECONDME_OAUTH_STATE_PREFIX.length);
+    const binary = atob(encoded);
+    const json = decodeURIComponent(
+      Array.from(binary)
+        .map((char) => `%${char.charCodeAt(0).toString(16).padStart(2, "0")}`)
+        .join(""),
+    );
+    return JSON.parse(json) as OAuthStatePayload;
+  } catch {
+    return null;
+  }
+}
+
+function isFreshOAuthState(payload: OAuthStatePayload | null) {
+  if (!payload?.createdAt) return false;
+  return Date.now() - payload.createdAt < SECONDME_OAUTH_STATE_MAX_AGE_MS;
+}
 
 const stageLabels: Record<Stage, string> = {
   validate: "校验授权",
@@ -74,16 +108,20 @@ function AuthCallbackContent() {
   useEffect(() => {
     try {
       const state = new URLSearchParams(window.location.search).get("state");
-      const storedContextRaw = state
-        ? window.localStorage.getItem(`${SECONDME_OAUTH_CONTEXT_KEY}:${state}`)
+      const parsedState = decodeOAuthState(state);
+      const nonce = parsedState?.nonce || state;
+      const storedContextRaw = nonce
+        ? window.localStorage.getItem(`${SECONDME_OAUTH_CONTEXT_KEY}:${nonce}`)
         : null;
       const storedContext = storedContextRaw ? JSON.parse(storedContextRaw) : null;
       const storedRole =
         storedContext?.roleId ||
+        parsedState?.roleId ||
         window.localStorage.getItem(CHARACTER_ROLE_STORAGE_KEY) ||
         window.sessionStorage.getItem(CHARACTER_ROLE_STORAGE_KEY);
       const storedAppearanceRaw =
         (storedContext?.appearance ? JSON.stringify(storedContext.appearance) : null) ||
+        (parsedState?.appearance ? JSON.stringify(parsedState.appearance) : null) ||
         window.localStorage.getItem(CHARACTER_APPEARANCE_STORAGE_KEY) ||
         window.sessionStorage.getItem(CHARACTER_APPEARANCE_STORAGE_KEY);
       const storedAppearance = storedAppearanceRaw
@@ -110,12 +148,15 @@ function AuthCallbackContent() {
     const code = searchParams.get("code");
     const error = searchParams.get("error");
     const state = searchParams.get("state");
-    const storedContextRaw = state
-      ? window.localStorage.getItem(`${SECONDME_OAUTH_CONTEXT_KEY}:${state}`)
+    const parsedState = decodeOAuthState(state);
+    const nonce = parsedState?.nonce || state;
+    const storedContextRaw = nonce
+      ? window.localStorage.getItem(`${SECONDME_OAUTH_CONTEXT_KEY}:${nonce}`)
       : null;
     const storedContext = storedContextRaw ? JSON.parse(storedContextRaw) : null;
     const expectedState =
       storedContext?.state ||
+      parsedState?.nonce ||
       window.sessionStorage.getItem(SECONDME_OAUTH_STATE_KEY) ||
       window.localStorage.getItem(SECONDME_OAUTH_STATE_KEY);
 
@@ -131,7 +172,16 @@ function AuthCallbackContent() {
       return;
     }
 
-    if (!state || !expectedState || state !== expectedState) {
+    const hasStoredState = Boolean(
+      storedContext?.state ||
+      window.sessionStorage.getItem(SECONDME_OAUTH_STATE_KEY) ||
+      window.localStorage.getItem(SECONDME_OAUTH_STATE_KEY),
+    );
+    const isStateValid = hasStoredState
+      ? Boolean(nonce && expectedState && nonce === expectedState)
+      : Boolean(parsedState && isFreshOAuthState(parsedState));
+
+    if (!state || !isStateValid) {
       setStatus("error");
       setMessage("登录状态校验失败，请重新发起登录。");
       return;
@@ -180,8 +230,8 @@ function AuthCallbackContent() {
         persistAuthSession(data.token, data.user);
         window.sessionStorage.removeItem(SECONDME_OAUTH_STATE_KEY);
         window.localStorage.removeItem(SECONDME_OAUTH_STATE_KEY);
-        if (state) {
-          window.localStorage.removeItem(`${SECONDME_OAUTH_CONTEXT_KEY}:${state}`);
+        if (nonce) {
+          window.localStorage.removeItem(`${SECONDME_OAUTH_CONTEXT_KEY}:${nonce}`);
         }
 
         setStage("appearance");
@@ -189,6 +239,7 @@ function AuthCallbackContent() {
 
         const storedAppearanceRaw =
           (storedContext?.appearance ? JSON.stringify(storedContext.appearance) : null) ||
+          (parsedState?.appearance ? JSON.stringify(parsedState.appearance) : null) ||
           window.localStorage.getItem(CHARACTER_APPEARANCE_STORAGE_KEY) ||
           window.sessionStorage.getItem(CHARACTER_APPEARANCE_STORAGE_KEY);
         const storedAppearance = storedAppearanceRaw
@@ -260,8 +311,8 @@ function AuthCallbackContent() {
         window.localStorage.removeItem(CHARACTER_APPEARANCE_STORAGE_KEY);
         window.localStorage.removeItem(CHARACTER_ROLE_STORAGE_KEY);
         window.localStorage.removeItem(SECONDME_OAUTH_STATE_KEY);
-        if (state) {
-          window.localStorage.removeItem(`${SECONDME_OAUTH_CONTEXT_KEY}:${state}`);
+        if (nonce) {
+          window.localStorage.removeItem(`${SECONDME_OAUTH_CONTEXT_KEY}:${nonce}`);
         }
 
         window.setTimeout(() => {
