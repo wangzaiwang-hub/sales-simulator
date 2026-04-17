@@ -14,7 +14,9 @@ export default function RootLayout({
   return (
     <html lang="zh-CN">
       <body className="min-h-screen bg-[var(--background)] text-[var(--foreground)]">
-        {children}
+        <div className="mobile-landscape-shell">
+          <div className="mobile-landscape-content">{children}</div>
+        </div>
       </body>
     </html>
   );
