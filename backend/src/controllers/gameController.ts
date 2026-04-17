@@ -149,6 +149,13 @@ function getPortalAreas(map: any): PortalArea[] {
   return Array.isArray(map?.portalAreas) ? map.portalAreas : [];
 }
 
+function hasPlayablePortals(map: any) {
+  return getPortalAreas(map).some((area) => {
+    const code = area?.portalCode;
+    return code !== undefined && code !== null && String(code).trim() !== '';
+  });
+}
+
 function getMapDimensions(map: any) {
   const tileSize = map?.gridSize || map?.tileSize || 48;
   const mapWidth = map?.cols || map?.width || 20;
@@ -157,6 +164,14 @@ function getMapDimensions(map: any) {
 }
 
 async function buildMapNpcPayload(userId: string, map: any, viewedMapKey: string) {
+  if (!hasPlayablePortals(map)) {
+    console.log('[map] skip npc payload for doorless map', {
+      viewedMapKey,
+      portalCount: getPortalAreas(map).length,
+    });
+    return [];
+  }
+
   const { tileSize, mapWidth, mapHeight } = getMapDimensions(map);
   const users = await selectMany<{
     id: string;
