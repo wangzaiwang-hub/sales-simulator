@@ -66,15 +66,20 @@ body {
 
   .mobile-landscape-content {
     position: absolute;
-    top: 50%;
-    left: 50%;
+    top: 100dvh;
+    left: 0;
     width: 100dvh;
-    height: 100vw;
+    height: 100dvw;
     min-height: 0;
-    transform: translate(-50%, -50%) rotate(90deg);
-    transform-origin: center center;
+    transform: rotate(-90deg);
+    transform-origin: top left;
     overflow: hidden;
     background: var(--background);
+  }
+
+  .mobile-landscape-content > * {
+    width: 100%;
+    min-height: 100%;
   }
 }
 
