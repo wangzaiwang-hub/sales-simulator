@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 
 import { PixelAvatarPreview } from "@/components/auth/pixel-avatar-preview";
 import {
-  AssetAnchorButton,
+  AssetButton,
   AssetLinkButton,
   AssetWindow,
 } from "@/components/game/mobile-casual-ui";
@@ -19,6 +19,15 @@ import {
 const rawClientId = process.env.NEXT_PUBLIC_SECONDME_CLIENT_ID;
 const SECONDME_AUTHORIZE_URL = "https://go.second-me.cn/oauth/";
 const SECONDME_OAUTH_STATE_KEY = "secondme-oauth-state";
+const SECONDME_OAUTH_CONTEXT_KEY = "secondme-oauth-context";
+
+function createOAuthState() {
+  if (typeof window !== "undefined" && window.crypto?.randomUUID) {
+    return window.crypto.randomUUID();
+  }
+
+  return `oauth-${Date.now()}-${Math.random().toString(36).slice(2, 12)}`;
+}
 
 const townSignals = [
   {
@@ -88,10 +97,12 @@ export default function LoginPage() {
       `${window.location.origin}/auth/callback`;
 
     try {
-      const storedRoleId = window.sessionStorage.getItem(CHARACTER_ROLE_STORAGE_KEY);
-      const storedAppearanceRaw = window.sessionStorage.getItem(
-        CHARACTER_APPEARANCE_STORAGE_KEY,
-      );
+      const storedRoleId =
+        window.sessionStorage.getItem(CHARACTER_ROLE_STORAGE_KEY) ||
+        window.localStorage.getItem(CHARACTER_ROLE_STORAGE_KEY);
+      const storedAppearanceRaw =
+        window.sessionStorage.getItem(CHARACTER_APPEARANCE_STORAGE_KEY) ||
+        window.localStorage.getItem(CHARACTER_APPEARANCE_STORAGE_KEY);
       const storedAppearance = storedAppearanceRaw
         ? normalizeAppearance(JSON.parse(storedAppearanceRaw))
         : null;
@@ -107,16 +118,50 @@ export default function LoginPage() {
     } catch {
       window.sessionStorage.removeItem(CHARACTER_APPEARANCE_STORAGE_KEY);
       window.sessionStorage.removeItem(CHARACTER_ROLE_STORAGE_KEY);
+      window.localStorage.removeItem(CHARACTER_APPEARANCE_STORAGE_KEY);
+      window.localStorage.removeItem(CHARACTER_ROLE_STORAGE_KEY);
     }
+  }, []);
+
+  useEffect(() => {
+    window.sessionStorage.setItem(
+      CHARACTER_APPEARANCE_STORAGE_KEY,
+      JSON.stringify(appearance),
+    );
+    window.sessionStorage.setItem(CHARACTER_ROLE_STORAGE_KEY, selectedRoleId);
+    window.localStorage.setItem(
+      CHARACTER_APPEARANCE_STORAGE_KEY,
+      JSON.stringify(appearance),
+    );
+    window.localStorage.setItem(CHARACTER_ROLE_STORAGE_KEY, selectedRoleId);
+  }, [appearance, selectedRoleId]);
+
+  useEffect(() => {
+    const clientId = rawClientId?.trim();
+    const redirectUri =
+      process.env.NEXT_PUBLIC_SECONDME_REDIRECT_URI?.trim() ||
+      `${window.location.origin}/auth/callback`;
 
     if (!clientId) {
       setAuthorizeUrl(null);
       return;
     }
 
-    const state = crypto.randomUUID();
+    const state = createOAuthState();
+    const oauthContext = {
+      state,
+      roleId: selectedRole?.id ?? "custom",
+      appearance,
+      redirectUri,
+      createdAt: Date.now(),
+    };
+
     window.sessionStorage.setItem(SECONDME_OAUTH_STATE_KEY, state);
     window.localStorage.setItem(SECONDME_OAUTH_STATE_KEY, state);
+    window.localStorage.setItem(
+      `${SECONDME_OAUTH_CONTEXT_KEY}:${state}`,
+      JSON.stringify(oauthContext),
+    );
 
     const params = new URLSearchParams({
       client_id: clientId,
@@ -127,17 +172,21 @@ export default function LoginPage() {
     });
 
     setAuthorizeUrl(`${SECONDME_AUTHORIZE_URL}?${params.toString()}`);
-  }, []);
-
-  useEffect(() => {
-    window.sessionStorage.setItem(
-      CHARACTER_APPEARANCE_STORAGE_KEY,
-      JSON.stringify(appearance),
-    );
-    window.sessionStorage.setItem(CHARACTER_ROLE_STORAGE_KEY, selectedRoleId);
-  }, [appearance, selectedRoleId]);
+  }, [appearance, selectedRole?.id, selectedRoleId]);
 
   const handleAuthorize = () => {
+    const redirectUri =
+      process.env.NEXT_PUBLIC_SECONDME_REDIRECT_URI?.trim() ||
+      `${window.location.origin}/auth/callback`;
+    const state = createOAuthState();
+    const oauthContext = {
+      state,
+      roleId: selectedRole?.id ?? "custom",
+      appearance,
+      redirectUri,
+      createdAt: Date.now(),
+    };
+
     window.sessionStorage.setItem(
       CHARACTER_APPEARANCE_STORAGE_KEY,
       JSON.stringify(appearance),
@@ -146,6 +195,39 @@ export default function LoginPage() {
       CHARACTER_ROLE_STORAGE_KEY,
       selectedRole?.id ?? "custom",
     );
+    window.localStorage.setItem(
+      CHARACTER_APPEARANCE_STORAGE_KEY,
+      JSON.stringify(appearance),
+    );
+    window.localStorage.setItem(
+      CHARACTER_ROLE_STORAGE_KEY,
+      selectedRole?.id ?? "custom",
+    );
+    window.sessionStorage.setItem(SECONDME_OAUTH_STATE_KEY, state);
+    window.localStorage.setItem(SECONDME_OAUTH_STATE_KEY, state);
+    window.localStorage.setItem(
+      `${SECONDME_OAUTH_CONTEXT_KEY}:${state}`,
+      JSON.stringify(oauthContext),
+    );
+
+    const clientId = rawClientId?.trim();
+    if (!clientId) {
+      setAuthorizeUrl(null);
+      return;
+    }
+
+    const params = new URLSearchParams({
+      client_id: clientId,
+      redirect_uri: redirectUri,
+      response_type: "code",
+      scope: "userinfo",
+      state,
+    });
+    const nextAuthorizeUrl = `${SECONDME_AUTHORIZE_URL}?${params.toString()}`;
+    setAuthorizeUrl(nextAuthorizeUrl);
+    
+    // 在当前标签页跳转，避免移动端打开新标签页
+    window.location.href = nextAuthorizeUrl;
   };
 
   return (
@@ -190,15 +272,14 @@ export default function LoginPage() {
                     >
                       返回首页
                     </AssetLinkButton>
-                    <AssetAnchorButton
-                      href={authorizeUrl}
+                    <AssetButton
                       onClick={handleAuthorize}
                       skin="play"
                       className="w-full text-[15px]"
                       style={{ minWidth: "100%", minHeight: 74 }}
                     >
                      SecondMe登录
-                    </AssetAnchorButton>
+                    </AssetButton>
                   </div>
                 ) : (
                   <div className="pixel-warning">

@@ -19,8 +19,9 @@ import {
 type Status = "loading" | "success" | "error";
 type Stage = "validate" | "identity" | "appearance" | "route";
 
-const apiUrl = "";
+const apiUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3001";
 const SECONDME_OAUTH_STATE_KEY = "secondme-oauth-state";
+const SECONDME_OAUTH_CONTEXT_KEY = "secondme-oauth-context";
 
 const stageLabels: Record<Stage, string> = {
   validate: "校验授权",
@@ -71,10 +72,19 @@ function AuthCallbackContent() {
 
   useEffect(() => {
     try {
-      const storedRole = window.sessionStorage.getItem(CHARACTER_ROLE_STORAGE_KEY);
-      const storedAppearanceRaw = window.sessionStorage.getItem(
-        CHARACTER_APPEARANCE_STORAGE_KEY,
-      );
+      const state = new URLSearchParams(window.location.search).get("state");
+      const storedContextRaw = state
+        ? window.localStorage.getItem(`${SECONDME_OAUTH_CONTEXT_KEY}:${state}`)
+        : null;
+      const storedContext = storedContextRaw ? JSON.parse(storedContextRaw) : null;
+      const storedRole =
+        storedContext?.roleId ||
+        window.localStorage.getItem(CHARACTER_ROLE_STORAGE_KEY) ||
+        window.sessionStorage.getItem(CHARACTER_ROLE_STORAGE_KEY);
+      const storedAppearanceRaw =
+        (storedContext?.appearance ? JSON.stringify(storedContext.appearance) : null) ||
+        window.localStorage.getItem(CHARACTER_APPEARANCE_STORAGE_KEY) ||
+        window.sessionStorage.getItem(CHARACTER_APPEARANCE_STORAGE_KEY);
       const storedAppearance = storedAppearanceRaw
         ? normalizeAppearance(JSON.parse(storedAppearanceRaw))
         : null;
@@ -90,6 +100,8 @@ function AuthCallbackContent() {
     } catch {
       window.sessionStorage.removeItem(CHARACTER_APPEARANCE_STORAGE_KEY);
       window.sessionStorage.removeItem(CHARACTER_ROLE_STORAGE_KEY);
+      window.localStorage.removeItem(CHARACTER_APPEARANCE_STORAGE_KEY);
+      window.localStorage.removeItem(CHARACTER_ROLE_STORAGE_KEY);
     }
   }, []);
 
@@ -97,7 +109,12 @@ function AuthCallbackContent() {
     const code = searchParams.get("code");
     const error = searchParams.get("error");
     const state = searchParams.get("state");
+    const storedContextRaw = state
+      ? window.localStorage.getItem(`${SECONDME_OAUTH_CONTEXT_KEY}:${state}`)
+      : null;
+    const storedContext = storedContextRaw ? JSON.parse(storedContextRaw) : null;
     const expectedState =
+      storedContext?.state ||
       window.sessionStorage.getItem(SECONDME_OAUTH_STATE_KEY) ||
       window.localStorage.getItem(SECONDME_OAUTH_STATE_KEY);
 
@@ -163,13 +180,17 @@ function AuthCallbackContent() {
         localStorage.setItem("sales-simulator-user", JSON.stringify(data.user));
         window.sessionStorage.removeItem(SECONDME_OAUTH_STATE_KEY);
         window.localStorage.removeItem(SECONDME_OAUTH_STATE_KEY);
+        if (state) {
+          window.localStorage.removeItem(`${SECONDME_OAUTH_CONTEXT_KEY}:${state}`);
+        }
 
         setStage("appearance");
         setMessage("正在写入角色外观...");
 
-        const storedAppearanceRaw = window.sessionStorage.getItem(
-          CHARACTER_APPEARANCE_STORAGE_KEY,
-        );
+        const storedAppearanceRaw =
+          (storedContext?.appearance ? JSON.stringify(storedContext.appearance) : null) ||
+          window.localStorage.getItem(CHARACTER_APPEARANCE_STORAGE_KEY) ||
+          window.sessionStorage.getItem(CHARACTER_APPEARANCE_STORAGE_KEY);
         const storedAppearance = storedAppearanceRaw
           ? normalizeAppearance(JSON.parse(storedAppearanceRaw))
           : null;
@@ -231,8 +252,17 @@ function AuthCallbackContent() {
         setStage("route");
         setDestinationLabel(nextDestinationLabel);
         setStatus("success");
+        
+        // 清理临时存储的数据
         window.sessionStorage.removeItem(CHARACTER_APPEARANCE_STORAGE_KEY);
         window.sessionStorage.removeItem(CHARACTER_ROLE_STORAGE_KEY);
+        window.sessionStorage.removeItem(SECONDME_OAUTH_STATE_KEY);
+        window.localStorage.removeItem(CHARACTER_APPEARANCE_STORAGE_KEY);
+        window.localStorage.removeItem(CHARACTER_ROLE_STORAGE_KEY);
+        window.localStorage.removeItem(SECONDME_OAUTH_STATE_KEY);
+        if (state) {
+          window.localStorage.removeItem(`${SECONDME_OAUTH_CONTEXT_KEY}:${state}`);
+        }
 
         window.setTimeout(() => {
           router.replace(destination);
