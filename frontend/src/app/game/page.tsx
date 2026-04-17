@@ -299,6 +299,7 @@ export default function GamePage() {
   const [isTouchControlsEnabled, setIsTouchControlsEnabled] = useState(false);
   const [isPortraitMobile, setIsPortraitMobile] = useState(false);
   const [orientationHint, setOrientationHint] = useState("");
+  const [portalDebugMessage, setPortalDebugMessage] = useState("");
   const [joystick, setJoystick] = useState<JoystickState>({ active: false, x: 0, y: 0 });
   const chatScrollRef = useRef<HTMLDivElement>(null);
   const joystickVectorRef = useRef({ x: 0, y: 0 });
@@ -878,16 +879,19 @@ export default function GamePage() {
 
       if (!activePortal) {
         portalLockRef.current = null;
+        setPortalDebugMessage("");
         return;
       }
 
       const activePortalKey = `${currentSharedMapIdRef.current || "local"}:${activePortal.id || activePortal.portalCode}`;
       if (portalLockRef.current === activePortalKey || teleportingRef.current) {
+        setPortalDebugMessage(`门 ${activePortal.portalCode || "?"} 已锁定，离开后可再次触发`);
         return;
       }
 
       if (!currentSharedMapIdRef.current || activePortal.portalCode === undefined || activePortal.portalCode === null) {
         portalLockRef.current = activePortalKey;
+        setPortalDebugMessage(`检测到门 ${activePortal.portalCode || "?"}，但当前地图未绑定共享地图ID`);
         return;
       }
 
@@ -895,6 +899,7 @@ export default function GamePage() {
       if (!token) return;
 
       teleportingRef.current = true;
+      setPortalDebugMessage(`检测到门 ${activePortal.portalCode}，正在查询目标...`);
 
       try {
         const response = await fetch(
@@ -928,8 +933,10 @@ export default function GamePage() {
         fixPlayerNpcOverlap(playerRef.current, npcsRef.current);
         portalLockRef.current = `${payload.mapId || "local"}:${payload.spawn?.portalId || payload.spawn?.portalCode || activePortal.portalCode}`;
         saveCurrentLocation(playerRef.current.x, playerRef.current.y);
+        setPortalDebugMessage(`已传送到门 ${payload.spawn?.portalCode || activePortal.portalCode}（地图 ${payload.mapId || "local"}）`);
       } catch (error) {
         console.error("Portal teleport failed:", error);
+        setPortalDebugMessage(error instanceof Error ? `传送失败：${error.message}` : "传送失败");
       } finally {
         teleportingRef.current = false;
       }
@@ -1731,6 +1738,13 @@ export default function GamePage() {
               onClick={() => setImmersiveMode(false)}
             />
           </div>
+        </div>
+      )}
+
+      {hasMap && portalDebugMessage && (
+        <div className="pointer-events-none absolute left-4 top-20 z-20 max-w-[min(520px,calc(100%-2rem))] rounded-[14px] border-2 border-[#6de9ff]/40 bg-[rgba(13,22,42,0.88)] px-4 py-3 text-[#e9f8ff] shadow-[0_12px_24px_rgba(0,0,0,0.28)]">
+          <div className="font-game-display text-[12px] text-[#fff2b8]">传送门调试</div>
+          <div className="font-game-ui mt-1 text-[11px] leading-5 text-[#c8d5f0]">{portalDebugMessage}</div>
         </div>
       )}
 

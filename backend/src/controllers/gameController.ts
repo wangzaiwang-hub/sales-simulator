@@ -326,20 +326,17 @@ export const gameController = {
           ? progress.currentMap.slice('shared:'.length)
           : null;
 
-      let sharedMap = null;
-      if (preferredSharedMapId) {
+      const activeSharedMap = await selectOne<Row>('SharedMap', {
+        select: '*',
+        ...eq('isActive', true),
+        order: order('updatedAt', false),
+      });
+
+      let sharedMap = activeSharedMap ?? null;
+      if (!sharedMap && preferredSharedMapId) {
         sharedMap = await selectOne<Row>('SharedMap', {
           select: '*',
           ...eq('id', preferredSharedMapId),
-        });
-      }
-
-      if (!sharedMap) {
-        // 优先使用激活的共享地图
-        sharedMap = await selectOne<Row>('SharedMap', {
-          select: '*',
-          ...eq('isActive', true),
-          order: order('updatedAt', false),
         });
       }
 
@@ -351,6 +348,14 @@ export const gameController = {
         map = parseStoredMap(sharedMap.mapData);
         isShared = true;
         mapId = sharedMap.id;
+
+        if (sharedMap.id !== preferredSharedMapId) {
+          await updateRows<Row>(
+            'GameProgress',
+            { ...eq('userId', userId) },
+            { currentMap: `shared:${sharedMap.id}` },
+          );
+        }
       } else {
         // 回退到用户个人地图
         map = parseStoredMap(progress.currentMap);
@@ -382,6 +387,13 @@ export const gameController = {
       const portalCode = typeof req.query.portalCode === 'string' ? req.query.portalCode.trim() : '';
       const currentPortalId =
         typeof req.query.currentPortalId === 'string' ? req.query.currentPortalId.trim() : '';
+
+      console.log('[portal] resolve request', {
+        userId,
+        fromMapId,
+        portalCode,
+        currentPortalId,
+      });
 
       if (!portalCode) {
         return res.status(400).json({ error: 'portalCode is required' });
@@ -420,8 +432,22 @@ export const gameController = {
         });
 
         if (!destinationPortal) {
+          console.log('[portal] no destination in map', {
+            candidateMapId: sharedMap.id,
+            portalCode,
+            currentPortalId,
+            portalCount: getPortalAreas(map).length,
+          });
           continue;
         }
+
+        console.log('[portal] destination resolved', {
+          fromMapId,
+          toMapId: sharedMap.id,
+          portalCode,
+          currentPortalId,
+          destinationPortalId: destinationPortal.id ?? null,
+        });
 
         const npcs = await buildMapNpcPayload(userId, map);
         const spawnX = destinationPortal.x + destinationPortal.width / 2 - 24;
@@ -441,6 +467,11 @@ export const gameController = {
         });
       }
 
+      console.log('[portal] no matching portal found', {
+        fromMapId,
+        portalCode,
+        currentPortalId,
+      });
       return res.status(404).json({ error: 'No matching portal found' });
     } catch (error) {
       console.error('Get portal target error:', error);
