@@ -132,6 +132,7 @@ async function buildMapNpcPayload(userId: string, map: any) {
     secondmeId?: string;
     username: string;
     avatar?: string | null;
+    secondmeProfile?: Record<string, unknown> | null;
     profession?: string | null;
     interests?: string[] | string | null;
     personaSummary?: string | null;
@@ -141,7 +142,7 @@ async function buildMapNpcPayload(userId: string, map: any) {
     currentMood?: string | null;
     activityStatus?: string | null;
   }>('User', {
-    select: 'id,secondmeId,username,avatar,profession,interests,personaSummary,npcBehavior,isNpcVisible,personalityTraits,currentMood,activityStatus',
+    select: 'id,secondmeId,username,avatar,secondmeProfile,profession,interests,personaSummary,npcBehavior,isNpcVisible,personalityTraits,currentMood,activityStatus',
     order: order('createdAt', false),
     limit: 20,
   });

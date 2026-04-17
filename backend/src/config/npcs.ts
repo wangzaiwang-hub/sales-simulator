@@ -78,6 +78,7 @@ type UserRecord = {
   secondmeId?: string;
   username: string;
   avatar?: string | null;
+  secondmeProfile?: Record<string, any> | null;
   profession?: string | null;
   interests?: string[] | string | null;
   personaSummary?: string | null;
@@ -88,6 +89,17 @@ type UserRecord = {
   activityStatus?: ActivityStatus | null;
   characterAppearance?: CharacterAppearance | string | null;
 };
+
+function resolveAvatarUrl(user: UserRecord) {
+  return (
+    user.avatar ||
+    user.secondmeProfile?.picture ||
+    user.secondmeProfile?.avatar ||
+    user.secondmeProfile?.avatarUrl ||
+    user.secondmeProfile?.avatar_url ||
+    null
+  );
+}
 
 function parseStoredAppearance(value: UserRecord['characterAppearance'] | NpcSeed['appearance']) {
   if (!value) {
@@ -261,7 +273,7 @@ function buildDynamicUserSeed(user: UserRecord, index: number, total: number): N
     profession,
     interests: normalizedInterests,
     bio: user.personaSummary || `${profession}，偏爱${normalizedInterests.join('、')}。`,
-    avatar: user.avatar ?? null,
+    avatar: resolveAvatarUrl(user),
     spriteColumnOffset: sprite.spriteColumnOffset,
     characterRow: sprite.characterRow,
     direction: ['Front', 'Left', 'Right', 'Back'][base % 4] as Direction,

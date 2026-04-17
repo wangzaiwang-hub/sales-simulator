@@ -37,6 +37,21 @@ function resolveSecondMeId(profile: any) {
   );
 }
 
+function resolveSecondMeAvatar(profile: any) {
+  return (
+    profile?.picture ||
+    profile?.avatar ||
+    profile?.avatarUrl ||
+    profile?.avatar_url ||
+    profile?.profilePicture ||
+    profile?.profile_picture ||
+    profile?.headImg ||
+    profile?.headimg ||
+    profile?.userAvatar ||
+    null
+  );
+}
+
 function resolveFrontendUrl(req: Request) {
   return process.env.FRONTEND_URL || `${req.protocol}://${req.get('host')}`;
 }
@@ -205,6 +220,7 @@ export const authController = {
 
       const secondmeUser = userResponse.data?.data;
       const secondmeId = resolveSecondMeId(secondmeUser);
+      const secondmeAvatar = resolveSecondMeAvatar(secondmeUser);
       const normalizedProfile = normalizeSecondMeProfile(secondmeUser || {});
       let syncedAvatarApiKey: string | null = null;
       let syncedAvatarId: number | null = null;
@@ -253,7 +269,7 @@ export const authController = {
           secondmeId,
           username,
           email: secondmeUser.email,
-          avatar: secondmeUser.picture,
+          avatar: secondmeAvatar,
           profession: normalizedProfile.profession,
           interests: normalizedProfile.interests,
           personaSummary: normalizedProfile.personaSummary,
@@ -293,7 +309,7 @@ export const authController = {
           {
             username: secondmeUser.name || secondmeUser.username || user.username,
             email: secondmeUser.email ?? user.email ?? null,
-            avatar: secondmeUser.picture ?? user.avatar ?? null,
+            avatar: secondmeAvatar ?? user.avatar ?? null,
             profession: normalizedProfile.profession ?? user.profession ?? null,
             interests: normalizedProfile.interests,
             personaSummary: normalizedProfile.personaSummary ?? user.personaSummary ?? null,
@@ -425,7 +441,13 @@ export const authController = {
         id: user.id,
         username: user.username,
         email: user.email,
-        avatar: user.avatar,
+        avatar:
+          user.avatar ||
+          (user.secondmeProfile as any)?.picture ||
+          (user.secondmeProfile as any)?.avatar ||
+          (user.secondmeProfile as any)?.avatarUrl ||
+          (user.secondmeProfile as any)?.avatar_url ||
+          null,
         profession: user.profession,
         interests: user.interests,
         personaSummary: user.personaSummary,

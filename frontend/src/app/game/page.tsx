@@ -173,6 +173,14 @@ function toAssetUrl(path?: string) {
   return `/${cleanPath}`;
 }
 
+function toAvatarUrl(path?: string) {
+  if (!path) return "";
+  if (/^data:|^blob:|^https?:\/\//.test(path)) {
+    return path;
+  }
+  return toAssetUrl(path);
+}
+
 function createPlayer(x: number, y: number): ActorState {
   return {
     x,
@@ -1635,7 +1643,7 @@ export default function GamePage() {
                 <div className="flex-shrink-0">
                   {selectedNpc.avatar ? (
                     <img
-                      src={toAssetUrl(selectedNpc.avatar)}
+                      src={toAvatarUrl(selectedNpc.avatar)}
                       alt={selectedNpc.name}
                       className="h-9 w-9 rounded-full object-cover shadow-md"
                       onError={(e) => {
@@ -1713,7 +1721,7 @@ export default function GamePage() {
                 <div className="flex-shrink-0">
                   {userAvatar ? (
                     <img
-                      src={toAssetUrl(userAvatar)}
+                      src={toAvatarUrl(userAvatar)}
                       alt={username}
                       className="h-9 w-9 rounded-full object-cover shadow-md"
                       onError={(e) => {
