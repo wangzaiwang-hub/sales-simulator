@@ -170,6 +170,44 @@ async function buildMapNpcPayload(userId: string, map: any) {
   );
 }
 
+function normalizeChatHistoryRows(history: Row[]) {
+  return history
+    .sort((a, b) => new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime())
+    .flatMap((entry) => {
+      const createdAt = entry.createdAt || new Date().toISOString();
+
+      if (entry.role && entry.content) {
+        return [
+          {
+            role: String(entry.role),
+            content: String(entry.content),
+            createdAt,
+          },
+        ];
+      }
+
+      const messages: Array<{ role: string; content: string; createdAt: string }> = [];
+
+      if (entry.message) {
+        messages.push({
+          role: 'user',
+          content: String(entry.message),
+          createdAt,
+        });
+      }
+
+      if (entry.reply) {
+        messages.push({
+          role: 'assistant',
+          content: String(entry.reply),
+          createdAt,
+        });
+      }
+
+      return messages;
+    });
+}
+
 function parseStoredAppearance(characterAppearance: unknown) {
   if (!characterAppearance) {
     return null;
@@ -742,20 +780,13 @@ export const gameController = {
         let chatHistory: Array<{ role: string; content: string; createdAt: string }> = [];
         try {
           const history = await selectMany<Row>('ChatMessage', {
-            select: 'role,content,createdAt',
-            ...eq('userId', ownerUserId),
-            ...eq('targetUserId', visitorUserId),
+            select: 'message,reply,role,content,createdAt',
+            ...eq('userId', visitorUserId),
+            ...eq('targetUserId', ownerUserId),
           });
           
           if (history && history.length > 0) {
-            // 按时间排序
-            chatHistory = history
-              .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
-              .map(h => ({
-                role: h.role,
-                content: h.content,
-                createdAt: h.createdAt,
-              }));
+            chatHistory = normalizeChatHistoryRows(history);
             console.log(`📚 加载了 ${chatHistory.length} 条聊天历史用于上下文`);
           }
         } catch (error) {
@@ -777,7 +808,8 @@ export const gameController = {
             secondmeApiKey: userNpc.secondmeApiKey,
           };
 
-          reply = userNpc.secondmeApiKey
+          reply = userNpc.secondmeAccessToken
+            ? userNpc.secondmeApiKey
             ? await requestSecondMeNpcReply(
                 npcProfile,
                 message,
@@ -789,7 +821,8 @@ export const gameController = {
                 npcProfile,
                 message,
                 chatHistory, // 传递聊天历史
-              );
+              )
+            : null;
         } catch (error) {
           console.error('SecondMe NPC chat fallback:', error);
         }
