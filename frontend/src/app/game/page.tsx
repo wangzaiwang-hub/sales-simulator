@@ -1430,11 +1430,14 @@ export default function GamePage() {
           appearance: playerAppearance,
           spriteColumnOffset: PLAYER_SPRITE_COLUMN_OFFSET,
           characterRow: PLAYER_CHARACTER_ROW,
-          layer: 1,
+          layer: Number.MAX_SAFE_INTEGER,
           sortY: actorSortY(playerRef.current),
         });
 
         renderables.sort((a, b) => {
+          if (a.type === "object" && b.type === "object" && a.layer !== b.layer) {
+            return a.layer - b.layer;
+          }
           return a.sortY - b.sortY;
         });
 
