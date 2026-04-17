@@ -260,7 +260,7 @@ export async function requestSecondMeDirectReply(
 
   const reply = chunks.join('').trim();
   if (!reply) {
-    throw new Error('SecondMe chat stream returned empty reply');
+    return '';
   }
 
   return reply;

@@ -804,7 +804,7 @@ export const gameController = {
         let chatHistory: Array<{ role: string; content: string; createdAt: string }> = [];
         try {
           const history = await selectMany<Row>('ChatMessage', {
-            select: 'message,reply,role,content,createdAt',
+            select: 'message,reply,createdAt',
             ...eq('userId', visitorUserId),
             ...eq('targetUserId', ownerUserId),
           });
