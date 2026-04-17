@@ -380,6 +380,8 @@ export const gameController = {
       const userId = (req as any).userId;
       const fromMapId = typeof req.query.fromMapId === 'string' ? req.query.fromMapId : '';
       const portalCode = typeof req.query.portalCode === 'string' ? req.query.portalCode.trim() : '';
+      const currentPortalId =
+        typeof req.query.currentPortalId === 'string' ? req.query.currentPortalId.trim() : '';
 
       if (!portalCode) {
         return res.status(400).json({ error: 'portalCode is required' });
@@ -392,7 +394,7 @@ export const gameController = {
       });
 
       for (const sharedMap of sharedMaps) {
-        if (!sharedMap?.id || sharedMap.id === fromMapId || !sharedMap.mapData) {
+        if (!sharedMap?.id || !sharedMap.mapData) {
           continue;
         }
 
@@ -401,9 +403,21 @@ export const gameController = {
           continue;
         }
 
-        const destinationPortal = getPortalAreas(map).find(
-          (area) => String(area.portalCode ?? '') === portalCode,
-        );
+        const destinationPortal = getPortalAreas(map).find((area) => {
+          if (String(area.portalCode ?? '') !== portalCode) {
+            return false;
+          }
+
+          if (
+            sharedMap.id === fromMapId &&
+            currentPortalId &&
+            String(area.id ?? '') === currentPortalId
+          ) {
+            return false;
+          }
+
+          return true;
+        });
 
         if (!destinationPortal) {
           continue;

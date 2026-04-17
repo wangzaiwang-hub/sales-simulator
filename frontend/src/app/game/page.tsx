@@ -898,7 +898,7 @@ export default function GamePage() {
 
       try {
         const response = await fetch(
-          `${apiUrl}/api/game/portal-target?fromMapId=${encodeURIComponent(currentSharedMapIdRef.current)}&portalCode=${encodeURIComponent(String(activePortal.portalCode))}`,
+          `${apiUrl}/api/game/portal-target?fromMapId=${encodeURIComponent(currentSharedMapIdRef.current)}&portalCode=${encodeURIComponent(String(activePortal.portalCode))}&currentPortalId=${encodeURIComponent(String(activePortal.id || ""))}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
