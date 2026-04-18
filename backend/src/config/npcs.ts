@@ -352,5 +352,50 @@ export function buildMapNpcs(
       };
     });
 
-  return dynamicUsers;
+  const placedNpcs: typeof dynamicUsers = [];
+  const minGap = Math.max(28, Math.floor(tileSize * 0.72));
+  const maxX = Math.max(0, mapWidth * tileSize - 48);
+  const maxY = Math.max(0, mapHeight * tileSize - 48);
+
+  const isOverlapping = (x: number, y: number) =>
+    placedNpcs.some((placed) => {
+      const dx = placed.x - x;
+      const dy = placed.y - y;
+      return Math.hypot(dx, dy) < minGap;
+    });
+
+  const findOpenSpot = (npc: (typeof dynamicUsers)[number]) => {
+    if (!isOverlapping(npc.x, npc.y)) {
+      return { x: npc.x, y: npc.y };
+    }
+
+    const step = Math.max(24, Math.floor(tileSize * 0.6));
+    const seed = hashString(npc.ownerUserId || npc.id);
+
+    for (let ring = 1; ring <= 6; ring += 1) {
+      const radius = ring * step;
+      for (let slot = 0; slot < 8; slot += 1) {
+        const angle = (((seed + slot) % 8) / 8) * Math.PI * 2;
+        const nextX = Math.max(0, Math.min(maxX, npc.x + Math.round(Math.cos(angle) * radius)));
+        const nextY = Math.max(0, Math.min(maxY, npc.y + Math.round(Math.sin(angle) * radius)));
+
+        if (!isOverlapping(nextX, nextY)) {
+          return { x: nextX, y: nextY };
+        }
+      }
+    }
+
+    return { x: npc.x, y: npc.y };
+  };
+
+  for (const npc of dynamicUsers) {
+    const resolvedPosition = findOpenSpot(npc);
+    npc.x = resolvedPosition.x;
+    npc.y = resolvedPosition.y;
+    npc.anchorX = resolvedPosition.x;
+    npc.anchorY = resolvedPosition.y;
+    placedNpcs.push(npc);
+  }
+
+  return placedNpcs;
 }

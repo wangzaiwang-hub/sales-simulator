@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 
 import { PixelAvatarPreview } from "@/components/auth/pixel-avatar-preview";
+import { MobileStage } from "@/components/auth/mobile-stage";
 import {
   AssetButton,
   AssetLinkButton,
@@ -265,10 +266,10 @@ export default function LoginPage() {
     <main className="pixel-auth-bg relative min-h-screen overflow-hidden text-[#fff6d8]">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(115,229,255,0.16),_transparent_24%),linear-gradient(180deg,_rgba(255,158,90,0.08),_transparent_32%)]" />
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-52 bg-[linear-gradient(180deg,_transparent,_rgba(10,6,19,0.96)_85%)]" />
-
-      <div className="relative mx-auto flex min-h-screen w-full max-w-6xl flex-col justify-center px-4 py-6 sm:px-6">
-        <div className="pixel-frame overflow-hidden">
-          <div className="grid gap-px bg-[#2b163d] lg:grid-cols-[1.12fr_0.88fr]">
+      <MobileStage baseWidth={1520} baseHeight={920} className="relative z-10">
+        <div className="mx-auto flex min-h-full w-full max-w-[1520px] flex-col justify-center px-10 py-10">
+          <div className="pixel-frame overflow-hidden">
+            <div className="grid gap-px bg-[#2b163d] lg:grid-cols-[1.12fr_0.88fr]">
             <section className="bg-[linear-gradient(180deg,_rgba(24,15,41,0.98),_rgba(16,10,29,0.98))] p-6 sm:p-8">
               <p className="font-pixel text-[10px] uppercase tracking-[0.32em] text-[#73e5ff]">
                 SecondMe Login
@@ -368,7 +369,8 @@ export default function LoginPage() {
             </section>
           </div>
         </div>
-      </div>
+        </div>
+      </MobileStage>
     </main>
   );
 }

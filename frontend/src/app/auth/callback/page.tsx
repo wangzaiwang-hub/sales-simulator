@@ -4,6 +4,7 @@ import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 import { PixelAvatarPreview } from "@/components/auth/pixel-avatar-preview";
+import { MobileStage } from "@/components/auth/mobile-stage";
 import {
   AssetLinkButton,
   AssetWindow,
@@ -344,10 +345,10 @@ function AuthCallbackContent() {
   return (
     <main className="pixel-auth-bg relative min-h-screen overflow-hidden text-[#fff6d8]">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(115,229,255,0.22),_transparent_24%),linear-gradient(180deg,_rgba(113,87,255,0.12),_transparent_40%)]" />
-
-      <div className="relative mx-auto flex min-h-screen w-full max-w-5xl items-center px-4 py-8 sm:px-6">
-        <div className="pixel-frame w-full overflow-hidden">
-          <div className="grid gap-px bg-[#2b163d] lg:grid-cols-[0.84fr_1.16fr]">
+      <MobileStage baseWidth={1440} baseHeight={860} className="relative z-10">
+        <div className="mx-auto flex min-h-full w-full max-w-[1440px] items-center px-10 py-10">
+          <div className="pixel-frame w-full overflow-hidden">
+            <div className="grid gap-px bg-[#2b163d] lg:grid-cols-[0.84fr_1.16fr]">
             <section className="bg-[linear-gradient(180deg,_rgba(18,10,34,0.98),_rgba(14,8,26,0.98))] p-5 sm:p-6">
               <div className="border-4 border-[#40305b] bg-[rgba(13,19,46,0.78)] p-5">
                 <div className="font-pixel text-[10px] uppercase tracking-[0.28em] text-[#77e4ff]">
@@ -422,7 +423,8 @@ function AuthCallbackContent() {
             </section>
           </div>
         </div>
-      </div>
+        </div>
+      </MobileStage>
     </main>
   );
 }
@@ -432,12 +434,14 @@ export default function AuthCallbackPage() {
     <Suspense
       fallback={
         <main className="pixel-auth-bg flex min-h-screen items-center justify-center px-4 text-[#fff6d8]">
-          <div className="pixel-frame w-full max-w-2xl overflow-hidden border-[#2e1b43] bg-[rgba(15,9,28,0.92)] p-8">
-            <div className="font-pixel text-[10px] uppercase tracking-[0.28em] text-[#77e4ff]">
-              Loading
+          <MobileStage baseWidth={1100} baseHeight={540}>
+            <div className="pixel-frame mx-auto w-full max-w-[1100px] overflow-hidden border-[#2e1b43] bg-[rgba(15,9,28,0.92)] p-8">
+              <div className="font-pixel text-[10px] uppercase tracking-[0.28em] text-[#77e4ff]">
+                Loading
+              </div>
+              <h1 className="mt-4 text-3xl font-semibold text-[#fff8df]">正在进入登录回调</h1>
             </div>
-            <h1 className="mt-4 text-3xl font-semibold text-[#fff8df]">正在进入登录回调</h1>
-          </div>
+          </MobileStage>
         </main>
       }
     >
