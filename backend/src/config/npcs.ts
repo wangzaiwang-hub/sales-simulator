@@ -299,10 +299,26 @@ export function buildMapNpcs(
   currentUserId: string,
   viewedMapKey: string,
   users: UserRecord[],
+  playableMapKeys: string[] = [],
 ) {
+  const normalizedPlayableMapKeys = playableMapKeys.filter(Boolean);
+  const resolveEffectiveMapKey = (user: UserRecord) => {
+    const currentMapKey = user.currentMap || 'main';
+
+    if (
+      !normalizedPlayableMapKeys.length ||
+      normalizedPlayableMapKeys.includes(currentMapKey)
+    ) {
+      return currentMapKey;
+    }
+
+    const stableIndex = hashString(user.id || user.username) % normalizedPlayableMapKeys.length;
+    return normalizedPlayableMapKeys[stableIndex];
+  };
+
   const dynamicUsers = users
     .filter((user) => user.id !== currentUserId && user.isNpcVisible !== false)
-    .filter((user) => (user.currentMap || 'main') === viewedMapKey)
+    .filter((user) => resolveEffectiveMapKey(user) === viewedMapKey)
     .slice(0, 8)
     .map((user) => {
       const seed = buildDynamicUserSeed(user);

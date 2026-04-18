@@ -156,6 +156,23 @@ function hasPlayablePortals(map: any) {
   });
 }
 
+async function getPlayableSharedMapKeys() {
+  const sharedMaps = await selectMany<Row>('SharedMap', {
+    select: 'id,mapData',
+    order: order('updatedAt', false),
+    limit: 100,
+  });
+
+  return sharedMaps
+    .filter((sharedMap) => sharedMap?.id && sharedMap?.mapData)
+    .map((sharedMap) => ({
+      id: sharedMap.id as string,
+      map: parseStoredMap(sharedMap.mapData),
+    }))
+    .filter((entry) => entry.map && hasPlayablePortals(entry.map))
+    .map((entry) => `shared:${entry.id}`);
+}
+
 function getMapDimensions(map: any) {
   const tileSize = map?.gridSize || map?.tileSize || 48;
   const mapWidth = map?.cols || map?.width || 20;
@@ -203,6 +220,7 @@ async function buildMapNpcPayload(userId: string, map: any, viewedMapKey: string
   const progressByUserId = new Map(
     progressRows.map((progress) => [progress.userId, progress]),
   );
+  const playableMapKeys = await getPlayableSharedMapKeys();
 
   return buildMapNpcs(
     tileSize,
@@ -217,6 +235,7 @@ async function buildMapNpcPayload(userId: string, map: any, viewedMapKey: string
       positionX: progressByUserId.get(user.id)?.positionX ?? null,
       positionY: progressByUserId.get(user.id)?.positionY ?? null,
     })) as any,
+    playableMapKeys,
   );
 }
 
