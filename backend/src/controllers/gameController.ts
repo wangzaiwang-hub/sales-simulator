@@ -180,6 +180,109 @@ function getMapDimensions(map: any) {
   return { tileSize, mapWidth, mapHeight };
 }
 
+function getBlockedAreasFromMap(map: any) {
+  const blockedAreas: Array<{ x: number; y: number; width: number; height: number }> = [];
+
+  const collectObjectCollisions = (obj: any, parentOffsetX = 0, parentOffsetY = 0) => {
+    if (!obj || typeof obj !== 'object') {
+      return;
+    }
+
+    const offsetX = parentOffsetX + (obj.x || 0);
+    const offsetY = parentOffsetY + (obj.y || 0);
+
+    if (obj.isGroup && Array.isArray(obj.children)) {
+      obj.children.forEach((child: any) => {
+        const childOffsetX = offsetX + (child.relativeX || 0);
+        const childOffsetY = offsetY + (child.relativeY || 0);
+        collectObjectCollisions(child, childOffsetX, childOffsetY);
+      });
+      return;
+    }
+
+    if (obj.collision) {
+      blockedAreas.push({
+        x: obj.collision.x,
+        y: obj.collision.y,
+        width: obj.collision.width,
+        height: obj.collision.height,
+      });
+    }
+  };
+
+  if (Array.isArray(map?.objects)) {
+    map.objects.forEach((obj: any) => collectObjectCollisions(obj));
+  }
+
+  return blockedAreas;
+}
+
+function relocateNpcsAwayFromBlockedAreas(
+  npcs: Array<{ id: string; x: number; y: number; width: number; height: number; anchorX: number; anchorY: number }>,
+  blockedAreas: Array<{ x: number; y: number; width: number; height: number }>,
+  mapWidth: number,
+  mapHeight: number,
+  tileSize: number,
+) {
+  if (!blockedAreas.length || !npcs.length) {
+    return npcs;
+  }
+
+  const maxX = Math.max(0, mapWidth * tileSize - 48);
+  const maxY = Math.max(0, mapHeight * tileSize - 48);
+  const placed: Array<{ x: number; y: number; width: number; height: number }> = [];
+  const step = Math.max(24, Math.floor(tileSize * 0.8));
+
+  const intersectsRect = (
+    a: { x: number; y: number; width: number; height: number },
+    b: { x: number; y: number; width: number; height: number },
+  ) =>
+    a.x < b.x + b.width &&
+    a.x + a.width > b.x &&
+    a.y < b.y + b.height &&
+    a.y + a.height > b.y;
+
+  const isBlocked = (x: number, y: number, width: number, height: number) => {
+    const rect = { x, y, width, height };
+    return (
+      blockedAreas.some((area) => intersectsRect(rect, area)) ||
+      placed.some((area) => intersectsRect(rect, area))
+    );
+  };
+
+  for (const npc of npcs) {
+    let resolvedX = npc.x;
+    let resolvedY = npc.y;
+
+    if (isBlocked(resolvedX, resolvedY, npc.width, npc.height)) {
+      const seed = Number.parseInt(crypto.createHash('md5').update(npc.id).digest('hex').slice(0, 8), 16);
+
+      outer: for (let ring = 1; ring <= 10; ring += 1) {
+        const radius = ring * step;
+        for (let slot = 0; slot < 12; slot += 1) {
+          const angle = (((seed + slot) % 12) / 12) * Math.PI * 2;
+          const candidateX = Math.max(0, Math.min(maxX, npc.x + Math.round(Math.cos(angle) * radius)));
+          const candidateY = Math.max(0, Math.min(maxY, npc.y + Math.round(Math.sin(angle) * radius)));
+
+          if (!isBlocked(candidateX, candidateY, npc.width, npc.height)) {
+            resolvedX = candidateX;
+            resolvedY = candidateY;
+            break outer;
+          }
+        }
+      }
+    }
+
+    npc.x = resolvedX;
+    npc.y = resolvedY;
+    npc.anchorX = resolvedX;
+    npc.anchorY = resolvedY;
+    placed.push({ x: resolvedX, y: resolvedY, width: npc.width, height: npc.height });
+  }
+
+  return npcs;
+}
+
 async function buildMapNpcPayload(userId: string, map: any, viewedMapKey: string) {
   if (!hasPlayablePortals(map)) {
     console.log('[map] skip npc payload for doorless map', {
@@ -222,7 +325,7 @@ async function buildMapNpcPayload(userId: string, map: any, viewedMapKey: string
   );
   const playableMapKeys = await getPlayableSharedMapKeys();
 
-  return buildMapNpcs(
+  const npcs = buildMapNpcs(
     tileSize,
     mapWidth,
     mapHeight,
@@ -236,6 +339,14 @@ async function buildMapNpcPayload(userId: string, map: any, viewedMapKey: string
       positionY: progressByUserId.get(user.id)?.positionY ?? null,
     })) as any,
     playableMapKeys,
+  );
+
+  return relocateNpcsAwayFromBlockedAreas(
+    npcs as any,
+    getBlockedAreasFromMap(map),
+    mapWidth,
+    mapHeight,
+    tileSize,
   );
 }
 

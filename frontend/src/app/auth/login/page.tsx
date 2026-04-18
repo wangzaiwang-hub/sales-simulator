@@ -83,7 +83,7 @@ function SignalCard({
           src={imageSrc}
           alt=""
           aria-hidden="true"
-          className="block h-[176px] w-full object-cover object-top pixel-art"
+          className="block h-[120px] w-full object-cover object-top pixel-art"
         />
         <div className="absolute left-3 top-3 bg-[rgba(29,18,47,0.86)] px-2 py-1 font-game-ui text-[10px] tracking-[0.08em] text-[#ffe39a]">
           {label}
@@ -266,11 +266,11 @@ export default function LoginPage() {
     <main className="pixel-auth-bg relative min-h-screen overflow-hidden text-[#fff6d8]">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(115,229,255,0.16),_transparent_24%),linear-gradient(180deg,_rgba(255,158,90,0.08),_transparent_32%)]" />
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-52 bg-[linear-gradient(180deg,_transparent,_rgba(10,6,19,0.96)_85%)]" />
-      <MobileStage baseWidth={1520} baseHeight={920} className="relative z-10">
-        <div className="mx-auto flex min-h-full w-full max-w-[1520px] flex-col justify-center px-10 py-10">
+      <MobileStage baseWidth={1366} baseHeight={768} className="relative z-10">
+        <div className="mx-auto flex min-h-full w-full max-w-[1366px] flex-col justify-center px-8 py-7">
           <div className="pixel-frame overflow-hidden">
-            <div className="grid gap-px bg-[#2b163d] lg:grid-cols-[1.12fr_0.88fr]">
-            <section className="bg-[linear-gradient(180deg,_rgba(24,15,41,0.98),_rgba(16,10,29,0.98))] p-6 sm:p-8">
+            <div className="grid grid-cols-[1.1fr_0.9fr] gap-px bg-[#2b163d]">
+            <section className="bg-[linear-gradient(180deg,_rgba(24,15,41,0.98),_rgba(16,10,29,0.98))] p-5">
               <p className="font-pixel text-[10px] uppercase tracking-[0.32em] text-[#73e5ff]">
                 SecondMe Login
               </p>
@@ -281,22 +281,22 @@ export default function LoginPage() {
                 </span>
               </h1>
 
-              <div className="mt-5 max-w-xl border-4 border-[#3c2556] bg-[rgba(255,241,200,0.92)] px-5 py-4 text-[#4d2c5e] shadow-[10px_10px_0_rgba(17,10,28,0.28)]">
+              <div className="mt-4 max-w-xl border-4 border-[#3c2556] bg-[rgba(255,241,200,0.92)] px-5 py-4 text-[#4d2c5e] shadow-[10px_10px_0_rgba(17,10,28,0.28)]">
                 <div className="font-pixel text-[10px] uppercase tracking-[0.26em] text-[#7c4d23]">小提示</div>
                 <p className="mt-3 text-base leading-8 sm:text-lg">
                   镇上的居民是真实人类的数字分身，他们不会排队等你推销。先观察谁正在生活、谁刚好有需求，再决定先和谁开口。
                 </p>
               </div>
 
-              <div className="mt-6 grid gap-4 sm:grid-cols-3">
+              <div className="mt-5 grid grid-cols-3 gap-3">
                 {townSignals.map((signal) => (
                   <SignalCard key={signal.label} {...signal} />
                 ))}
               </div>
 
-              <div className="mt-8 max-w-xl">
+              <div className="mt-5 max-w-xl">
                 {authorizeUrl ? (
-                  <div className="grid gap-4 sm:grid-cols-[170px_minmax(0,1fr)]">
+                  <div className="grid grid-cols-[170px_minmax(0,1fr)] gap-4">
                     <AssetLinkButton
                       href="/"
                       className="w-full text-[14px]"
@@ -322,13 +322,13 @@ export default function LoginPage() {
                   </div>
                 )}
 
-                <p className="mt-4 text-sm leading-7 text-[#cabce3]">
+                <p className="mt-3 text-[13px] leading-6 text-[#cabce3]">
                   登录后会直接进入小镇。这里不是捏脸入口，而是开场大厅，你会从这里直接进入居民正在生活的地图。
                 </p>
               </div>
             </section>
 
-            <section className="bg-[linear-gradient(180deg,_rgba(247,233,196,0.98),_rgba(234,214,173,0.96))] p-5 sm:p-6">
+            <section className="bg-[linear-gradient(180deg,_rgba(247,233,196,0.98),_rgba(234,214,173,0.96))] p-5">
               <AssetWindow
                 className="h-full"
                 translucent
@@ -340,7 +340,7 @@ export default function LoginPage() {
                       <p className="font-pixel text-[10px] uppercase tracking-[0.28em] text-[#77e4ff]">
                         Scene Preview
                       </p>
-                      <h2 className="mt-3 text-2xl font-semibold text-white">
+                      <h2 className="mt-2 text-[28px] font-semibold text-white">
                         像素小镇现场
                       </h2>
                     </div>
@@ -352,14 +352,14 @@ export default function LoginPage() {
                   <PixelAvatarPreview
                     appearance={appearance}
                     accentColor={selectedRole?.accent ?? "#73e5ff"}
-                    className="mt-4"
+                    className="mt-3"
                   />
 
-                  <div className="mt-4 space-y-3 text-sm leading-7 text-[#e3ebff]">
+                  <div className="mt-3 space-y-3 text-[13px] leading-6 text-[#e3ebff]">
                     <p>
                       这里不是站柜台等客的商店，而是一个持续运转的 AI 小镇。每次进入，都是从居民的日常里找与你产品相交的那一刻。
                     </p>
-                    <div className="grid gap-2 sm:grid-cols-2">
+                    <div className="grid grid-cols-2 gap-2">
                       <div className="border-2 border-white/20 bg-[rgba(255,255,255,0.06)] px-3 py-2">真实数字分身</div>
                       <div className="border-2 border-white/20 bg-[rgba(255,255,255,0.06)] px-3 py-2">先观察再开口</div>
                     </div>

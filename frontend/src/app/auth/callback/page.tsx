@@ -345,36 +345,36 @@ function AuthCallbackContent() {
   return (
     <main className="pixel-auth-bg relative min-h-screen overflow-hidden text-[#fff6d8]">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(115,229,255,0.22),_transparent_24%),linear-gradient(180deg,_rgba(113,87,255,0.12),_transparent_40%)]" />
-      <MobileStage baseWidth={1440} baseHeight={860} className="relative z-10">
-        <div className="mx-auto flex min-h-full w-full max-w-[1440px] items-center px-10 py-10">
+      <MobileStage baseWidth={1280} baseHeight={720} className="relative z-10">
+        <div className="mx-auto flex min-h-full w-full max-w-[1280px] items-center px-8 py-7">
           <div className="pixel-frame w-full overflow-hidden">
-            <div className="grid gap-px bg-[#2b163d] lg:grid-cols-[0.84fr_1.16fr]">
-            <section className="bg-[linear-gradient(180deg,_rgba(18,10,34,0.98),_rgba(14,8,26,0.98))] p-5 sm:p-6">
+            <div className="grid grid-cols-[0.76fr_1.24fr] gap-px bg-[#2b163d]">
+            <section className="bg-[linear-gradient(180deg,_rgba(18,10,34,0.98),_rgba(14,8,26,0.98))] p-5">
               <div className="border-4 border-[#40305b] bg-[rgba(13,19,46,0.78)] p-5">
                 <div className="font-pixel text-[10px] uppercase tracking-[0.28em] text-[#77e4ff]">
                   Sync Preview
                 </div>
-                <h2 className="mt-3 text-2xl font-semibold text-[#fff8df]">{roleLabel}</h2>
+                <h2 className="mt-3 text-[28px] font-semibold text-[#fff8df]">{roleLabel}</h2>
                 <PixelAvatarPreview
                   appearance={previewAppearance}
                   accentColor={currentRole?.accent ?? "#73e5ff"}
                   mode={status === "loading" ? "loading" : status}
-                  className="mt-4"
+                  className="mt-3"
                 />
-                <div className="mt-4 border-2 border-white/10 bg-[rgba(255,255,255,0.04)] px-4 py-3 font-game-ui text-[12px] leading-6 text-[#dbe7ff]">
+                <div className="mt-3 border-2 border-white/10 bg-[rgba(255,255,255,0.04)] px-4 py-3 font-game-ui text-[12px] leading-6 text-[#dbe7ff]">
                   当前阶段：{stageLabels[stage]}
                 </div>
               </div>
             </section>
 
-            <section className="bg-[linear-gradient(180deg,_rgba(245,238,255,0.96),_rgba(218,231,255,0.94))] p-6 text-[#112245] sm:p-8">
+            <section className="bg-[linear-gradient(180deg,_rgba(245,238,255,0.96),_rgba(218,231,255,0.94))] p-5 text-[#112245]">
               <AssetWindow className="w-full" contentClassName="bg-[rgba(34,77,173,0.14)] text-[#18305a]">
                 <div className="flex items-start justify-between gap-4">
                   <div>
                     <div className="font-pixel text-[10px] uppercase tracking-[0.24em] text-[#3562b2]">
                       Gateway Status
                     </div>
-                    <h1 className="mt-3 text-3xl font-semibold leading-tight text-[#1e3765] sm:text-4xl">
+                    <h1 className="mt-3 text-[36px] font-semibold leading-tight text-[#1e3765]">
                       {heading}
                     </h1>
                   </div>
@@ -383,11 +383,11 @@ function AuthCallbackContent() {
                   </div>
                 </div>
 
-                <p className="mt-5 max-w-2xl font-game-ui text-[14px] leading-8 text-[#2d4572]">
+                <p className="mt-4 max-w-2xl font-game-ui text-[13px] leading-7 text-[#2d4572]">
                   {message}
                 </p>
 
-                <div className="mt-6 grid gap-2 sm:grid-cols-2">
+                <div className="mt-5 grid grid-cols-2 gap-2">
                   {steps.map((item, index) => {
                     const completed = status === "success" || index < activeStepIndex;
                     const active = status !== "success" && index === activeStepIndex;
@@ -403,9 +403,9 @@ function AuthCallbackContent() {
                   })}
                 </div>
 
-                <div className="mt-7 border-4 border-[#8ba8dd] bg-[rgba(255,255,255,0.58)] px-5 py-4">
+                <div className="mt-5 border-4 border-[#8ba8dd] bg-[rgba(255,255,255,0.58)] px-5 py-4">
                   <div className="font-pixel text-[10px] uppercase tracking-[0.24em] text-[#5a77af]">下一站</div>
-                  <div className="mt-3 font-game-display-tight text-2xl text-[#213b6d]">
+                    <div className="mt-3 font-game-display-tight text-[28px] text-[#213b6d]">
                     {destinationLabel}
                   </div>
                 </div>

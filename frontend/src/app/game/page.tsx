@@ -1386,11 +1386,12 @@ export default function GamePage() {
           actor.y + actor.collisionOffsetY + actor.collisionHeight;
 
         const renderables: Array<
-          | { type: "object"; sortY: number; layer: number; obj: any }
+          | { type: "object"; sortY: number; layer: number; order: number; obj: any }
           | {
               type: "actor";
               sortY: number;
               layer: number;
+              order: number;
               actor: ActorState;
               spriteColumnOffset: number;
               characterRow: number;
@@ -1400,16 +1401,17 @@ export default function GamePage() {
             }
         > = [];
 
-        objects.forEach((obj) => {
+        objects.forEach((obj, index) => {
           renderables.push({
             type: "object",
             obj,
             layer: obj.layer ?? 0,
+            order: index,
             sortY: objectSortY(obj),
           });
         });
 
-        npcsRef.current.forEach((npc) => {
+        npcsRef.current.forEach((npc, index) => {
           renderables.push({
             type: "actor",
             actor: npc,
@@ -1419,6 +1421,7 @@ export default function GamePage() {
             spriteColumnOffset: npc.spriteColumnOffset,
             characterRow: npc.characterRow,
             layer: 1,
+            order: objects.length + index,
             sortY: actorSortY(npc),
           });
         });
@@ -1431,6 +1434,7 @@ export default function GamePage() {
           spriteColumnOffset: PLAYER_SPRITE_COLUMN_OFFSET,
           characterRow: PLAYER_CHARACTER_ROW,
           layer: Number.MAX_SAFE_INTEGER,
+          order: Number.MAX_SAFE_INTEGER,
           sortY: actorSortY(playerRef.current),
         });
 
@@ -1438,7 +1442,13 @@ export default function GamePage() {
           if (a.type === "object" && b.type === "object" && a.layer !== b.layer) {
             return a.layer - b.layer;
           }
-          return a.sortY - b.sortY;
+          if (a.sortY !== b.sortY) {
+            return a.sortY - b.sortY;
+          }
+          if (a.type !== b.type) {
+            return a.type === "object" ? -1 : 1;
+          }
+          return a.order - b.order;
         });
 
         renderables.forEach((item) => {
