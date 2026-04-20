@@ -209,7 +209,7 @@ function createPlayer(x: number, y: number): ActorState {
 
 const getActorDepthOffset = (actor?: Pick<ActorState, "collisionOffsetY" | "collisionHeight">) => {
   if (!actor) return 8;
-  return Math.max(3, Math.round((actor.collisionOffsetY + actor.collisionHeight) * 0.25));
+  return Math.max(6, Math.round((actor.collisionOffsetY + actor.collisionHeight) * 0.35));
 };
 const GROUP_DEPTH_OFFSET = 3;
 
