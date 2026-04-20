@@ -255,6 +255,33 @@
             return relativePath.startsWith('/') ? relativePath : `/${relativePath}`;
         }
 
+        function normalizeAssetUrl(rawUrl) {
+            if (!rawUrl || typeof rawUrl !== 'string') return rawUrl;
+
+            const trimmed = rawUrl.trim();
+            if (!trimmed || trimmed.startsWith('data:') || trimmed.startsWith('blob:')) {
+                return trimmed;
+            }
+
+            if (trimmed.startsWith('/resource/')) {
+                return trimmed.replace(/^\/resource/, '');
+            }
+
+            if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+                try {
+                    const parsed = new URL(trimmed);
+                    const pathname = parsed.pathname || trimmed;
+                    return pathname.startsWith('/resource/')
+                        ? pathname.replace(/^\/resource/, '')
+                        : pathname;
+                } catch {
+                    return trimmed;
+                }
+            }
+
+            return trimmed.startsWith('/') ? trimmed : `/${trimmed}`;
+        }
+
         async function readJsonResponse(response, fallbackMessage) {
             const rawText = await response.text();
 
@@ -1406,7 +1433,7 @@
                             } else if (childObj.spriteData.spriteImageSrc) {
                                 if (!childObj.spriteData._cachedImage) {
                                     childObj.spriteData._cachedImage = new Image();
-                                    childObj.spriteData._cachedImage.src = childObj.spriteData.spriteImageSrc;
+                                    childObj.spriteData._cachedImage.src = normalizeAssetUrl(childObj.spriteData.spriteImageSrc);
                                 }
                                 spriteImg = childObj.spriteData._cachedImage;
                             }
@@ -1536,20 +1563,22 @@
                 let spriteImg = spriteImage; // 默认使用当前素材集图片
                 
                 // 如果对象保存了素材数据，优先使用保存的图片
-                if (obj.spriteData) {
-                    if (obj.spriteData.isFullImage && obj.spriteData.image) {
-                        // 完整图片素材，直接使用保存的图片
-                        spriteImg = obj.spriteData.image;
-                    } else if (obj.spriteData.spriteImageSrc) {
-                        // 瓦片集素材，需要确保瓦片集图片已加载
-                        // 创建或获取缓存的图片
-                        if (!obj.spriteData._cachedImage) {
-                            obj.spriteData._cachedImage = new Image();
-                            obj.spriteData._cachedImage.src = obj.spriteData.spriteImageSrc;
+                    if (obj.spriteData) {
+                        if (obj.spriteData.isFullImage && obj.spriteData.image) {
+                            // 完整图片素材，直接使用保存的图片
+                            spriteImg = obj.spriteData.image;
+                        } else if (obj.spriteData.spriteImageSrc) {
+                            // 瓦片集素材，需要确保瓦片集图片已加载
+                            // 创建或获取缓存的图片
+                            if (!obj.spriteData._cachedImage) {
+                                obj.spriteData._cachedImage = new Image();
+                                obj.spriteData._cachedImage.crossOrigin = 'anonymous';
+                                obj.spriteData._cachedImage.onload = () => render();
+                                obj.spriteData._cachedImage.src = normalizeAssetUrl(obj.spriteData.spriteImageSrc);
+                            }
+                            spriteImg = obj.spriteData._cachedImage;
                         }
-                        spriteImg = obj.spriteData._cachedImage;
                     }
-                }
                 
                 ctx.save();
                 
@@ -1872,7 +1901,7 @@
                             if (!obj.spriteData._cachedImage) {
                                 obj.spriteData._cachedImage = new Image();
                                 obj.spriteData._cachedImage.onload = () => render();
-                                obj.spriteData._cachedImage.src = obj.spriteData.spriteImageSrc;
+                                obj.spriteData._cachedImage.src = normalizeAssetUrl(obj.spriteData.spriteImageSrc);
                             }
                             spriteImg = obj.spriteData._cachedImage;
                         }
@@ -2464,8 +2493,8 @@
                     name: sprite.name,
                     isFullImage: sprite.isFullImage,
                     image: sprite.image, // 保存图片引用（运行时使用）
-                    imageSrc: sprite.image ? sprite.image.src : null, // 保存图片源（用于导出/导入）
-                    spriteImageSrc: spriteImage ? spriteImage.src : null // 保存瓦片集图片源
+                    imageSrc: sprite.image ? normalizeAssetUrl(sprite.image.src) : null, // 保存图片源（用于导出/导入）
+                    spriteImageSrc: spriteImage ? normalizeAssetUrl(spriteImage.src) : null // 保存瓦片集图片源
                 };
                 
                 const newObj = {
@@ -2568,8 +2597,8 @@
                             name: sprite.name,
                             isFullImage: sprite.isFullImage,
                             image: sprite.image, // 保存图片引用（运行时使用）
-                            imageSrc: sprite.image ? sprite.image.src : null, // 保存图片源（用于导出/导入）
-                            spriteImageSrc: spriteImage ? spriteImage.src : null // 保存瓦片集图片源
+                            imageSrc: sprite.image ? normalizeAssetUrl(sprite.image.src) : null, // 保存图片源（用于导出/导入）
+                            spriteImageSrc: spriteImage ? normalizeAssetUrl(spriteImage.src) : null // 保存瓦片集图片源
                         };
                         
                         const newObj = {
@@ -3230,7 +3259,7 @@
                 // 辅助函数：收集对象的瓦片集图片URL
                 function collectSpriteUrls(obj, urlSet) {
                     if (obj.spriteData && obj.spriteData.spriteImageSrc) {
-                        urlSet.add(obj.spriteData.spriteImageSrc);
+                        urlSet.add(normalizeAssetUrl(obj.spriteData.spriteImageSrc));
                     }
                     // 如果是组合对象，递归处理子对象
                     if (obj.isGroup && obj.children) {
@@ -3241,14 +3270,15 @@
                 // 辅助函数：为对象设置缓存的图片引用
                 function setCachedImages(obj, imageCache) {
                     if (obj.spriteData && obj.spriteData.spriteImageSrc) {
-                        const cachedImg = imageCache[obj.spriteData.spriteImageSrc];
+                        const normalizedSrc = normalizeAssetUrl(obj.spriteData.spriteImageSrc);
+                        const cachedImg = imageCache[normalizedSrc];
                         if (cachedImg) {
                             obj.spriteData._cachedImage = cachedImg;
                         } else if (!obj.spriteData._cachedImage) {
                             const fallbackImg = new Image();
                             fallbackImg.crossOrigin = 'anonymous';
                             fallbackImg.onload = () => render();
-                            fallbackImg.src = obj.spriteData.spriteImageSrc;
+                            fallbackImg.src = normalizeAssetUrl(obj.spriteData.spriteImageSrc);
                             obj.spriteData._cachedImage = fallbackImg;
                         }
                     }
@@ -3279,7 +3309,7 @@
                             console.error('✗ 加载瓦片集图片失败:', url);
                             resolve(); // 即使失败也继续
                         };
-                        img.src = url;
+                        img.src = normalizeAssetUrl(url);
                     });
                     loadPromises.push(promise);
                 });
@@ -3332,7 +3362,7 @@
                                     console.error('✗ 加载完整图片素材失败');
                                     resolve();
                                 };
-                                img.src = obj.spriteData.imageSrc;
+                                img.src = normalizeAssetUrl(obj.spriteData.imageSrc);
                             });
                             loadPromises.push(promise);
                         }
@@ -3557,7 +3587,7 @@
                 // 辅助函数：收集对象的瓦片集图片URL
                 function collectSpriteUrls(obj, urlSet) {
                     if (obj.spriteData && obj.spriteData.spriteImageSrc) {
-                        urlSet.add(obj.spriteData.spriteImageSrc);
+                        urlSet.add(normalizeAssetUrl(obj.spriteData.spriteImageSrc));
                     }
                     // 如果是组合对象，递归处理子对象
                     if (obj.isGroup && obj.children) {
@@ -3568,14 +3598,15 @@
                 // 辅助函数：为对象设置缓存的图片引用
                 function setCachedImages(obj, imageCache) {
                     if (obj.spriteData && obj.spriteData.spriteImageSrc) {
-                        const cachedImg = imageCache[obj.spriteData.spriteImageSrc];
+                        const normalizedSrc = normalizeAssetUrl(obj.spriteData.spriteImageSrc);
+                        const cachedImg = imageCache[normalizedSrc];
                         if (cachedImg) {
                             obj.spriteData._cachedImage = cachedImg;
                         } else if (!obj.spriteData._cachedImage) {
                             const fallbackImg = new Image();
                             fallbackImg.crossOrigin = 'anonymous';
                             fallbackImg.onload = () => render();
-                            fallbackImg.src = obj.spriteData.spriteImageSrc;
+                            fallbackImg.src = normalizeAssetUrl(obj.spriteData.spriteImageSrc);
                             obj.spriteData._cachedImage = fallbackImg;
                         }
                     }
@@ -3610,7 +3641,7 @@
                             console.error('✗ 加载瓦片集图片失败:', url);
                             resolve();
                         };
-                        img.src = url;
+                        img.src = normalizeAssetUrl(url);
                     });
                     loadPromises.push(promise);
                 });
@@ -3659,7 +3690,7 @@
                                     console.error('✗ 加载完整图片素材失败');
                                     resolve();
                                 };
-                                img.src = obj.spriteData.imageSrc;
+                                img.src = normalizeAssetUrl(obj.spriteData.imageSrc);
                             });
                             loadPromises.push(promise);
                         }
