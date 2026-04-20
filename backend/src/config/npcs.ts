@@ -32,6 +32,8 @@ export type NpcSeed = {
 export type MapNpcPayload = {
   id: string;
   ownerUserId?: string | null;
+  resolvedMapKey?: string;
+  hasStoredPosition?: boolean;
   sourceType: 'static' | 'secondme';
   name: string;
   role: NpcRole;
@@ -318,7 +320,20 @@ export function buildMapNpcs(
 
   const dynamicUsers = users
     .filter((user) => user.id !== currentUserId && user.isNpcVisible !== false)
-    .filter((user) => resolveEffectiveMapKey(user) === viewedMapKey)
+    .filter((user) => {
+      const effectiveMapKey = resolveEffectiveMapKey(user);
+      const matches = effectiveMapKey === viewedMapKey;
+      if (!matches) {
+        console.log('[buildMapNpcs] 用户地图不匹配', {
+          userId: user.id,
+          username: user.username,
+          currentMap: user.currentMap,
+          effectiveMapKey,
+          viewedMapKey,
+        });
+      }
+      return matches;
+    })
     .slice(0, 8)
     .map((user) => {
       const seed = buildDynamicUserSeed(user);
@@ -348,6 +363,8 @@ export function buildMapNpcs(
       return {
         ...npc,
         ownerUserId: user.id,
+        resolvedMapKey: resolveEffectiveMapKey(user),
+        hasStoredPosition,
         sourceType: 'secondme' as const,
       };
     });

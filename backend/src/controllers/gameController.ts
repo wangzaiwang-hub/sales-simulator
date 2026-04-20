@@ -250,10 +250,16 @@ function relocateNpcsAwayFromBlockedAreas(
     a.y + a.height > b.y;
 
   const isBlocked = (x: number, y: number, width: number, height: number) => {
-    const rect = { x, y, width, height };
+    // 使用 NPC 的实际碰撞体积而不是整个精灵大小
+    const collisionRect = {
+      x: x + 12, // collisionOffsetX
+      y: y + 32, // collisionOffsetY
+      width: 24, // collisionWidth
+      height: 16, // collisionHeight
+    };
     return (
-      blockedAreas.some((area) => intersectsRect(rect, area)) ||
-      placed.some((area) => intersectsRect(rect, area))
+      blockedAreas.some((area) => intersectsRect(collisionRect, area)) ||
+      placed.some((area) => intersectsRect(collisionRect, area))
     );
   };
 
@@ -284,21 +290,21 @@ function relocateNpcsAwayFromBlockedAreas(
     npc.y = resolvedY;
     npc.anchorX = resolvedX;
     npc.anchorY = resolvedY;
-    placed.push({ x: resolvedX, y: resolvedY, width: npc.width, height: npc.height });
+    // 记录实际的碰撞体积位置
+    placed.push({
+      x: resolvedX + 12, // collisionOffsetX
+      y: resolvedY + 32, // collisionOffsetY
+      width: 24, // collisionWidth
+      height: 16, // collisionHeight
+    });
   }
 
   return npcs;
 }
 
 async function buildMapNpcPayload(userId: string, map: any, viewedMapKey: string) {
-  if (!hasPlayablePortals(map)) {
-    console.log('[map] skip npc payload for doorless map', {
-      viewedMapKey,
-      portalCount: getPortalAreas(map).length,
-    });
-    return [];
-  }
-
+  console.log('[buildMapNpcPayload] 开始构建 NPC 列表', { userId, viewedMapKey });
+  
   const { tileSize, mapWidth, mapHeight } = getMapDimensions(map);
   const users = await selectMany<{
     id: string;
@@ -332,6 +338,12 @@ async function buildMapNpcPayload(userId: string, map: any, viewedMapKey: string
   );
   const playableMapKeys = await getPlayableSharedMapKeys();
 
+  console.log('[buildMapNpcPayload] 用户和地图数据', {
+    totalUsers: users.length,
+    playableMapKeys: playableMapKeys.length,
+    viewedMapKey,
+  });
+
   const npcs = buildMapNpcs(
     tileSize,
     mapWidth,
@@ -348,13 +360,54 @@ async function buildMapNpcPayload(userId: string, map: any, viewedMapKey: string
     playableMapKeys,
   );
 
-  return relocateNpcsAwayFromBlockedAreas(
+  console.log('[buildMapNpcPayload] buildMapNpcs 返回', { npcCount: npcs.length });
+
+  const relocatedNpcs = relocateNpcsAwayFromBlockedAreas(
     npcs as any,
     getBlockedAreasFromMap(map),
     mapWidth,
     mapHeight,
     tileSize,
   );
+
+  await Promise.all(
+    relocatedNpcs
+      .filter((npc: any) => npc.ownerUserId)
+      .map(async (npc: any) => {
+        const nextMapKey = npc.resolvedMapKey || viewedMapKey;
+        const previous = progressByUserId.get(npc.ownerUserId);
+
+        const prevX = Number(previous?.positionX);
+        const prevY = Number(previous?.positionY);
+        const prevMap = typeof previous?.currentMap === 'string' ? previous.currentMap : null;
+        const nextX = Math.round(npc.x);
+        const nextY = Math.round(npc.y);
+
+        const shouldPersist =
+          !npc.hasStoredPosition ||
+          !Number.isFinite(prevX) ||
+          !Number.isFinite(prevY) ||
+          prevMap !== nextMapKey ||
+          Math.round(prevX) !== nextX ||
+          Math.round(prevY) !== nextY;
+
+        if (!shouldPersist) {
+          return;
+        }
+
+        await updateRows<Row>(
+          'GameProgress',
+          eq('userId', npc.ownerUserId),
+          {
+            currentMap: nextMapKey,
+            positionX: nextX,
+            positionY: nextY,
+          },
+        );
+      }),
+  );
+
+  return relocatedNpcs;
 }
 
 function normalizeChatHistoryRows(history: Row[]) {
@@ -477,23 +530,27 @@ export const gameController = {
         return res.status(404).json({ error: 'Progress not found' });
       }
 
-      const preferredSharedMapId =
-        typeof progress.currentMap === 'string' && progress.currentMap.startsWith('shared:')
-          ? progress.currentMap.slice('shared:'.length)
-          : null;
-
       const activeSharedMap = await selectOne<Row>('SharedMap', {
         select: '*',
         ...eq('isActive', true),
         order: order('updatedAt', false),
       });
 
-      let sharedMap = activeSharedMap ?? null;
-      if (!sharedMap && preferredSharedMapId) {
+      const preferredSharedMapId =
+        typeof progress.currentMap === 'string' && progress.currentMap.startsWith('shared:')
+          ? progress.currentMap.slice('shared:'.length)
+          : null;
+
+      let sharedMap = null;
+      if (preferredSharedMapId) {
         sharedMap = await selectOne<Row>('SharedMap', {
           select: '*',
           ...eq('id', preferredSharedMapId),
         });
+      }
+
+      if (!sharedMap) {
+        sharedMap = activeSharedMap ?? null;
       }
 
       let map = null;
@@ -1438,6 +1495,46 @@ export const gameController = {
     } catch (error) {
       console.error('Update NPC states error:', error);
       res.status(500).json({ error: 'Failed to update NPC states' });
+    }
+  },
+
+  // NPC 传送到另一张地图
+  async teleportNpc(req: Request, res: Response) {
+    try {
+      const { npcUserId, targetMapKey, spawnX, spawnY, portalCode } = req.body;
+
+      if (!npcUserId || !targetMapKey) {
+        return res.status(400).json({ error: 'Missing required parameters' });
+      }
+
+      // 更新 NPC 的地图位置
+      const [updated] = await updateRows<Row>(
+        'GameProgress',
+        { ...eq('userId', npcUserId) },
+        {
+          currentMap: targetMapKey,
+          positionX: spawnX ?? 96,
+          positionY: spawnY ?? 96,
+        }
+      );
+
+      if (!updated) {
+        return res.status(404).json({ error: 'NPC progress not found' });
+      }
+
+      console.log(`🚪 NPC ${npcUserId} 传送到地图 ${targetMapKey}，位置 (${spawnX}, ${spawnY})，传送门 ${portalCode}`);
+
+      res.json({
+        success: true,
+        npcUserId,
+        targetMapKey,
+        spawnX,
+        spawnY,
+        portalCode,
+      });
+    } catch (error) {
+      console.error('Teleport NPC error:', error);
+      res.status(500).json({ error: 'Failed to teleport NPC' });
     }
   },
 
