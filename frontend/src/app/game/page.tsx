@@ -231,6 +231,42 @@ function hydrateNpcRoster(npcs: NpcState[] | undefined, tileSize: number, mapWid
   }));
 }
 
+function mergeNpcRoster(
+  currentNpcs: NpcState[],
+  incomingNpcs: NpcState[] | undefined,
+  tileSize: number,
+  mapWidth: number,
+  mapHeight: number,
+) {
+  const hydratedIncoming = hydrateNpcRoster(incomingNpcs, tileSize, mapWidth, mapHeight);
+
+  if (!currentNpcs.length) {
+    return hydratedIncoming;
+  }
+
+  const currentById = new Map(currentNpcs.map((npc) => [npc.id, npc]));
+
+  return hydratedIncoming.map((incomingNpc) => {
+    const currentNpc = currentById.get(incomingNpc.id);
+    if (!currentNpc) {
+      return incomingNpc;
+    }
+
+    return {
+      ...incomingNpc,
+      x: currentNpc.x,
+      y: currentNpc.y,
+      anchorX: currentNpc.anchorX ?? currentNpc.x,
+      anchorY: currentNpc.anchorY ?? currentNpc.y,
+      direction: currentNpc.direction,
+      currentFrame: currentNpc.currentFrame,
+      frameCount: currentNpc.frameCount,
+      isMoving: currentNpc.isMoving,
+      moveTimer: currentNpc.moveTimer,
+    };
+  });
+}
+
 // 检测并修复玩家与NPC重叠
 function fixPlayerNpcOverlap(player: ActorState, npcs: NpcState[]) {
   const playerBounds = {
@@ -507,7 +543,7 @@ export default function GamePage() {
     void syncNpcPositions();
     npcPositionSyncTimerRef.current = window.setInterval(() => {
       void syncNpcPositions();
-    }, 4000);
+    }, 1000);
 
     return () => {
       if (npcPositionSyncTimerRef.current) {
@@ -636,7 +672,8 @@ export default function GamePage() {
         if (cancelled) return;
 
         currentMapKeyRef.current = payload.mapKey || currentMapKeyRef.current;
-        npcsRef.current = hydrateNpcRoster(
+        npcsRef.current = mergeNpcRoster(
+          npcsRef.current,
           payload.npcs,
           ((mapRef.current as any)?.gridSize || mapRef.current?.tileSize || 48),
           ((mapRef.current as any)?.cols || mapRef.current?.width || 20),
