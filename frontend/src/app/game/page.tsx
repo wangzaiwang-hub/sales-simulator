@@ -96,6 +96,7 @@ type ActorState = {
 type NpcState = ActorState & {
   id: string;
   ownerUserId?: string | null;
+  resolvedMapKey?: string;
   sourceType?: "static" | "secondme";
   name: string;
   role?: string;
@@ -510,16 +511,15 @@ export default function GamePage() {
     if (!token || !hasMap) return;
 
     const syncNpcPositions = async () => {
-      const currentMap =
-        currentSharedMapIdRef.current
-          ? `shared:${currentSharedMapIdRef.current}`
-          : currentMapKeyRef.current;
-
       const occupants = npcsRef.current
         .filter((npc) => npc.ownerUserId)
         .map((npc) => ({
           npcUserId: npc.ownerUserId,
-          currentMap,
+          currentMap:
+            npc.resolvedMapKey ||
+            (currentSharedMapIdRef.current
+              ? `shared:${currentSharedMapIdRef.current}`
+              : currentMapKeyRef.current),
           positionX: Math.round(npc.x),
           positionY: Math.round(npc.y),
         }));
@@ -1040,6 +1040,7 @@ export default function GamePage() {
                 x: spawnX,
                 y: spawnY,
               };
+              npc.resolvedMapKey = targetMapKey;
               npc.x = resolvedSpawn.x;
               npc.y = resolvedSpawn.y;
               npc.anchorX = resolvedSpawn.x;
