@@ -172,6 +172,33 @@
                     <option value="urbanExampleScene">城市示例整图</option>
                     <option value="emoteIcons">情绪装饰图标</option>
                 </optgroup>
+                <optgroup label="手机UI">
+                    <option value="mobileCasualButtons">手机按钮组</option>
+                    <option value="mobileCasualCountBars">手机计数条</option>
+                    <option value="mobileCasualIcons">手机图标</option>
+                    <option value="mobileCasualWindows">手机窗口</option>
+                    <option value="mobileCasualSheet">手机UI总表</option>
+                </optgroup>
+                <optgroup label="游戏UI">
+                    <option value="uiDialogFrames">对话框样式</option>
+                    <option value="uiSliders">滑块素材</option>
+                    <option value="uiScrollbars">滚动条素材</option>
+                    <option value="uiVirtualButtons">虚拟按钮</option>
+                    <option value="uiCharacterCards">角色卡片</option>
+                    <option value="uiGeneralFrames">通用框体</option>
+                </optgroup>
+                <optgroup label="角色素材">
+                    <option value="animeGirlSheet">Anime Girl 动画表</option>
+                    <option value="cgsCharacters">CGS 角色图</option>
+                    <option value="charIdleSheets">32x32 Idle 动画</option>
+                    <option value="charWalkSheets">32x32 Walk 动画</option>
+                    <option value="charRunSheets">32x32 Run 动画</option>
+                    <option value="charHurtSheets">32x32 Hurt 动画</option>
+                    <option value="charInteractSheets">32x32 Interact 动画</option>
+                    <option value="charJumpSheets">32x32 Jump 动画</option>
+                    <option value="charPunchSheets">32x32 Punch 动画</option>
+                    <option value="charSwordSheets">32x32 Sword 动画</option>
+                </optgroup>
             </select>
             
             <div class="info">
@@ -1239,7 +1266,386 @@
                 ]
             }
         };
-        
+
+        Object.assign(spriteSets, {
+            mobileCasualButtons: {
+                name: '手机按钮组',
+                image: null,
+                sprites: [
+                    {path: '/3c24f09e57876183/MobileCasualUI_English/Buttons/Ad_Button.png', name: 'Ad-Button'},
+                    {path: '/3c24f09e57876183/MobileCasualUI_English/Buttons/Announcement_Button.png', name: 'Announcement-Button'},
+                    {path: '/3c24f09e57876183/MobileCasualUI_English/Buttons/Boss_Button.png', name: 'Boss-Button'},
+                    {path: '/3c24f09e57876183/MobileCasualUI_English/Buttons/Count_Button.png', name: 'Count-Button'},
+                    {path: '/3c24f09e57876183/MobileCasualUI_English/Buttons/Empty_Boss_Button.png', name: 'Empty-Boss-Button'},
+                    {path: '/3c24f09e57876183/MobileCasualUI_English/Buttons/Empty_Button- Yellow.png', name: 'Empty-Button-Yellow'},
+                    {path: '/3c24f09e57876183/MobileCasualUI_English/Buttons/Empty_Button.png', name: 'Empty-Button'},
+                    {path: '/3c24f09e57876183/MobileCasualUI_English/Buttons/Empty_Mode_Button.png', name: 'Empty-Mode-Button'},
+                    {path: '/3c24f09e57876183/MobileCasualUI_English/Buttons/Empty_Play_Button.png', name: 'Empty-Play-Button'},
+                    {path: '/3c24f09e57876183/MobileCasualUI_English/Buttons/Exit_Button.png', name: 'Exit-Button'},
+                    {path: '/3c24f09e57876183/MobileCasualUI_English/Buttons/Letter_Button.png', name: 'Letter-Button'},
+                    {path: '/3c24f09e57876183/MobileCasualUI_English/Buttons/Menu_Button.png', name: 'Menu-Button'},
+                    {path: '/3c24f09e57876183/MobileCasualUI_English/Buttons/Mode_Button.png', name: 'Mode-Button'},
+                    {path: '/3c24f09e57876183/MobileCasualUI_English/Buttons/Off_Button.png', name: 'Off-Button'},
+                    {path: '/3c24f09e57876183/MobileCasualUI_English/Buttons/Play_Button.png', name: 'Play-Button'},
+                    {path: '/3c24f09e57876183/MobileCasualUI_English/Buttons/Setting_Button.png', name: 'Setting-Button'}
+                ]
+            },
+            mobileCasualCountBars: {
+                name: '手机计数条',
+                image: null,
+                sprites: [
+                    {path: '/3c24f09e57876183/MobileCasualUI_English/CountBar/Coin_CountBar.png', name: 'Coin-CountBar'},
+                    {path: '/3c24f09e57876183/MobileCasualUI_English/CountBar/Energy_CountBar.png', name: 'Energy-CountBar'},
+                    {path: '/3c24f09e57876183/MobileCasualUI_English/CountBar/Gem_CountBar.png', name: 'Gem-CountBar'}
+                ]
+            },
+            mobileCasualIcons: {
+                name: '手机图标',
+                image: null,
+                sprites: [
+                    {path: '/3c24f09e57876183/MobileCasualUI_English/Icons/Challenge_Icon.png', name: 'Challenge-Icon'},
+                    {path: '/3c24f09e57876183/MobileCasualUI_English/Icons/Coin_Icon.png', name: 'Coin-Icon'},
+                    {path: '/3c24f09e57876183/MobileCasualUI_English/Icons/DailyCheckIn_Icon.png', name: 'DailyCheckIn-Icon'},
+                    {path: '/3c24f09e57876183/MobileCasualUI_English/Icons/Energy_Icon.png', name: 'Energy-Icon'},
+                    {path: '/3c24f09e57876183/MobileCasualUI_English/Icons/Gem_Icon.png', name: 'Gem-Icon'},
+                    {path: '/3c24f09e57876183/MobileCasualUI_English/Icons/Health_Icon.png', name: 'Health-Icon'},
+                    {path: '/3c24f09e57876183/MobileCasualUI_English/Icons/Quest_Icon.png', name: 'Quest-Icon'},
+                    {path: '/3c24f09e57876183/MobileCasualUI_English/Icons/Ranking_Icon.png', name: 'Ranking-Icon'},
+                    {path: '/3c24f09e57876183/MobileCasualUI_English/Icons/Shop_Icon.png', name: 'Shop-Icon'},
+                    {path: '/3c24f09e57876183/MobileCasualUI_English/Icons/Star_Icon.png', name: 'Star-Icon'}
+                ]
+            },
+            mobileCasualWindows: {
+                name: '手机窗口',
+                image: null,
+                sprites: [
+                    {path: '/3c24f09e57876183/MobileCasualUI_English/Windows/Translucent_Window.png', name: 'Translucent-Window'},
+                    {path: '/3c24f09e57876183/MobileCasualUI_English/Windows/Window.png', name: 'Window'}
+                ]
+            },
+            mobileCasualSheet: {
+                name: '手机UI总表',
+                image: null,
+                sprites: [
+                    {path: '/3c24f09e57876183/MobileCasualUI_English/MobileCasualUI_English.png', name: 'MobileCasualUI-English'}
+                ]
+            },
+            uiDialogFrames: {
+                name: '对话框样式',
+                image: null,
+                sprites: [
+                    {path: '/UI/对话框样式/对话框底色.png', name: '对话框底色'},
+                    {path: '/UI/对话框样式/对话框底色2.png', name: '对话框底色2'},
+                    {path: '/UI/对话框样式/跳过标志/1.png', name: '跳过标志-1'},
+                    {path: '/UI/对话框样式/跳过标志/2.png', name: '跳过标志-2'},
+                    {path: '/UI/对话框样式/跳过标志/3.png', name: '跳过标志-3'},
+                    {path: '/UI/对话框样式/跳过标志/4.png', name: '跳过标志-4'},
+                    {path: '/UI/对话框样式/跳过标志/5.png', name: '跳过标志-5'}
+                ]
+            },
+            uiSliders: {
+                name: '滑块素材',
+                image: null,
+                sprites: [
+                    {path: '/UI/滑块/填充.png', name: '填充'},
+                    {path: '/UI/滑块/滑块.png', name: '滑块'},
+                    {path: '/UI/滑块/背景.png', name: '背景'}
+                ]
+            },
+            uiScrollbars: {
+                name: '滚动条素材',
+                image: null,
+                sprites: [
+                    {path: '/UI/滚动条/滚动条-横.png', name: '滚动条-横'},
+                    {path: '/UI/滚动条/滚动条-横2.png', name: '滚动条-横2'},
+                    {path: '/UI/滚动条/滚动条-竖.png', name: '滚动条-竖'},
+                    {path: '/UI/滚动条/滚动条-竖2.png', name: '滚动条-竖2'}
+                ]
+            },
+            uiVirtualButtons: {
+                name: '虚拟按钮',
+                image: null,
+                sprites: [
+                    {path: '/UI/虚拟按钮/按键1.png', name: '按键1'},
+                    {path: '/UI/虚拟按钮/按键2.png', name: '按键2'},
+                    {path: '/UI/虚拟按钮/触摸.png', name: '触摸'}
+                ]
+            },
+            uiCharacterCards: {
+                name: '角色卡片',
+                image: null,
+                sprites: [
+                    {path: '/UI/角色卡片/剑士-未选.png', name: '剑士-未选'},
+                    {path: '/UI/角色卡片/剑士-选中.png', name: '剑士-选中'},
+                    {path: '/UI/角色卡片/医师-未选.png', name: '医师-未选'},
+                    {path: '/UI/角色卡片/医师-选中.png', name: '医师-选中'},
+                    {path: '/UI/角色卡片/魔法师-未选.png', name: '魔法师-未选'},
+                    {path: '/UI/角色卡片/魔法师-选中.png', name: '魔法师-选中'}
+                ]
+            },
+            uiGeneralFrames: {
+                name: '通用框体',
+                image: null,
+                sprites: [
+                    {path: '/UI/通用外框.png', name: '通用外框'},
+                    {path: '/UI/通用外框2.png', name: '通用外框2'},
+                    {path: '/UI/通用底色.png', name: '通用底色'},
+                    {path: '/UI/通用底色2.png', name: '通用底色2'}
+                ]
+            },
+            animeGirlSheet: {
+                name: 'Anime Girl 动画表',
+                image: null,
+                sprites: [
+                    {path: '/225525db3ab3e4a8/Anime girl sprite sheet Basic Move Dlou Saiyan/Anime girl sprite sheet Basic Move Dlou Saiyan.png', name: 'Anime-Girl-Basic-Move'}
+                ]
+            },
+            cgsCharacters: {
+                name: 'CGS 角色图',
+                image: null,
+                sprites: [
+                    {path: '/CGS_RU_HouseFree/img/characters/!CGS_House_1.png', name: 'CGS-House-Character'},
+                    {path: '/CGS_RU_HouseFree/img/characters/CGS_Char_1.png', name: 'CGS-Character-1'}
+                ]
+            },
+            charIdleSheets: {
+                name: '32x32 Idle 动画',
+                image: null,
+                sprites: [
+                    {path: '/32x32 Customizable Character Pack/Idle/Character/Character_Idle_Back-Sheet.png', name: 'Character-Character_Idle_Back-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Idle/Character/Character_Idle_Front-Sheet.png', name: 'Character-Character_Idle_Front-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Idle/Character/Character_Idle_Left-Sheet.png', name: 'Character-Character_Idle_Left-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Idle/Character/Character_Idle_Right-Sheet.png', name: 'Character-Character_Idle_Right-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Idle/Clothing/Clothing_Bottoms_Idle_Back-Sheet.png', name: 'Clothing-Clothing_Bottoms_Idle_Back-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Idle/Clothing/Clothing_Bottoms_Idle_Front-Sheet.png', name: 'Clothing-Clothing_Bottoms_Idle_Front-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Idle/Clothing/Clothing_Bottoms_Idle_Left-Sheet.png', name: 'Clothing-Clothing_Bottoms_Idle_Left-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Idle/Clothing/Clothing_Bottoms_Idle_Right-Sheet.png', name: 'Clothing-Clothing_Bottoms_Idle_Right-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Idle/Clothing/Clothing_Shoes_Idle_Back-Sheet.png', name: 'Clothing-Clothing_Shoes_Idle_Back-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Idle/Clothing/Clothing_Shoes_Idle_Front-Sheet.png', name: 'Clothing-Clothing_Shoes_Idle_Front-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Idle/Clothing/Clothing_Shoes_Idle_Left-Sheet.png', name: 'Clothing-Clothing_Shoes_Idle_Left-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Idle/Clothing/Clothing_Shoes_Idle_Right-Sheet.png', name: 'Clothing-Clothing_Shoes_Idle_Right-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Idle/Clothing/Clothing_Top_Idle_Back-Sheet.png', name: 'Clothing-Clothing_Top_Idle_Back-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Idle/Clothing/Clothing_Tops_Idle_Front-Sheet.png', name: 'Clothing-Clothing_Tops_Idle_Front-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Idle/Clothing/Clothing_Tops_Idle_Left-Sheet.png', name: 'Clothing-Clothing_Tops_Idle_Left-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Idle/Clothing/Clothing_Tops_Idle_Right-Sheet.png', name: 'Clothing-Clothing_Tops_Idle_Right-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Idle/Eyes/Eyes_Idle_Front-Sheet.png', name: 'Eyes-Eyes_Idle_Front-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Idle/Eyes/Eyes_Idle_Left-Sheet.png', name: 'Eyes-Eyes_Idle_Left-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Idle/Eyes/Eyes_Idle_Right-Sheet.png', name: 'Eyes-Eyes_Idle_Right-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Idle/Hair/Hair_Idle_Back-Sheet.png', name: 'Hair-Hair_Idle_Back-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Idle/Hair/Hair_Idle_Front-Sheet.png', name: 'Hair-Hair_Idle_Front-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Idle/Hair/Hair_Idle_Left-Sheet.png', name: 'Hair-Hair_Idle_Left-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Idle/Hair/Hair_Idle_Right-Sheet.png', name: 'Hair-Hair_Idle_Right-Sheet'}
+                ]
+            },
+            charWalkSheets: {
+                name: '32x32 Walk 动画',
+                image: null,
+                sprites: [
+                    {path: '/32x32 Customizable Character Pack/Walk/Character/Character_Walk_Back-Sheet.png', name: 'Character-Character_Walk_Back-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Walk/Character/Character_Walk_Front-Sheet.png', name: 'Character-Character_Walk_Front-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Walk/Character/Character_Walk_Left-Sheet.png', name: 'Character-Character_Walk_Left-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Walk/Character/Character_Walk_Right-Sheet.png', name: 'Character-Character_Walk_Right-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Walk/Clothing/Clothing_Bottoms_Walk_Back-Sheet.png', name: 'Clothing-Clothing_Bottoms_Walk_Back-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Walk/Clothing/Clothing_Bottoms_Walk_Front-Sheet.png', name: 'Clothing-Clothing_Bottoms_Walk_Front-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Walk/Clothing/Clothing_Bottoms_Walk_Left-Sheet.png', name: 'Clothing-Clothing_Bottoms_Walk_Left-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Walk/Clothing/Clothing_Bottoms_Walk_Right-Sheet.png', name: 'Clothing-Clothing_Bottoms_Walk_Right-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Walk/Clothing/Clothing_Shoes_Walk_Back-Sheet.png', name: 'Clothing-Clothing_Shoes_Walk_Back-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Walk/Clothing/Clothing_Shoes_Walk_Front-Sheet.png', name: 'Clothing-Clothing_Shoes_Walk_Front-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Walk/Clothing/Clothing_Shoes_Walk_Left-Sheet.png', name: 'Clothing-Clothing_Shoes_Walk_Left-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Walk/Clothing/Clothing_Shoes_Walk_Right-Sheet.png', name: 'Clothing-Clothing_Shoes_Walk_Right-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Walk/Clothing/Clothing_Tops_Walk_Back-Sheet.png', name: 'Clothing-Clothing_Tops_Walk_Back-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Walk/Clothing/Clothing_Tops_Walk_Front-Sheet.png', name: 'Clothing-Clothing_Tops_Walk_Front-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Walk/Clothing/Clothing_Tops_Walk_Left-Sheet.png', name: 'Clothing-Clothing_Tops_Walk_Left-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Walk/Clothing/Clothing_Tops_Walk_Right-Sheet.png', name: 'Clothing-Clothing_Tops_Walk_Right-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Walk/Eyes/Eyes_Walk_Front-Sheet.png', name: 'Eyes-Eyes_Walk_Front-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Walk/Eyes/Eyes_Walk_Left-Sheet.png', name: 'Eyes-Eyes_Walk_Left-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Walk/Eyes/Eyes_Walk_Right-Sheet.png', name: 'Eyes-Eyes_Walk_Right-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Walk/Hair/Hair_Walk_Back-Sheet.png', name: 'Hair-Hair_Walk_Back-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Walk/Hair/Hair_Walk_Front-Sheet.png', name: 'Hair-Hair_Walk_Front-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Walk/Hair/Hair_Walk_Left-Sheet.png', name: 'Hair-Hair_Walk_Left-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Walk/Hair/Hair_Walk_Right-Sheet.png', name: 'Hair-Hair_Walk_Right-Sheet'}
+                ]
+            },
+            charRunSheets: {
+                name: '32x32 Run 动画',
+                image: null,
+                sprites: [
+                    {path: '/32x32 Customizable Character Pack/Run/Character/Character_Run_Back-Sheet.png', name: 'Character-Character_Run_Back-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Run/Character/Character_Run_Front-Sheet.png', name: 'Character-Character_Run_Front-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Run/Character/Character_Run_Left-Sheet.png', name: 'Character-Character_Run_Left-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Run/Character/Character_Run_Right-Sheet.png', name: 'Character-Character_Run_Right-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Run/Clothing/Clothing_Bottoms_Run_Left-Sheet.png', name: 'Clothing-Clothing_Bottoms_Run_Left-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Run/Clothing/Clothing_Bottoms_Walk_Back-Sheet.png', name: 'Clothing-Clothing_Bottoms_Walk_Back-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Run/Clothing/Clothing_Bottoms_Walk_Front-Sheet.png', name: 'Clothing-Clothing_Bottoms_Walk_Front-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Run/Clothing/Clothing_Bottoms_Walk_Right-Sheet.png', name: 'Clothing-Clothing_Bottoms_Walk_Right-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Run/Clothing/Clothing_Shoes_Run_Front-Sheet.png', name: 'Clothing-Clothing_Shoes_Run_Front-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Run/Clothing/Clothing_Shoes_Run_Left-Sheet.png', name: 'Clothing-Clothing_Shoes_Run_Left-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Run/Clothing/Clothing_Shoes_Run_Right-Sheet.png', name: 'Clothing-Clothing_Shoes_Run_Right-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Run/Clothing/Clothing_Shoes_Walk_Back-Sheet.png', name: 'Clothing-Clothing_Shoes_Walk_Back-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Run/Clothing/Clothing_Tops_Run_Back-Sheet.png', name: 'Clothing-Clothing_Tops_Run_Back-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Run/Clothing/Clothing_Tops_Run_Left-Sheet.png', name: 'Clothing-Clothing_Tops_Run_Left-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Run/Clothing/Clothing_Tops_Walk_Front-Sheet.png', name: 'Clothing-Clothing_Tops_Walk_Front-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Run/Clothing/Clothing_Tops_Walk_Right-Sheet.png', name: 'Clothing-Clothing_Tops_Walk_Right-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Run/Eyes/Eyes_Run_Front-Sheet.png', name: 'Eyes-Eyes_Run_Front-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Run/Eyes/Eyes_Run_Left-Sheet.png', name: 'Eyes-Eyes_Run_Left-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Run/Eyes/Eyes_Run_Right-Sheet.png', name: 'Eyes-Eyes_Run_Right-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Run/Hair/Hair_Run_Back-Sheet.png', name: 'Hair-Hair_Run_Back-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Run/Hair/Hair_Run_Front-Sheet.png', name: 'Hair-Hair_Run_Front-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Run/Hair/Hair_Run_Left-Sheet.png', name: 'Hair-Hair_Run_Left-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Run/Hair/Hair_Run_Right-Sheet.png', name: 'Hair-Hair_Run_Right-Sheet'}
+                ]
+            },
+            charHurtSheets: {
+                name: '32x32 Hurt 动画',
+                image: null,
+                sprites: [
+                    {path: '/32x32 Customizable Character Pack/Hurt/Character/Character_Hurt_Back-Sheet.png', name: 'Character-Character_Hurt_Back-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Hurt/Character/Character_Hurt_Front-Sheet.png', name: 'Character-Character_Hurt_Front-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Hurt/Character/Character_Hurt_Left-Sheet.png', name: 'Character-Character_Hurt_Left-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Hurt/Character/Character_Hurt_Right-Sheet.png', name: 'Character-Character_Hurt_Right-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Hurt/Clothing/Clothing_Bottoms_Hurt_Back-Sheet.png', name: 'Clothing-Clothing_Bottoms_Hurt_Back-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Hurt/Clothing/Clothing_Bottoms_Hurt_Front-Sheet.png', name: 'Clothing-Clothing_Bottoms_Hurt_Front-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Hurt/Clothing/Clothing_Bottoms_Hurt_Left-Sheet.png', name: 'Clothing-Clothing_Bottoms_Hurt_Left-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Hurt/Clothing/Clothing_Bottoms_Hurt_Right-Sheet.png', name: 'Clothing-Clothing_Bottoms_Hurt_Right-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Hurt/Clothing/Clothing_Shoes_Hurt_Back-Sheet.png', name: 'Clothing-Clothing_Shoes_Hurt_Back-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Hurt/Clothing/Clothing_Shoes_Hurt_Front-Sheet.png', name: 'Clothing-Clothing_Shoes_Hurt_Front-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Hurt/Clothing/Clothing_Shoes_Hurt_Left-Sheet.png', name: 'Clothing-Clothing_Shoes_Hurt_Left-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Hurt/Clothing/Clothing_Shoes_Hurt_Right-Sheet.png', name: 'Clothing-Clothing_Shoes_Hurt_Right-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Hurt/Clothing/Clothing_Tops_Hurt_Back-Sheet.png', name: 'Clothing-Clothing_Tops_Hurt_Back-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Hurt/Clothing/Clothing_Tops_Hurt_Front-Sheet.png', name: 'Clothing-Clothing_Tops_Hurt_Front-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Hurt/Clothing/Clothing_Tops_Hurt_Left-Sheet.png', name: 'Clothing-Clothing_Tops_Hurt_Left-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Hurt/Clothing/Clothing_Tops_Hurt_Right-Sheet.png', name: 'Clothing-Clothing_Tops_Hurt_Right-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Hurt/Eyes/Eyes_Hurt_Front-Sheet.png', name: 'Eyes-Eyes_Hurt_Front-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Hurt/Eyes/Eyes_Hurt_Left-Sheet.png', name: 'Eyes-Eyes_Hurt_Left-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Hurt/Eyes/Eyes_Hurt_Right-Sheet.png', name: 'Eyes-Eyes_Hurt_Right-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Hurt/Hair/Hair_Hurt_Back-Sheet.png', name: 'Hair-Hair_Hurt_Back-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Hurt/Hair/Hair_Hurt_Front-Sheet.png', name: 'Hair-Hair_Hurt_Front-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Hurt/Hair/Hair_Hurt_Left-Sheet.png', name: 'Hair-Hair_Hurt_Left-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Hurt/Hair/Hair_Hurt_Right-Sheet.png', name: 'Hair-Hair_Hurt_Right-Sheet'}
+                ]
+            },
+            charInteractSheets: {
+                name: '32x32 Interact 动画',
+                image: null,
+                sprites: [
+                    {path: '/32x32 Customizable Character Pack/Interact/Character/Character_Interact_Back-Sheet.png', name: 'Character-Character_Interact_Back-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Interact/Character/Character_Interact_Front-Sheet.png', name: 'Character-Character_Interact_Front-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Interact/Character/Character_Interact_Left-Sheet.png', name: 'Character-Character_Interact_Left-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Interact/Character/Character_Interact_Right-Sheet.png', name: 'Character-Character_Interact_Right-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Interact/Clothing/Clothing_Bottoms_Interact_Back-Sheet.png', name: 'Clothing-Clothing_Bottoms_Interact_Back-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Interact/Clothing/Clothing_Bottoms_Interact_Front-Sheet.png', name: 'Clothing-Clothing_Bottoms_Interact_Front-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Interact/Clothing/Clothing_Bottoms_Interact_Left-Sheet.png', name: 'Clothing-Clothing_Bottoms_Interact_Left-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Interact/Clothing/Clothing_Bottoms_Interact_Right-Sheet.png', name: 'Clothing-Clothing_Bottoms_Interact_Right-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Interact/Clothing/Clothing_Shoes_Interact_Back-Sheet.png', name: 'Clothing-Clothing_Shoes_Interact_Back-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Interact/Clothing/Clothing_Shoes_Interact_Front-Sheet.png', name: 'Clothing-Clothing_Shoes_Interact_Front-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Interact/Clothing/Clothing_Shoes_Interact_Left-Sheet.png', name: 'Clothing-Clothing_Shoes_Interact_Left-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Interact/Clothing/Clothing_Shoes_Interact_Right-Sheet.png', name: 'Clothing-Clothing_Shoes_Interact_Right-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Interact/Clothing/Clothing_Tops_Interact_Back-Sheet.png', name: 'Clothing-Clothing_Tops_Interact_Back-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Interact/Clothing/Clothing_Tops_Interact_Front-Sheet.png', name: 'Clothing-Clothing_Tops_Interact_Front-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Interact/Clothing/Clothing_Tops_Interact_Left-Sheet.png', name: 'Clothing-Clothing_Tops_Interact_Left-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Interact/Clothing/Clothing_Tops_Interact_Right-Sheet.png', name: 'Clothing-Clothing_Tops_Interact_Right-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Interact/Eyes/Eyes_Interact_Front-Sheet.png', name: 'Eyes-Eyes_Interact_Front-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Interact/Eyes/Eyes_Interact_Left-Sheet.png', name: 'Eyes-Eyes_Interact_Left-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Interact/Eyes/Eyes_Interact_Right-Sheet.png', name: 'Eyes-Eyes_Interact_Right-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Interact/Hair/Hair_Interact_Back-Sheet.png', name: 'Hair-Hair_Interact_Back-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Interact/Hair/Hair_Interact_Front-Sheet.png', name: 'Hair-Hair_Interact_Front-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Interact/Hair/Hair_Interact_Left-Sheet.png', name: 'Hair-Hair_Interact_Left-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Interact/Hair/Hair_Interact_Right-Sheet.png', name: 'Hair-Hair_Interact_Right-Sheet'}
+                ]
+            },
+            charJumpSheets: {
+                name: '32x32 Jump 动画',
+                image: null,
+                sprites: [
+                    {path: '/32x32 Customizable Character Pack/Jump/Character/Character_Jump_Back-Sheet.png', name: 'Character-Character_Jump_Back-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Jump/Character/Character_Jump_Front-Sheet.png', name: 'Character-Character_Jump_Front-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Jump/Character/Character_Jump_Left-Sheet.png', name: 'Character-Character_Jump_Left-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Jump/Character/Character_Jump_Right-Sheet.png', name: 'Character-Character_Jump_Right-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Jump/Clothing/Clothing_Bottoms_Jump_Back-Sheet.png', name: 'Clothing-Clothing_Bottoms_Jump_Back-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Jump/Clothing/Clothing_Bottoms_Jump_Front-Sheet.png', name: 'Clothing-Clothing_Bottoms_Jump_Front-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Jump/Clothing/Clothing_Bottoms_Jump_Left-Sheet.png', name: 'Clothing-Clothing_Bottoms_Jump_Left-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Jump/Clothing/Clothing_Bottoms_Jump_Right-Sheet.png', name: 'Clothing-Clothing_Bottoms_Jump_Right-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Jump/Clothing/Clothing_Shoes_Jump_Back-Sheet.png', name: 'Clothing-Clothing_Shoes_Jump_Back-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Jump/Clothing/Clothing_Shoes_Jump_Front-Sheet.png', name: 'Clothing-Clothing_Shoes_Jump_Front-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Jump/Clothing/Clothing_Shoes_Jump_Left-Sheet.png', name: 'Clothing-Clothing_Shoes_Jump_Left-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Jump/Clothing/Clothing_Shoes_Jump_Right-Sheet.png', name: 'Clothing-Clothing_Shoes_Jump_Right-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Jump/Clothing/Clothing_Tops_Jump_Back-Sheet.png', name: 'Clothing-Clothing_Tops_Jump_Back-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Jump/Clothing/Clothing_Tops_Jump_Front-Sheet.png', name: 'Clothing-Clothing_Tops_Jump_Front-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Jump/Clothing/Clothing_Tops_Jump_Left-Sheet.png', name: 'Clothing-Clothing_Tops_Jump_Left-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Jump/Clothing/Clothing_Tops_Jump_Right-Sheet.png', name: 'Clothing-Clothing_Tops_Jump_Right-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Jump/Eyes/Eyes_Jump_Front-Sheet.png', name: 'Eyes-Eyes_Jump_Front-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Jump/Eyes/Eyes_Jump_Left-Sheet.png', name: 'Eyes-Eyes_Jump_Left-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Jump/Eyes/Eyes_Jump_Right-Sheet.png', name: 'Eyes-Eyes_Jump_Right-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Jump/Hair/Hair_Jump_Back-Sheet.png', name: 'Hair-Hair_Jump_Back-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Jump/Hair/Hair_Jump_Front-Sheet.png', name: 'Hair-Hair_Jump_Front-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Jump/Hair/Hair_Jump_Left-Sheet.png', name: 'Hair-Hair_Jump_Left-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Jump/Hair/Hair_Jump_Right-Sheet.png', name: 'Hair-Hair_Jump_Right-Sheet'}
+                ]
+            },
+            charPunchSheets: {
+                name: '32x32 Punch 动画',
+                image: null,
+                sprites: [
+                    {path: '/32x32 Customizable Character Pack/Punch/Character/Character_Punch_Back-Sheet.png', name: 'Character-Character_Punch_Back-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Punch/Character/Character_Punch_Front-Sheet.png', name: 'Character-Character_Punch_Front-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Punch/Character/Character_Punch_Left-Sheet.png', name: 'Character-Character_Punch_Left-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Punch/Character/Character_Punch_Right-Sheet.png', name: 'Character-Character_Punch_Right-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Punch/Clothing/Clothing_Bottoms_Punch_Back-Sheet.png', name: 'Clothing-Clothing_Bottoms_Punch_Back-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Punch/Clothing/Clothing_Bottoms_Punch_Front-Sheet.png', name: 'Clothing-Clothing_Bottoms_Punch_Front-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Punch/Clothing/Clothing_Bottoms_Punch_Left-Sheet.png', name: 'Clothing-Clothing_Bottoms_Punch_Left-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Punch/Clothing/Clothing_Bottoms_Punch_Right-Sheet.png', name: 'Clothing-Clothing_Bottoms_Punch_Right-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Punch/Clothing/Clothing_Shoes_Punch_Back-Sheet.png', name: 'Clothing-Clothing_Shoes_Punch_Back-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Punch/Clothing/Clothing_Shoes_Punch_Front-Sheet.png', name: 'Clothing-Clothing_Shoes_Punch_Front-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Punch/Clothing/Clothing_Shoes_Punch_Left-Sheet.png', name: 'Clothing-Clothing_Shoes_Punch_Left-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Punch/Clothing/Clothing_Shoes_Punch_Right-Sheet.png', name: 'Clothing-Clothing_Shoes_Punch_Right-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Punch/Clothing/Clothing_Tops_Punch_Back-Sheet.png', name: 'Clothing-Clothing_Tops_Punch_Back-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Punch/Clothing/Clothing_Tops_Punch_Front-Sheet.png', name: 'Clothing-Clothing_Tops_Punch_Front-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Punch/Clothing/Clothing_Tops_Punch_Left-Sheet.png', name: 'Clothing-Clothing_Tops_Punch_Left-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Punch/Clothing/Clothing_Tops_Punch_Right-Sheet.png', name: 'Clothing-Clothing_Tops_Punch_Right-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Punch/Eyes/Eyes_Punch_Front-Sheet.png', name: 'Eyes-Eyes_Punch_Front-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Punch/Eyes/Eyes_Punch_Left-Sheet.png', name: 'Eyes-Eyes_Punch_Left-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Punch/Eyes/Eyes_Punch_Right-Sheet.png', name: 'Eyes-Eyes_Punch_Right-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Punch/Hair/Hair_Punch_Back-Sheet.png', name: 'Hair-Hair_Punch_Back-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Punch/Hair/Hair_Punch_Front-Sheet.png', name: 'Hair-Hair_Punch_Front-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Punch/Hair/Hair_Punch_Left-Sheet.png', name: 'Hair-Hair_Punch_Left-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Punch/Hair/Hair_Punch_Right-Sheet.png', name: 'Hair-Hair_Punch_Right-Sheet'}
+                ]
+            },
+            charSwordSheets: {
+                name: '32x32 Sword 动画',
+                image: null,
+                sprites: [
+                    {path: '/32x32 Customizable Character Pack/Sword/Character/Character_Sword_Back-Sheet.png', name: 'Character-Character_Sword_Back-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Sword/Character/Character_Sword_Front-Sheet.png', name: 'Character-Character_Sword_Front-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Sword/Character/Character_Sword_Left-Sheet.png', name: 'Character-Character_Sword_Left-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Sword/Character/Character_Sword_Right-Sheet.png', name: 'Character-Character_Sword_Right-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Sword/Clothing/Clothing_Bottoms_Sword_Back-Sheet.png', name: 'Clothing-Clothing_Bottoms_Sword_Back-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Sword/Clothing/Clothing_Bottoms_Sword_Front-Sheet.png', name: 'Clothing-Clothing_Bottoms_Sword_Front-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Sword/Clothing/Clothing_Bottoms_Sword_Left-Sheet.png', name: 'Clothing-Clothing_Bottoms_Sword_Left-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Sword/Clothing/Clothing_Bottoms_Sword_Right-Sheet.png', name: 'Clothing-Clothing_Bottoms_Sword_Right-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Sword/Clothing/Clothing_Shoes_Sword_Back-Sheet.png', name: 'Clothing-Clothing_Shoes_Sword_Back-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Sword/Clothing/Clothing_Shoes_Sword_Left-Sheet.png', name: 'Clothing-Clothing_Shoes_Sword_Left-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Sword/Clothing/Clothing_Shoes_Sword_Right-Sheet.png', name: 'Clothing-Clothing_Shoes_Sword_Right-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Sword/Clothing/Clothing_Short_Sword_Front-Sheet.png', name: 'Clothing-Clothing_Short_Sword_Front-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Sword/Clothing/Clothing_Tops_Sword_Back-Sheet.png', name: 'Clothing-Clothing_Tops_Sword_Back-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Sword/Clothing/Clothing_Tops_Sword_Front-Sheet.png', name: 'Clothing-Clothing_Tops_Sword_Front-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Sword/Clothing/Clothing_Tops_Sword_Left-Sheet.png', name: 'Clothing-Clothing_Tops_Sword_Left-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Sword/Clothing/Clothing_Tops_Sword_Right-Sheet.png', name: 'Clothing-Clothing_Tops_Sword_Right-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Sword/Eyes/Eyes_Sword_Front-Sheet.png', name: 'Eyes-Eyes_Sword_Front-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Sword/Eyes/Eyes_Sword_Left-Sheet.png', name: 'Eyes-Eyes_Sword_Left-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Sword/Eyes/Eyes_Sword_Right-Sheet.png', name: 'Eyes-Eyes_Sword_Right-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Sword/Hair/Hair_Sword_Back-Sheet.png', name: 'Hair-Hair_Sword_Back-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Sword/Hair/Hair_Sword_Front-Sheet.png', name: 'Hair-Hair_Sword_Front-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Sword/Hair/Hair_Sword_Left-Sheet.png', name: 'Hair-Hair_Sword_Left-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Sword/Hair/Hair_Sword_Right-Sheet.png', name: 'Hair-Hair_Sword_Right-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Sword/Swords/Sword_Back-Sheet.png', name: 'Swords-Sword_Back-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Sword/Swords/Sword_Front-Sheet.png', name: 'Swords-Sword_Front-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Sword/Swords/Sword_Left-Sheet.png', name: 'Swords-Sword_Left-Sheet'},
+                    {path: '/32x32 Customizable Character Pack/Sword/Swords/Sword_Right-Sheet.png', name: 'Swords-Sword_Right-Sheet'}
+                ]
+            }
+        });
+
         // ========== 素材加载 ==========
         function loadSprites() {
             const setId = document.getElementById('spriteSource').value;
