@@ -1697,7 +1697,16 @@ export default function GamePage() {
             }
         > = [];
 
-        objects.forEach((obj, index) => {
+        const sortedObjects = [...objects].sort((a, b) => {
+          const aLayer = a.isBackground ? -9999 : (a.layer ?? 0);
+          const bLayer = b.isBackground ? -9999 : (b.layer ?? 0);
+          if (aLayer !== bLayer) {
+            return aLayer - bLayer;
+          }
+          return (a.y + a.height) - (b.y + b.height);
+        });
+
+        sortedObjects.forEach((obj, index) => {
           renderables.push({
             type: "object",
             obj,
@@ -1717,7 +1726,7 @@ export default function GamePage() {
             spriteColumnOffset: npc.spriteColumnOffset,
             characterRow: npc.characterRow,
             layer: 1,
-            order: objects.length + index,
+            order: sortedObjects.length + index,
             sortY: actorSortY(npc),
           });
         });
