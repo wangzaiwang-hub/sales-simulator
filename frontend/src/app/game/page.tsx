@@ -2262,7 +2262,7 @@ export default function GamePage() {
           {closestNpc && (
             <div className="pointer-events-none absolute bottom-6 left-1/2 z-20 hidden -translate-x-1/2 md:block">
               <RpgPromptPanel className="w-[620px] drop-shadow-[0_16px_42px_rgba(0,0,0,0.34)]">
-                <div className="font-game-ui flex w-full flex-wrap items-center justify-center gap-x-3 gap-y-1 text-[13px] leading-7 text-[#4a2a58] md:flex-nowrap">
+                <div className="font-game-ui flex w-full translate-x-5 -translate-y-1 flex-wrap items-center justify-center gap-x-3 gap-y-1 text-[13px] leading-7 text-[#4a2a58] md:flex-nowrap">
                   <span>靠近 {closestNpc.name} 后按</span>
                   <RpgKeyBadge>C</RpgKeyBadge>
                   <span>对话，或直接点击 TA</span>
