@@ -1768,14 +1768,14 @@
                     } else if (obj.isGroup) {
                         // 组合对象：使用组合碰撞框或组合边界框的底部
                         if (obj.collision) {
-                            sortY = obj.collision.y + PREVIEW_GROUP_DEPTH_OFFSET;
+                            sortY = obj.collision.y + (obj.collision.height || 0);
                         } else {
                             sortY = obj.y + obj.height;
                         }
                     } else {
-                        // 其他对象使用碰撞框顶部作为排序点
+                        // 其他对象使用碰撞框底部作为排序点
                         if (obj.collision) {
-                            sortY = obj.collision.y + 15;
+                            sortY = obj.collision.y + (obj.collision.height || 0);
                         } else {
                             sortY = obj.y + obj.height; // 没有碰撞框，使用对象底部
                         }
@@ -1806,6 +1806,15 @@
                 // 预览中保留对象之间的图层顺序，角色仍然按sortY与对象穿插
                 allRenderables.sort((a, b) => a.sortY - b.sortY);
                 allRenderables.sort((a, b) => {
+                    const aIsFlatObject = a.type === 'object' && !a.obj?.isBackground && (a.obj?.layer ?? 0) !== 0 && !a.obj?.collision;
+                    const bIsFlatObject = b.type === 'object' && !b.obj?.isBackground && (b.obj?.layer ?? 0) !== 0 && !b.obj?.collision;
+
+                    if (a.type === 'character' && bIsFlatObject) {
+                        return 1;
+                    }
+                    if (aIsFlatObject && b.type === 'character') {
+                        return -1;
+                    }
                     if (a.type === 'object' && b.type === 'object' && a.layer !== b.layer) {
                         return a.layer - b.layer;
                     }

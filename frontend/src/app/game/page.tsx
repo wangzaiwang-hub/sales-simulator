@@ -1690,10 +1690,14 @@ export default function GamePage() {
           }
 
           if (obj.isGroup) {
-            return obj.collision ? obj.collision.y + GROUP_DEPTH_OFFSET : obj.y + obj.height;
+            return obj.collision
+              ? obj.collision.y + (obj.collision.height || 0)
+              : obj.y + obj.height;
           }
 
-          return obj.collision ? obj.collision.y + 15 : obj.y + obj.height;
+          return obj.collision
+            ? obj.collision.y + (obj.collision.height || 0)
+            : obj.y + obj.height;
         };
 
         const actorSortY = (actor: ActorState) =>
@@ -1753,6 +1757,23 @@ export default function GamePage() {
         });
 
         renderables.sort((a, b) => {
+          const aIsFlatObject =
+            a.type === "object" &&
+            !a.obj?.isBackground &&
+            (a.obj?.layer ?? 0) !== 0 &&
+            !a.obj?.collision;
+          const bIsFlatObject =
+            b.type === "object" &&
+            !b.obj?.isBackground &&
+            (b.obj?.layer ?? 0) !== 0 &&
+            !b.obj?.collision;
+
+          if (a.type === "actor" && bIsFlatObject) {
+            return 1;
+          }
+          if (aIsFlatObject && b.type === "actor") {
+            return -1;
+          }
           if (a.type === "object" && b.type === "object" && a.layer !== b.layer) {
             return a.layer - b.layer;
           }
