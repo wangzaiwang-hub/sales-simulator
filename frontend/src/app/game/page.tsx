@@ -752,6 +752,7 @@ export default function GamePage() {
     if (!ctx) return;
 
     const imageCache = new Map<string, HTMLImageElement>();
+    const pendingImageLoads = new Set<string>();
     let interactionFrame = 0;
 
     const getCurrentMap = () => mapRef.current;
@@ -795,6 +796,29 @@ export default function GamePage() {
         img.onerror = () => resolve();
         img.src = src;
       });
+
+    const ensureImage = (src?: string | null) => {
+      if (!src) return null;
+      const normalizedSrc = /^data:|^blob:/.test(src) ? src : toAssetUrl(src);
+      const cached = imageCache.get(normalizedSrc);
+      if (cached) {
+        return cached;
+      }
+      if (!pendingImageLoads.has(normalizedSrc)) {
+        pendingImageLoads.add(normalizedSrc);
+        const img = new Image();
+        img.crossOrigin = "anonymous";
+        img.onload = () => {
+          imageCache.set(normalizedSrc, img);
+          pendingImageLoads.delete(normalizedSrc);
+        };
+        img.onerror = () => {
+          pendingImageLoads.delete(normalizedSrc);
+        };
+        img.src = normalizedSrc;
+      }
+      return null;
+    };
 
     const actorBounds = (actor: ActorState, nextX = actor.x, nextY = actor.y) => ({
       x: nextX + actor.collisionOffsetX,
@@ -1629,18 +1653,18 @@ export default function GamePage() {
             
             if (obj.isBackground && obj.imageData) {
               // 背景图
-              const img = imageCache.get(obj.imageData);
+              const img = ensureImage(obj.imageData);
               if (img) {
                 ctx.drawImage(img, -obj.width / 2, -obj.height / 2, obj.width, obj.height);
               }
             } else if (obj.spriteData?.isFullImage && obj.spriteData.imageSrc) {
-              const img = imageCache.get(toAssetUrl(obj.spriteData.imageSrc));
+              const img = ensureImage(obj.spriteData.imageSrc);
               if (img) {
                 ctx.drawImage(img, -obj.width / 2, -obj.height / 2, obj.width, obj.height);
               }
             } else if (obj.spriteData && obj.spriteData.spriteImageSrc) {
               // 瓦片集素材
-              const img = imageCache.get(toAssetUrl(obj.spriteData.spriteImageSrc));
+              const img = ensureImage(obj.spriteData.spriteImageSrc);
               if (img) {
                 const sourceX = obj.spriteData.sx ?? obj.spriteData.x ?? 0;
                 const sourceY = obj.spriteData.sy ?? obj.spriteData.y ?? 0;
@@ -1674,7 +1698,10 @@ export default function GamePage() {
           }
 
           return obj.collision
-            ? obj.collision.y + getActorDepthOffset(playerRef.current)
+            ? obj.collision.y + Math.min(
+                obj.collision.height || getActorDepthOffset(playerRef.current),
+                getActorDepthOffset(playerRef.current) + 4,
+              )
             : obj.y + obj.height;
         };
 
