@@ -166,6 +166,12 @@
                     <option value="woodenFurniture">木质家具</option>
                     <option value="deskEssentials">办公桌物品</option>
                 </optgroup>
+                <optgroup label="综合素材">
+                    <option value="cityMegaSheet">城市综合大图 (CP_V1.0.4)</option>
+                    <option value="interiorScene">室内场景整图</option>
+                    <option value="urbanExampleScene">城市示例整图</option>
+                    <option value="emoteIcons">情绪装饰图标</option>
+                </optgroup>
             </select>
             
             <div class="info">
@@ -1169,6 +1175,68 @@
                 tileHeight: 30,
                 columns: 20,
                 rows: 20
+            },
+            // 综合城市与家具大图
+            cityMegaSheet: {
+                name: '城市综合大图',
+                image: '/CP_V1.1.0_nyknck/CP_V1.0.4_nyknck/CP_V1.0.4.png',
+                gridMode: true,
+                tileWidth: 32,
+                tileHeight: 32,
+                columns: 32,
+                rows: 32
+            },
+            // 室内整景
+            interiorScene: {
+                name: '室内场景整图',
+                image: null,
+                sprites: [
+                    {path: '/Inferior/inferior.png', name: '室内陈设'}
+                ]
+            },
+            // 城市示例整景
+            urbanExampleScene: {
+                name: '城市示例整图',
+                image: null,
+                sprites: [
+                    {path: '/225525db3ab3e4a8/Urban City Tileset Free Demo version Dlou Saiyan/Urban City Tileset Free Demo Version example 2.png', name: '城市示例'}
+                ]
+            },
+            // 情绪与提示装饰
+            emoteIcons: {
+                name: '情绪装饰图标',
+                image: null,
+                sprites: [
+                    {path: '/Icons emote/01 - Baloons.png', name: '气泡'},
+                    {path: '/Icons emote/02 - Happy.png', name: '开心'},
+                    {path: '/Icons emote/03 - Exclamation.png', name: '惊叹'},
+                    {path: '/Icons emote/04 - Tear.png', name: '眼泪'},
+                    {path: '/Icons emote/05 - Anger.png', name: '生气'},
+                    {path: '/Icons emote/06 - Idea.png', name: '灵感'},
+                    {path: '/Icons emote/07 - Question Mark.png', name: '问号'},
+                    {path: '/Icons emote/08 - Doki Doki.png', name: '心动'},
+                    {path: '/Icons emote/09 - Heartbreak.png', name: '心碎'},
+                    {path: '/Icons emote/10 - Dots.png', name: '省略号'},
+                    {path: '/Icons emote/11 - Sleeping.png', name: '睡眠'},
+                    {path: '/Icons emote/12 - Depression.png', name: '沮丧'},
+                    {path: '/Icons emote/13 - Note.png', name: '音符'},
+                    {path: '/Icons emote/14 - Injuried.png', name: '受伤'},
+                    {path: '/Icons emote/15 - Flowers.png', name: '花朵'},
+                    {path: '/Icons emote/16 - HappyB.png', name: '开心B'},
+                    {path: '/Icons emote/17 - ExclamationB.png', name: '惊叹B'},
+                    {path: '/Icons emote/18 - TearB.png', name: '眼泪B'},
+                    {path: '/Icons emote/19 - AngerB.png', name: '生气B'},
+                    {path: '/Icons emote/20 - IdeaB.png', name: '灵感B'},
+                    {path: '/Icons emote/21 - Question MarkB.png', name: '问号B'},
+                    {path: '/Icons emote/22 - Doki DokiB.png', name: '心动B'},
+                    {path: '/Icons emote/23 - HeartbreakB.png', name: '心碎B'},
+                    {path: '/Icons emote/24 - DotsB.png', name: '省略号B'},
+                    {path: '/Icons emote/25 - SleepingB.png', name: '睡眠B'},
+                    {path: '/Icons emote/26 - DepressionB.png', name: '沮丧B'},
+                    {path: '/Icons emote/27 - NoteB.png', name: '音符B'},
+                    {path: '/Icons emote/28 - InjuriedB.png', name: '受伤B'},
+                    {path: '/Icons emote/29 - FlowersB.png', name: '花朵B'}
+                ]
             }
         };
         
