@@ -3244,6 +3244,12 @@
                         const cachedImg = imageCache[obj.spriteData.spriteImageSrc];
                         if (cachedImg) {
                             obj.spriteData._cachedImage = cachedImg;
+                        } else if (!obj.spriteData._cachedImage) {
+                            const fallbackImg = new Image();
+                            fallbackImg.crossOrigin = 'anonymous';
+                            fallbackImg.onload = () => render();
+                            fallbackImg.src = obj.spriteData.spriteImageSrc;
+                            obj.spriteData._cachedImage = fallbackImg;
                         }
                     }
                     // 如果是组合对象，递归处理子对象
@@ -3319,6 +3325,7 @@
                                 img.onload = () => {
                                     obj.spriteData.image = img;
                                     console.log('✓ 加载完整图片素材');
+                                    render();
                                     resolve();
                                 };
                                 img.onerror = () => {
@@ -3564,6 +3571,12 @@
                         const cachedImg = imageCache[obj.spriteData.spriteImageSrc];
                         if (cachedImg) {
                             obj.spriteData._cachedImage = cachedImg;
+                        } else if (!obj.spriteData._cachedImage) {
+                            const fallbackImg = new Image();
+                            fallbackImg.crossOrigin = 'anonymous';
+                            fallbackImg.onload = () => render();
+                            fallbackImg.src = obj.spriteData.spriteImageSrc;
+                            obj.spriteData._cachedImage = fallbackImg;
                         }
                     }
                     // 如果是组合对象，递归处理子对象
@@ -3639,6 +3652,7 @@
                                 img.onload = () => {
                                     obj.spriteData.image = img;
                                     console.log('✓ 加载完整图片素材');
+                                    render();
                                     resolve();
                                 };
                                 img.onerror = () => {

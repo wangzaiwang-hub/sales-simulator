@@ -49,6 +49,7 @@ type MapData = {
   tileSize: number;
   tileset?: string;
   layers: Layer[];
+  objects?: any[];
   portalAreas?: Array<{
     id?: string;
     x: number;
@@ -271,6 +272,124 @@ function fixPlayerNpcOverlap(player: ActorState, npcs: NpcState[]) {
   }
 }
 
+// 检测并修复玩家与墙的碰撞
+function fixPlayerWallCollision(player: ActorState, map: MapData) {
+  if (!map?.objects) return;
+
+  const playerBounds = {
+    x: player.x + player.collisionOffsetX,
+    y: player.y + player.collisionOffsetY,
+    width: player.collisionWidth,
+    height: player.collisionHeight,
+  };
+
+  const checkCollision = (obj: any): boolean => {
+    if (obj.collision) {
+      const collisionBounds = {
+        x: obj.collision.x,
+        y: obj.collision.y,
+        width: obj.collision.width,
+        height: obj.collision.height,
+      };
+
+      if (
+        playerBounds.x < collisionBounds.x + collisionBounds.width &&
+        playerBounds.x + playerBounds.width > collisionBounds.x &&
+        playerBounds.y < collisionBounds.y + collisionBounds.height &&
+        playerBounds.y + playerBounds.height > collisionBounds.y
+      ) {
+        return true;
+      }
+    }
+
+    if (obj.isGroup && obj.children) {
+      for (const child of obj.children) {
+        if (checkCollision(child)) return true;
+      }
+    }
+
+    return false;
+  };
+
+  let isColliding = false;
+  for (const obj of map.objects) {
+    if (checkCollision(obj)) {
+      isColliding = true;
+      break;
+    }
+  }
+
+  if (isColliding) {
+    // 尝试在附近找一个安全位置
+    const tileSize = (map as any).gridSize || map.tileSize || 48;
+    const maxX = ((map as any).cols || map.width || 20) * tileSize - player.width;
+    const maxY = ((map as any).rows || map.height || 20) * tileSize - player.height;
+    
+    const tryPositions = [
+      { x: player.x, y: player.y - tileSize }, // 上
+      { x: player.x, y: player.y + tileSize }, // 下
+      { x: player.x - tileSize, y: player.y }, // 左
+      { x: player.x + tileSize, y: player.y }, // 右
+      { x: player.x - tileSize, y: player.y - tileSize }, // 左上
+      { x: player.x + tileSize, y: player.y - tileSize }, // 右上
+      { x: player.x - tileSize, y: player.y + tileSize }, // 左下
+      { x: player.x + tileSize, y: player.y + tileSize }, // 右下
+      { x: tileSize * 2, y: tileSize * 2 }, // 左上角安全区
+      { x: maxX - tileSize * 2, y: tileSize * 2 }, // 右上角安全区
+    ];
+
+    for (const pos of tryPositions) {
+      if (pos.x < 0 || pos.x > maxX || pos.y < 0 || pos.y > maxY) continue;
+
+      const testBounds = {
+        x: pos.x + player.collisionOffsetX,
+        y: pos.y + player.collisionOffsetY,
+        width: player.collisionWidth,
+        height: player.collisionHeight,
+      };
+
+      let testColliding = false;
+      for (const obj of map.objects) {
+        const testCheck = (o: any): boolean => {
+          if (o.collision) {
+            const cb = {
+              x: o.collision.x,
+              y: o.collision.y,
+              width: o.collision.width,
+              height: o.collision.height,
+            };
+            if (
+              testBounds.x < cb.x + cb.width &&
+              testBounds.x + testBounds.width > cb.x &&
+              testBounds.y < cb.y + cb.height &&
+              testBounds.y + testBounds.height > cb.y
+            ) {
+              return true;
+            }
+          }
+          if (o.isGroup && o.children) {
+            for (const child of o.children) {
+              if (testCheck(child)) return true;
+            }
+          }
+          return false;
+        };
+
+        if (testCheck(obj)) {
+          testColliding = true;
+          break;
+        }
+      }
+
+      if (!testColliding) {
+        player.x = pos.x;
+        player.y = pos.y;
+        return;
+      }
+    }
+  }
+}
+
 export default function GamePage() {
   const router = useRouter();
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -283,6 +402,7 @@ export default function GamePage() {
   const currentSharedMapIdRef = useRef<string | null>(null);
   const portalLockRef = useRef<string | null>(null);
   const teleportingRef = useRef(false);
+  const npcPortalLockRef = useRef<Set<string>>(new Set());
   const [status, setStatus] = useState("正在加载游戏...");
   const [username, setUsername] = useState("");
   const [userId, setUserId] = useState(""); // Current user's ID
@@ -418,6 +538,9 @@ export default function GamePage() {
           (mapPayload.map as any).cols || mapPayload.map.width || 20,
           (mapPayload.map as any).rows || mapPayload.map.height || 20,
         );
+        
+        // 修复玩家与墙的碰撞
+        fixPlayerWallCollision(playerRef.current, mapRef.current);
         
         // 修复玩家与NPC重叠问题
         fixPlayerNpcOverlap(playerRef.current, npcsRef.current);
@@ -674,6 +797,90 @@ export default function GamePage() {
       height: actor.collisionHeight,
     });
 
+    // NPC 传送门检测和传送
+    const checkNpcPortalTeleport = async (npc: NpcState) => {
+      const currentMap = getCurrentMap();
+      const portals = Array.isArray((currentMap as any)?.portalAreas) ? (currentMap as any).portalAreas : [];
+      if (portals.length === 0) return;
+
+      const npcBounds = actorBounds(npc);
+      
+      for (const portal of portals) {
+        const portalBounds = {
+          x: portal.x,
+          y: portal.y,
+          width: portal.width,
+          height: portal.height,
+        };
+
+        if (intersects(npcBounds, portalBounds)) {
+          const lockKey = `${npc.ownerUserId}:${portal.portalCode}`;
+          
+          // 如果这个 NPC 已经在这个传送门的锁定列表中，跳过
+          if (npcPortalLockRef.current.has(lockKey)) {
+            return;
+          }
+
+          // 添加锁定
+          npcPortalLockRef.current.add(lockKey);
+
+          try {
+            const token = getStoredAuthToken();
+            if (!token || !npc.ownerUserId) return;
+
+            // 获取目标地图信息
+            const targetResponse = await fetch(
+              `${apiUrl}/api/game/portal-target?portalCode=${portal.portalCode}&fromMapId=${currentSharedMapIdRef.current || ""}&currentPortalId=${portal.id || ""}`,
+              {
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                },
+              },
+            );
+
+            if (!targetResponse.ok) return;
+
+            const targetData = await targetResponse.json();
+            if (!targetData.spawn) return;
+
+            const spawnX = targetData.spawn.x;
+            const spawnY = targetData.spawn.y;
+            const targetMapKey = `shared:${targetData.mapId}`;
+
+            // 调用后端 API 传送 NPC
+            await fetch(`${apiUrl}/api/game/teleport-npc`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+              body: JSON.stringify({
+                npcUserId: npc.ownerUserId,
+                targetMapKey,
+                spawnX,
+                spawnY,
+                portalCode: portal.portalCode,
+              }),
+            });
+
+            // 从当前地图移除这个 NPC
+            npcsRef.current = npcsRef.current.filter(n => n.id !== npc.id);
+            
+            console.log(`🚪 NPC ${npc.name} 传送到地图 ${targetMapKey}`);
+          } catch (error) {
+            console.error("NPC portal teleport failed:", error);
+          } finally {
+            // 5秒后移除锁定
+            setTimeout(() => {
+              npcPortalLockRef.current.delete(lockKey);
+            }, 5000);
+          }
+
+          return;
+        }
+      }
+    };
+
     const intersects = (
       a: { x: number; y: number; width: number; height: number },
       b: { x: number; y: number; width: number; height: number },
@@ -688,7 +895,7 @@ export default function GamePage() {
       }
 
       // 检查是否是新格式的地图
-      const isNewFormat = (currentMap as any)?.objects && Array.isArray((currentMap as any)?.objects);
+      const isNewFormat = (currentMap as any)?.objects && Array.isArray((currentMap as any)?.objects) && (currentMap as any).objects.length > 0;
       
       if (isNewFormat) {
         // 新格式：检查对象的碰撞框和独立碰撞区域
@@ -793,7 +1000,7 @@ export default function GamePage() {
         return sources;
       }
 
-      const isNewFormat = (currentMap as any).objects && Array.isArray((currentMap as any).objects);
+      const isNewFormat = (currentMap as any).objects && Array.isArray((currentMap as any).objects) && (currentMap as any).objects.length > 0;
 
       if (isNewFormat) {
         const objects = (currentMap as any).objects as Array<{
@@ -930,7 +1137,13 @@ export default function GamePage() {
 
         playerRef.current.x = payload.spawn?.x ?? playerRef.current.x;
         playerRef.current.y = payload.spawn?.y ?? playerRef.current.y;
+        
+        // 修复玩家与墙的碰撞
+        fixPlayerWallCollision(playerRef.current, nextMap);
+        
+        // 修复玩家与NPC重叠
         fixPlayerNpcOverlap(playerRef.current, npcsRef.current);
+        
         portalLockRef.current = `${payload.mapId || "local"}:${payload.spawn?.portalId || payload.spawn?.portalCode || activePortal.portalCode}`;
         saveCurrentLocation(playerRef.current.x, playerRef.current.y);
         setPortalDebugMessage(`已传送到门 ${payload.spawn?.portalCode || activePortal.portalCode}（地图 ${payload.mapId || "local"}）`);
@@ -1268,6 +1481,9 @@ export default function GamePage() {
           if (!isBlockedByMap(nextBounds) && !isBlockedByNpcs(nextBounds, npc.id) && !intersects(nextBounds, actorBounds(playerRef.current))) {
             npc.x = nextX;
             npc.y = nextY;
+            
+            // 检测 NPC 是否进入传送门区域
+            checkNpcPortalTeleport(npc);
           } else {
             npc.isMoving = false;
           }
@@ -1292,7 +1508,7 @@ export default function GamePage() {
       }
 
       // 检查是否是新格式的地图（使用objects而不是layers的瓦片数据）
-      const isNewFormat = (currentMap as any).objects && Array.isArray((currentMap as any).objects);
+      const isNewFormat = (currentMap as any).objects && Array.isArray((currentMap as any).objects) && (currentMap as any).objects.length > 0;
       
       if (isNewFormat) {
         // 新格式：渲染对象
@@ -1513,7 +1729,7 @@ export default function GamePage() {
       drawMap();
       void tryPortalTeleport();
 
-      if (!((getCurrentMap() as any)?.objects && Array.isArray((getCurrentMap() as any)?.objects))) {
+      if (!((getCurrentMap() as any)?.objects && Array.isArray((getCurrentMap() as any)?.objects) && (getCurrentMap() as any).objects.length > 0)) {
         for (const npc of npcsRef.current) {
           drawActorSprite(npc, npc.spriteColumnOffset, npc.characterRow, npc.name, npc);
         }
@@ -1535,8 +1751,13 @@ export default function GamePage() {
         ]);
       }
 
-      await preloadImageSources([...collectMapImageSources(getCurrentMap()), ...collectCharacterImageSources()]);
-      setStatus("游戏已加载，使用方向键或 WASD 移动角色。靠近 NPC 后按 C，或直接点击 NPC 对话。");
+      try {
+        await preloadImageSources([...collectMapImageSources(getCurrentMap()), ...collectCharacterImageSources()]);
+        setStatus("游戏已加载，使用方向键或 WASD 移动角色。靠近 NPC 后按 C，或直接点击 NPC 对话。");
+      } catch (error) {
+        console.error('图片加载失败:', error);
+        setStatus("游戏已加载（部分图片加载失败），使用方向键或 WASD 移动角色。");
+      }
     };
 
     const onKeyDown = (event: KeyboardEvent) => {
