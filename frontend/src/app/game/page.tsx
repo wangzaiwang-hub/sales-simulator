@@ -207,7 +207,10 @@ function createPlayer(x: number, y: number): ActorState {
   };
 }
 
-const ACTOR_DEPTH_OFFSET = 8;
+const getActorDepthOffset = (actor?: Pick<ActorState, "collisionOffsetY" | "collisionHeight">) => {
+  if (!actor) return 8;
+  return Math.max(3, Math.round((actor.collisionOffsetY + actor.collisionHeight) * 0.25));
+};
 const GROUP_DEPTH_OFFSET = 3;
 
 function hydrateNpcRoster(npcs: NpcState[] | undefined, tileSize: number, mapWidth: number, mapHeight: number) {
@@ -1442,10 +1445,13 @@ export default function GamePage() {
         dy = normalizedY * playerRef.current.speed;
       }
 
-      if (dy < 0) playerRef.current.direction = "Back";
-      else if (dy > 0) playerRef.current.direction = "Front";
-      else if (dx < 0) playerRef.current.direction = "Left";
-      else if (dx > 0) playerRef.current.direction = "Right";
+      if (Math.abs(dx) >= Math.abs(dy)) {
+        if (dx < 0) playerRef.current.direction = "Left";
+        else if (dx > 0) playerRef.current.direction = "Right";
+      } else {
+        if (dy < 0) playerRef.current.direction = "Back";
+        else if (dy > 0) playerRef.current.direction = "Front";
+      }
 
       playerRef.current.isMoving = dx !== 0 || dy !== 0;
 
@@ -1667,7 +1673,9 @@ export default function GamePage() {
             return obj.collision ? obj.collision.y + GROUP_DEPTH_OFFSET : obj.y + obj.height;
           }
 
-          return obj.collision ? obj.collision.y + ACTOR_DEPTH_OFFSET : obj.y + obj.height;
+          return obj.collision
+            ? obj.collision.y + getActorDepthOffset(playerRef.current)
+            : obj.y + obj.height;
         };
 
         const actorSortY = (actor: ActorState) =>

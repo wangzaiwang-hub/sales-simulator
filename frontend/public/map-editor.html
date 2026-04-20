@@ -359,7 +359,9 @@
         // 预览模式
         let isPreviewMode = false;
         let showCollisionBoxes = false;
-        const PREVIEW_ACTOR_DEPTH_OFFSET = 8;
+        const getPreviewActorDepthOffset = () => {
+            return Math.max(3, Math.round((testCharacter.height / 2) * 0.5));
+        };
         const PREVIEW_GROUP_DEPTH_OFFSET = 3;
         
         // 测试角色
@@ -1777,7 +1779,7 @@
                         // 其他对象使用碰撞框顶部作为排序点
                         // 角色缩小为32x32后，使用更贴近脚部碰撞框的排序阈值
                         if (obj.collision) {
-                            sortY = obj.collision.y + PREVIEW_ACTOR_DEPTH_OFFSET;
+                            sortY = obj.collision.y + getPreviewActorDepthOffset();
                         } else {
                             sortY = obj.y + obj.height; // 没有碰撞框，使用对象底部
                         }
