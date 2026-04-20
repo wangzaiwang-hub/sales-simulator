@@ -303,32 +303,16 @@ export function buildMapNpcs(
   users: UserRecord[],
   playableMapKeys: string[] = [],
 ) {
-  const normalizedPlayableMapKeys = playableMapKeys.filter(Boolean);
-  const resolveEffectiveMapKey = (user: UserRecord) => {
-    const currentMapKey = user.currentMap || 'main';
-
-    if (
-      !normalizedPlayableMapKeys.length ||
-      normalizedPlayableMapKeys.includes(currentMapKey)
-    ) {
-      return currentMapKey;
-    }
-
-    const stableIndex = hashString(user.id || user.username) % normalizedPlayableMapKeys.length;
-    return normalizedPlayableMapKeys[stableIndex];
-  };
-
   const dynamicUsers = users
     .filter((user) => user.id !== currentUserId && user.isNpcVisible !== false)
     .filter((user) => {
-      const effectiveMapKey = resolveEffectiveMapKey(user);
-      const matches = effectiveMapKey === viewedMapKey;
+      const currentMapKey = user.currentMap || 'main';
+      const matches = currentMapKey === viewedMapKey;
       if (!matches) {
         console.log('[buildMapNpcs] 用户地图不匹配', {
           userId: user.id,
           username: user.username,
           currentMap: user.currentMap,
-          effectiveMapKey,
           viewedMapKey,
         });
       }
@@ -362,7 +346,7 @@ export function buildMapNpcs(
       return {
         ...npc,
         ownerUserId: user.id,
-        resolvedMapKey: resolveEffectiveMapKey(user),
+        resolvedMapKey: user.currentMap || viewedMapKey,
         hasStoredPosition,
         sourceType: 'secondme' as const,
       };

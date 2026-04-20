@@ -188,6 +188,19 @@ function getMapDimensions(map: any) {
   return { tileSize, mapWidth, mapHeight };
 }
 
+function getStablePlayableMapKey(userId: string, playableMapKeys: string[]) {
+  if (!playableMapKeys.length) {
+    return 'main';
+  }
+
+  const hash = Number.parseInt(
+    crypto.createHash('md5').update(userId).digest('hex').slice(0, 8),
+    16,
+  );
+
+  return playableMapKeys[hash % playableMapKeys.length];
+}
+
 function getBlockedAreasFromMap(map: any) {
   const blockedAreas: Array<{ x: number; y: number; width: number; height: number }> = [];
 
@@ -339,6 +352,62 @@ async function buildMapNpcPayload(userId: string, map: any, viewedMapKey: string
   );
   const playableMapKeys = await getPlayableSharedMapKeys();
   const playableMapKeySet = new Set(playableMapKeys);
+  const normalizedUsers = users.map((user) => {
+    const progress = progressByUserId.get(user.id);
+    const storedMap =
+      typeof progress?.currentMap === 'string' ? progress.currentMap.trim() : '';
+    const normalizedMap =
+      playableMapKeys.length === 0
+        ? storedMap || 'main'
+        : playableMapKeySet.has(storedMap)
+          ? storedMap
+          : getStablePlayableMapKey(user.id, playableMapKeys);
+
+    return {
+      ...user,
+      characterAppearance: progress?.characterAppearance ?? null,
+      currentMap: normalizedMap,
+      positionX: progress?.positionX ?? null,
+      positionY: progress?.positionY ?? null,
+      __hadStoredMap: storedMap,
+      __hadProgress: !!progress,
+    } as any;
+  });
+
+  await Promise.all(
+    normalizedUsers
+      .filter((user: any) => playableMapKeys.length > 0 && user.__hadStoredMap !== user.currentMap)
+      .map(async (user: any) => {
+        const existingProgress = progressByUserId.get(user.id);
+        if (existingProgress) {
+          await updateRows<Row>(
+            'GameProgress',
+            eq('userId', user.id),
+            { currentMap: user.currentMap },
+          );
+          progressByUserId.set(user.id, {
+            ...existingProgress,
+            currentMap: user.currentMap,
+          });
+          return;
+        }
+
+        const [created] = await insertRows<Row>('GameProgress', {
+          id: crypto.randomUUID(),
+          userId: user.id,
+          level: 1,
+          experience: 0,
+          gold: 0,
+          currentMap: user.currentMap,
+          positionX: 96,
+          positionY: 96,
+        });
+
+        if (created) {
+          progressByUserId.set(user.id, created);
+        }
+      }),
+  );
 
   console.log('[buildMapNpcPayload] 用户和地图数据', {
     totalUsers: users.length,
@@ -352,13 +421,7 @@ async function buildMapNpcPayload(userId: string, map: any, viewedMapKey: string
     mapHeight,
     userId,
     viewedMapKey,
-    users.map((user) => ({
-      ...user,
-      characterAppearance: progressByUserId.get(user.id)?.characterAppearance ?? null,
-      currentMap: progressByUserId.get(user.id)?.currentMap ?? 'main',
-      positionX: progressByUserId.get(user.id)?.positionX ?? null,
-      positionY: progressByUserId.get(user.id)?.positionY ?? null,
-    })) as any,
+    normalizedUsers as any,
     playableMapKeys,
   );
 
@@ -386,7 +449,6 @@ async function buildMapNpcPayload(userId: string, map: any, viewedMapKey: string
         const nextY = Math.round(npc.y);
 
         const hasValidStoredMap = !!prevMap && playableMapKeySet.has(prevMap);
-        const shouldAssignMap = !hasValidStoredMap;
         const shouldPersistPosition =
           !npc.hasStoredPosition ||
           !Number.isFinite(prevX) ||
@@ -394,7 +456,7 @@ async function buildMapNpcPayload(userId: string, map: any, viewedMapKey: string
           (prevMap === nextMapKey &&
             (Math.round(prevX) !== nextX || Math.round(prevY) !== nextY));
 
-        if (!shouldAssignMap && !shouldPersistPosition) {
+        if (!hasValidStoredMap && !shouldPersistPosition) {
           return;
         }
 
@@ -402,7 +464,6 @@ async function buildMapNpcPayload(userId: string, map: any, viewedMapKey: string
           'GameProgress',
           eq('userId', npc.ownerUserId),
           {
-            ...(shouldAssignMap ? { currentMap: nextMapKey } : {}),
             positionX: nextX,
             positionY: nextY,
           },
@@ -810,7 +871,6 @@ export const gameController = {
             'GameProgress',
             { ...eq('userId', npcUserId) },
             {
-              currentMap,
               positionX: Math.round(positionX),
               positionY: Math.round(positionY),
             },
