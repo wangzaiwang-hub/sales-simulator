@@ -669,8 +669,8 @@ export const gameController = {
         });
 
         const npcs = await buildMapNpcPayload(userId, map, `shared:${sharedMap.id}`);
-        const spawnX = destinationPortal.x + destinationPortal.width / 2 - 24;
-        const spawnY = destinationPortal.y + destinationPortal.height - 48;
+        const spawnX = destinationPortal.x + destinationPortal.width / 2 - 16;
+        const spawnY = destinationPortal.y + destinationPortal.height - 32;
 
         return res.json({
           isShared: true,

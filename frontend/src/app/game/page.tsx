@@ -1187,6 +1187,18 @@ export default function GamePage() {
 
         playerRef.current.x = payload.spawn?.x ?? playerRef.current.x;
         playerRef.current.y = payload.spawn?.y ?? playerRef.current.y;
+
+        const resolvedPlayerSpawn = findNearestWalkablePosition(
+          playerRef.current,
+          playerRef.current.x,
+          playerRef.current.y,
+          undefined,
+          false,
+        );
+        if (resolvedPlayerSpawn) {
+          playerRef.current.x = resolvedPlayerSpawn.x;
+          playerRef.current.y = resolvedPlayerSpawn.y;
+        }
         
         // 修复玩家与墙的碰撞
         fixPlayerWallCollision(playerRef.current, nextMap);
