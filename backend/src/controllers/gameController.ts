@@ -4,6 +4,13 @@ import { eq, inList, insertRows, order, selectMany, selectOne, updateRows } from
 import { buildMapNpcs } from '../config/npcs';
 import { buildLocalNpcReply, requestSecondMeDirectReply, requestSecondMeNpcReply } from '../lib/npcChat';
 import { syncSecondMeAvatarApiKey } from '../lib/secondmeAvatar';
+import {
+  extractMemorySummaries,
+  MEMORY_SUMMARY_SOURCE,
+  persistConversationMemorySummary,
+  splitChatRows,
+  syncConversationMemoryToSecondMeNote,
+} from '../lib/conversationMemory';
 
 type Row = Record<string, any>;
 type PortalArea = {
@@ -1002,15 +1009,18 @@ export const gameController = {
 
         // 加载聊天历史（用于上下文）
         let chatHistory: Array<{ role: string; content: string; createdAt: string }> = [];
+        let memorySummaries: string[] = [];
         try {
           const history = await selectMany<Row>('ChatMessage', {
-            select: 'message,reply,createdAt',
+            select: 'id,message,reply,createdAt,source,aiReasoning',
             ...eq('userId', visitorUserId),
             ...eq('targetUserId', ownerUserId),
           });
           
           if (history && history.length > 0) {
-            chatHistory = normalizeChatHistoryRows(history);
+            const { conversations, summaries } = splitChatRows(history as any);
+            chatHistory = normalizeChatHistoryRows(conversations);
+            memorySummaries = extractMemorySummaries(summaries as any);
             console.log(`📚 加载了 ${chatHistory.length} 条聊天历史用于上下文`);
           }
         } catch (error) {
@@ -1040,11 +1050,13 @@ export const gameController = {
                 visitorUserId,
                 visitorUser?.username || `player-${visitorUserId}`,
                 chatHistory, // 传递聊天历史
+                memorySummaries,
               )
             : await requestSecondMeDirectReply(
                 npcProfile,
                 message,
                 chatHistory, // 传递聊天历史
+                memorySummaries,
               )
             : null;
         } catch (error) {
@@ -1215,6 +1227,36 @@ export const gameController = {
             npcStatusAfter: evaluation.newActivityStatus,
           });
           console.log('✅ 聊天记录保存成功');
+
+          try {
+            const allRows = await selectMany<Row>('ChatMessage', {
+              select: 'id,userId,targetUserId,message,reply,createdAt,source,aiReasoning',
+              ...eq('userId', visitorUserId),
+              ...eq('targetUserId', ownerUserId),
+              order: order('createdAt', true),
+            });
+
+            const savedSummary = await persistConversationMemorySummary(allRows as any);
+            if (savedSummary?.reply) {
+              try {
+                await syncConversationMemoryToSecondMeNote(
+                  userNpc.secondmeAccessToken,
+                  userNpc.username,
+                  String(savedSummary.reply),
+                );
+              } catch (noteError) {
+                console.warn(
+                  'SecondMe note sync skipped:',
+                  noteError instanceof Error ? noteError.message : noteError,
+                );
+              }
+            }
+          } catch (memoryError) {
+            console.warn(
+              'Conversation memory summary skipped:',
+              memoryError instanceof Error ? memoryError.message : memoryError,
+            );
+          }
         } catch (error) {
           console.error('❌ Failed to save chat message:', error);
           // 不影响主流程，继续返回结果
@@ -1315,8 +1357,11 @@ export const gameController = {
       // 过滤出与目标用户的对话
       const filteredMessages = messages.filter(
         (msg) =>
-          (msg.userId === userId && msg.targetUserId === actualTargetUserId) ||
-          (msg.userId === actualTargetUserId && msg.targetUserId === userId)
+          msg.source !== MEMORY_SUMMARY_SOURCE &&
+          (
+            (msg.userId === userId && msg.targetUserId === actualTargetUserId) ||
+            (msg.userId === actualTargetUserId && msg.targetUserId === userId)
+          )
       );
 
       console.log(`✅ 过滤后有 ${filteredMessages.length} 条相关记录`);

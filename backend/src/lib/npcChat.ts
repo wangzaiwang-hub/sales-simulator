@@ -175,7 +175,8 @@ function waitForVisitorReply(wsUrl: string) {
 export async function requestSecondMeDirectReply(
   npc: ChatNpcProfile,
   userMessage: string,
-  chatHistory?: Array<{ role: string; content: string; createdAt: string }>
+  chatHistory?: Array<{ role: string; content: string; createdAt: string }>,
+  memorySummaries: string[] = [],
 ) {
   const accessToken = await resolveSecondMeAccessToken(npc.secondmeAccessToken);
 
@@ -204,6 +205,13 @@ export async function requestSecondMeDirectReply(
       { role: 'system', content: systemPrompt },
       { role: 'user', content: userMessage },
     ];
+  }
+
+  if (memorySummaries.length > 0) {
+    messages.splice(1, 0, {
+      role: 'system',
+      content: `[持久化记忆]\n${memorySummaries.slice(-3).join('\n\n')}`,
+    });
   }
 
   const response = await fetch('https://api.mindverse.com/gate/lab/api/secondme/chat/stream', {
@@ -271,7 +279,8 @@ export async function requestSecondMeNpcReply(
   userMessage: string,
   visitorId?: string,
   visitorName?: string,
-  chatHistory?: Array<{ role: string; content: string; createdAt: string }>
+  chatHistory?: Array<{ role: string; content: string; createdAt: string }>,
+  memorySummaries: string[] = [],
 ) {
   if (!npc.secondmeApiKey) {
     throw new Error('NPC 未配置 SecondMe avatar api key');
@@ -329,6 +338,10 @@ export async function requestSecondMeNpcReply(
     let contextStr = '';
     if (compressed.summary) {
       contextStr += `${compressed.summary}\n\n`;
+    }
+
+    if (memorySummaries.length > 0) {
+      contextStr += `持久化记忆：\n${memorySummaries.slice(-3).join('\n')}\n\n`;
     }
     
     // 添加最近的对话
