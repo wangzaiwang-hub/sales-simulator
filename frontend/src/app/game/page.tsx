@@ -874,7 +874,7 @@ export default function GamePage() {
             const targetMapKey = `shared:${targetData.mapId}`;
 
             // 调用后端 API 传送 NPC
-            await fetch(`${apiUrl}/api/game/teleport-npc`, {
+            const teleportResponse = await fetch(`${apiUrl}/api/game/teleport-npc`, {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
@@ -888,6 +888,11 @@ export default function GamePage() {
                 portalCode: portal.portalCode,
               }),
             });
+
+            if (!teleportResponse.ok) {
+              const errorPayload = await teleportResponse.json().catch(() => null);
+              throw new Error(errorPayload?.error || "NPC 传送持久化失败");
+            }
 
             const currentMapKey = currentSharedMapIdRef.current ? `shared:${currentSharedMapIdRef.current}` : null;
             if (targetMapKey === currentMapKey) {

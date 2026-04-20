@@ -1507,14 +1507,35 @@ export const gameController = {
         return res.status(400).json({ error: 'Missing required parameters' });
       }
 
-      // 更新 NPC 的地图位置
+      const nextPositionX = Number.isFinite(Number(spawnX)) ? Math.round(Number(spawnX)) : 96;
+      const nextPositionY = Number.isFinite(Number(spawnY)) ? Math.round(Number(spawnY)) : 96;
+
+      let progress = await selectOne<Row>('GameProgress', {
+        select: '*',
+        ...eq('userId', npcUserId),
+      });
+
+      if (!progress) {
+        const [created] = await insertRows<Row>('GameProgress', {
+          id: crypto.randomUUID(),
+          userId: npcUserId,
+          level: 1,
+          experience: 0,
+          gold: 0,
+          currentMap: targetMapKey,
+          positionX: nextPositionX,
+          positionY: nextPositionY,
+        });
+        progress = created ?? null;
+      }
+
       const [updated] = await updateRows<Row>(
         'GameProgress',
         { ...eq('userId', npcUserId) },
         {
           currentMap: targetMapKey,
-          positionX: spawnX ?? 96,
-          positionY: spawnY ?? 96,
+          positionX: nextPositionX,
+          positionY: nextPositionY,
         }
       );
 
@@ -1522,14 +1543,14 @@ export const gameController = {
         return res.status(404).json({ error: 'NPC progress not found' });
       }
 
-      console.log(`🚪 NPC ${npcUserId} 传送到地图 ${targetMapKey}，位置 (${spawnX}, ${spawnY})，传送门 ${portalCode}`);
+      console.log(`🚪 NPC ${npcUserId} 传送到地图 ${targetMapKey}，位置 (${nextPositionX}, ${nextPositionY})，传送门 ${portalCode}`);
 
       res.json({
         success: true,
         npcUserId,
         targetMapKey,
-        spawnX,
-        spawnY,
+        spawnX: nextPositionX,
+        spawnY: nextPositionY,
         portalCode,
       });
     } catch (error) {
