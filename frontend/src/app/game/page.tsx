@@ -671,14 +671,16 @@ export default function GamePage() {
         const payload = await response.json() as { mapKey?: string; npcs?: NpcState[] };
         if (cancelled) return;
 
-        currentMapKeyRef.current = payload.mapKey || currentMapKeyRef.current;
-        npcsRef.current = mergeNpcRoster(
-          npcsRef.current,
-          payload.npcs,
-          ((mapRef.current as any)?.gridSize || mapRef.current?.tileSize || 48),
-          ((mapRef.current as any)?.cols || mapRef.current?.width || 20),
-          ((mapRef.current as any)?.rows || mapRef.current?.height || 15),
-        );
+        const nextMapKey = payload.mapKey || currentMapKeyRef.current;
+        const tileSize = ((mapRef.current as any)?.gridSize || mapRef.current?.tileSize || 48);
+        const mapWidth = ((mapRef.current as any)?.cols || mapRef.current?.width || 20);
+        const mapHeight = ((mapRef.current as any)?.rows || mapRef.current?.height || 15);
+
+        npcsRef.current =
+          nextMapKey !== currentMapKeyRef.current
+            ? hydrateNpcRoster(payload.npcs, tileSize, mapWidth, mapHeight)
+            : mergeNpcRoster(npcsRef.current, payload.npcs, tileSize, mapWidth, mapHeight);
+        currentMapKeyRef.current = nextMapKey;
       } catch (error) {
         console.error("Failed to sync map roster:", error);
       }

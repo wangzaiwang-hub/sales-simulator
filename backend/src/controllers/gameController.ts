@@ -177,7 +177,8 @@ async function getPlayableSharedMapKeys() {
       map: parseStoredMap(sharedMap.mapData),
     }))
     .filter((entry) => entry.map && hasPlayablePortals(entry.map))
-    .map((entry) => `shared:${entry.id}`);
+    .map((entry) => `shared:${entry.id}`)
+    .sort((a, b) => a.localeCompare(b));
 }
 
 function getMapDimensions(map: any) {
@@ -337,6 +338,7 @@ async function buildMapNpcPayload(userId: string, map: any, viewedMapKey: string
     progressRows.map((progress) => [progress.userId, progress]),
   );
   const playableMapKeys = await getPlayableSharedMapKeys();
+  const playableMapKeySet = new Set(playableMapKeys);
 
   console.log('[buildMapNpcPayload] 用户和地图数据', {
     totalUsers: users.length,
@@ -383,15 +385,16 @@ async function buildMapNpcPayload(userId: string, map: any, viewedMapKey: string
         const nextX = Math.round(npc.x);
         const nextY = Math.round(npc.y);
 
-        const shouldPersist =
+        const hasValidStoredMap = !!prevMap && playableMapKeySet.has(prevMap);
+        const shouldAssignMap = !hasValidStoredMap;
+        const shouldPersistPosition =
           !npc.hasStoredPosition ||
           !Number.isFinite(prevX) ||
           !Number.isFinite(prevY) ||
-          prevMap !== nextMapKey ||
-          Math.round(prevX) !== nextX ||
-          Math.round(prevY) !== nextY;
+          (prevMap === nextMapKey &&
+            (Math.round(prevX) !== nextX || Math.round(prevY) !== nextY));
 
-        if (!shouldPersist) {
+        if (!shouldAssignMap && !shouldPersistPosition) {
           return;
         }
 
@@ -399,7 +402,7 @@ async function buildMapNpcPayload(userId: string, map: any, viewedMapKey: string
           'GameProgress',
           eq('userId', npc.ownerUserId),
           {
-            currentMap: nextMapKey,
+            ...(shouldAssignMap ? { currentMap: nextMapKey } : {}),
             positionX: nextX,
             positionY: nextY,
           },
