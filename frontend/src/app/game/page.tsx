@@ -863,8 +863,20 @@ export default function GamePage() {
               }),
             });
 
-            // 从当前地图移除这个 NPC
-            npcsRef.current = npcsRef.current.filter(n => n.id !== npc.id);
+            const currentMapKey = currentSharedMapIdRef.current ? `shared:${currentSharedMapIdRef.current}` : null;
+            if (targetMapKey === currentMapKey) {
+              const resolvedSpawn = findNearestWalkablePosition(npc, spawnX, spawnY, npc.id, true) || {
+                x: spawnX,
+                y: spawnY,
+              };
+              npc.x = resolvedSpawn.x;
+              npc.y = resolvedSpawn.y;
+              npc.anchorX = resolvedSpawn.x;
+              npc.anchorY = resolvedSpawn.y;
+            } else {
+              // 跨图传送才从当前地图移除
+              npcsRef.current = npcsRef.current.filter(n => n.id !== npc.id);
+            }
             
             console.log(`🚪 NPC ${npc.name} 传送到地图 ${targetMapKey}`);
           } catch (error) {
@@ -975,6 +987,44 @@ export default function GamePage() {
 
     const isBlockedByNpcs = (bounds: { x: number; y: number; width: number; height: number }, ignoreId?: string) =>
       npcsRef.current.some((npc) => npc.id !== ignoreId && intersects(bounds, actorBounds(npc)));
+
+    const findNearestWalkablePosition = (
+      actor: ActorState,
+      preferredX: number,
+      preferredY: number,
+      ignoreNpcId?: string,
+      avoidPlayer = false,
+    ) => {
+      const isWalkable = (x: number, y: number) => {
+        const bounds = actorBounds(actor, x, y);
+        if (isBlockedByMap(bounds)) return false;
+        if (isBlockedByNpcs(bounds, ignoreNpcId)) return false;
+        if (avoidPlayer && intersects(bounds, actorBounds(playerRef.current))) return false;
+        return true;
+      };
+
+      if (isWalkable(preferredX, preferredY)) {
+        return { x: preferredX, y: preferredY };
+      }
+
+      const step = 16;
+      const directions = [
+        [1, 0], [-1, 0], [0, 1], [0, -1],
+        [1, 1], [1, -1], [-1, 1], [-1, -1],
+      ];
+
+      for (let ring = 1; ring <= 8; ring += 1) {
+        for (const [dx, dy] of directions) {
+          const candidateX = preferredX + dx * ring * step;
+          const candidateY = preferredY + dy * ring * step;
+          if (isWalkable(candidateX, candidateY)) {
+            return { x: candidateX, y: candidateY };
+          }
+        }
+      }
+
+      return null;
+    };
 
     const getIntersectingPortal = () => {
       const currentMap = getCurrentMap();
@@ -1485,6 +1535,13 @@ export default function GamePage() {
             // 检测 NPC 是否进入传送门区域
             checkNpcPortalTeleport(npc);
           } else {
+            const unstuckPosition = findNearestWalkablePosition(npc, npc.x, npc.y, npc.id, true);
+            if (unstuckPosition) {
+              npc.x = unstuckPosition.x;
+              npc.y = unstuckPosition.y;
+              npc.anchorX = unstuckPosition.x;
+              npc.anchorY = unstuckPosition.y;
+            }
             npc.isMoving = false;
           }
         }
