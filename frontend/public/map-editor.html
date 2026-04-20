@@ -2673,27 +2673,34 @@
         }
 
         function handlePortalMouseDown(x, y) {
-            const layer = layers.find(l => l.id === currentLayer);
-            if (layer && layer.locked) {
-                return;
-            }
-
             const area = portalAreas.findLast?.(area =>
-                area.layer === currentLayer &&
+                (layers.find(l => l.id === area.layer)?.visible !== false) &&
                 x >= area.x && x <= area.x + area.width &&
                 y >= area.y && y <= area.y + area.height
             ) || [...portalAreas].reverse().find(area =>
-                area.layer === currentLayer &&
+                (layers.find(l => l.id === area.layer)?.visible !== false) &&
                 x >= area.x && x <= area.x + area.width &&
                 y >= area.y && y <= area.y + area.height
             );
 
             if (area) {
+                const areaLayer = layers.find(l => l.id === area.layer);
+                if (areaLayer && areaLayer.locked) {
+                    return;
+                }
+
                 selectedObject = area;
+                currentLayer = area.layer;
+                renderLayerList();
                 isDragging = true;
                 dragStart = {x: x - area.x, y: y - area.y};
                 updateObjectProps();
                 render();
+                return;
+            }
+
+            const layer = layers.find(l => l.id === currentLayer);
+            if (layer && layer.locked) {
                 return;
             }
 
@@ -2713,8 +2720,12 @@
                 return;
             }
             
-            const area = findAreaAtPosition(x, y);
+            const area = findAreaAtPosition(x, y, true);
             if (area) {
+                const areaLayer = layers.find(l => l.id === area.layer);
+                if (areaLayer && areaLayer.locked) {
+                    return;
+                }
                 const collection = getAreaCollection(area);
                 const index = collection.indexOf(area);
                 if (index !== -1) {
@@ -2724,6 +2735,8 @@
                     selectedObject = null;
                     updateObjectProps();
                 }
+                currentLayer = area.layer;
+                renderLayerList();
                 render();
                 return;
             }
