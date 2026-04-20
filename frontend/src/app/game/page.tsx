@@ -1856,6 +1856,13 @@ export default function GamePage() {
         const actorSortY = (actor: ActorState) =>
           actor.y + actor.collisionOffsetY + actor.collisionHeight;
 
+        const sortedObjects = [...objects].sort((a, b) => {
+          if ((a.layer ?? 0) !== (b.layer ?? 0)) {
+            return (a.layer ?? 0) - (b.layer ?? 0);
+          }
+          return ((a.y || 0) + (a.height || 0)) - ((b.y || 0) + (b.height || 0));
+        });
+
         const renderables: Array<
           | { type: "object"; sortY: number; layer: number; order: number; obj: any }
           | {
@@ -1872,7 +1879,7 @@ export default function GamePage() {
             }
         > = [];
 
-        objects.forEach((obj, index) => {
+        sortedObjects.forEach((obj, index) => {
           renderables.push({
             type: "object",
             obj,
@@ -1909,6 +1916,8 @@ export default function GamePage() {
           sortY: actorSortY(playerRef.current),
         });
 
+        renderables.sort((a, b) => a.sortY - b.sortY);
+
         renderables.sort((a, b) => {
           const aIsFlatObject =
             a.type === "object" &&
@@ -1930,7 +1939,7 @@ export default function GamePage() {
           if (a.type === "object" && b.type === "object" && a.layer !== b.layer) {
             return a.layer - b.layer;
           }
-          return a.sortY - b.sortY;
+          return (a.sortY - b.sortY) || (a.order - b.order);
         });
 
         renderables.forEach((item) => {
