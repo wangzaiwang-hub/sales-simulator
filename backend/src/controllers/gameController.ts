@@ -765,6 +765,67 @@ export const gameController = {
     }
   },
 
+  async syncNpcPositions(req: Request, res: Response) {
+    try {
+      const occupants = Array.isArray(req.body?.occupants) ? req.body.occupants : [];
+
+      if (!occupants.length) {
+        return res.json({ success: true, updated: 0 });
+      }
+
+      let updated = 0;
+
+      for (const occupant of occupants) {
+        const npcUserId = typeof occupant?.npcUserId === 'string' ? occupant.npcUserId.trim() : '';
+        const currentMap = typeof occupant?.currentMap === 'string' ? occupant.currentMap.trim() : '';
+        const positionX = Number(occupant?.positionX);
+        const positionY = Number(occupant?.positionY);
+
+        if (!npcUserId || !currentMap || !Number.isFinite(positionX) || !Number.isFinite(positionY)) {
+          continue;
+        }
+
+        let progress = await selectOne<Row>('GameProgress', {
+          select: '*',
+          ...eq('userId', npcUserId),
+        });
+
+        if (!progress) {
+          const [created] = await insertRows<Row>('GameProgress', {
+            id: crypto.randomUUID(),
+            userId: npcUserId,
+            level: 1,
+            experience: 0,
+            gold: 0,
+            currentMap,
+            positionX: Math.round(positionX),
+            positionY: Math.round(positionY),
+          });
+          progress = created ?? null;
+        } else {
+          await updateRows<Row>(
+            'GameProgress',
+            { ...eq('userId', npcUserId) },
+            {
+              currentMap,
+              positionX: Math.round(positionX),
+              positionY: Math.round(positionY),
+            },
+          );
+        }
+
+        if (progress) {
+          updated += 1;
+        }
+      }
+
+      return res.json({ success: true, updated });
+    } catch (error) {
+      console.error('Sync NPC positions error:', error);
+      return res.status(500).json({ error: 'Failed to sync npc positions' });
+    }
+  },
+
   async saveMap(req: Request, res: Response) {
     try {
       const userId = (req as any).userId; // 可能为 undefined（公开路由）

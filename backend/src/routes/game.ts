@@ -25,6 +25,9 @@ router.get('/map', gameController.getMap);
 // 获取当前地图应显示的用户/NPC名单
 router.get('/map-roster', gameController.getMapRoster);
 
+// 同步当前地图里 NPC/用户的最新位置
+router.post('/sync-npc-positions', gameController.syncNpcPositions);
+
 // 根据传送门编号获取目标地图
 router.get('/portal-target', gameController.getPortalTarget);
 

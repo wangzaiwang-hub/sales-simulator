@@ -404,6 +404,7 @@ export default function GamePage() {
   const saveTimerRef = useRef<number | null>(null);
   const currentSharedMapIdRef = useRef<string | null>(null);
   const currentMapKeyRef = useRef<string>("main");
+  const npcPositionSyncTimerRef = useRef<number | null>(null);
   const portalLockRef = useRef<string | null>(null);
   const teleportingRef = useRef(false);
   const npcPortalLockRef = useRef<Set<string>>(new Set());
@@ -466,6 +467,54 @@ export default function GamePage() {
     }, 30000);
 
     return () => clearInterval(interval);
+  }, [hasMap]);
+
+  useEffect(() => {
+    const token = getStoredAuthToken();
+    if (!token || !hasMap) return;
+
+    const syncNpcPositions = async () => {
+      const currentMap =
+        currentSharedMapIdRef.current
+          ? `shared:${currentSharedMapIdRef.current}`
+          : currentMapKeyRef.current;
+
+      const occupants = npcsRef.current
+        .filter((npc) => npc.ownerUserId)
+        .map((npc) => ({
+          npcUserId: npc.ownerUserId,
+          currentMap,
+          positionX: Math.round(npc.x),
+          positionY: Math.round(npc.y),
+        }));
+
+      if (!occupants.length) return;
+
+      try {
+        await fetch(`${apiUrl}/api/game/sync-npc-positions`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ occupants }),
+        });
+      } catch (error) {
+        console.error("Failed to sync npc positions:", error);
+      }
+    };
+
+    void syncNpcPositions();
+    npcPositionSyncTimerRef.current = window.setInterval(() => {
+      void syncNpcPositions();
+    }, 4000);
+
+    return () => {
+      if (npcPositionSyncTimerRef.current) {
+        window.clearInterval(npcPositionSyncTimerRef.current);
+        npcPositionSyncTimerRef.current = null;
+      }
+    };
   }, [hasMap]);
 
   // 自动滚动到最新消息
