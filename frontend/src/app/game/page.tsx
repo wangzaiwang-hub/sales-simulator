@@ -1621,7 +1621,7 @@ export default function GamePage() {
           renderables.push({
             type: "object",
             obj,
-            layer: obj.layer ?? 0,
+            layer: obj.isBackground ? -9999 : (obj.layer ?? 0),
             order: index,
             sortY: objectSortY(obj),
           });
@@ -1654,17 +1654,15 @@ export default function GamePage() {
           sortY: actorSortY(playerRef.current),
         });
 
+        // Align runtime depth sorting with the editor preview:
+        // 1. sort by sortY for all renderables
+        // 2. then preserve object-vs-object layer ordering only
+        renderables.sort((a, b) => a.sortY - b.sortY);
         renderables.sort((a, b) => {
           if (a.type === "object" && b.type === "object" && a.layer !== b.layer) {
             return a.layer - b.layer;
           }
-          if (a.sortY !== b.sortY) {
-            return a.sortY - b.sortY;
-          }
-          if (a.type !== b.type) {
-            return a.type === "object" ? -1 : 1;
-          }
-          return a.order - b.order;
+          return a.sortY - b.sortY;
         });
 
         renderables.forEach((item) => {
