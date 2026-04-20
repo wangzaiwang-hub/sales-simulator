@@ -252,9 +252,9 @@ function relocateNpcsAwayFromBlockedAreas(
   const isBlocked = (x: number, y: number, width: number, height: number) => {
     // 使用 NPC 的实际碰撞体积而不是整个精灵大小
     const collisionRect = {
-      x: x + 12, // collisionOffsetX
-      y: y + 32, // collisionOffsetY
-      width: 24, // collisionWidth
+      x: x + 8, // collisionOffsetX
+      y: y + 16, // collisionOffsetY
+      width: 16, // collisionWidth
       height: 16, // collisionHeight
     };
     return (
@@ -292,9 +292,9 @@ function relocateNpcsAwayFromBlockedAreas(
     npc.anchorY = resolvedY;
     // 记录实际的碰撞体积位置
     placed.push({
-      x: resolvedX + 12, // collisionOffsetX
-      y: resolvedY + 32, // collisionOffsetY
-      width: 24, // collisionWidth
+      x: resolvedX + 8, // collisionOffsetX
+      y: resolvedY + 16, // collisionOffsetY
+      width: 16, // collisionWidth
       height: 16, // collisionHeight
     });
   }

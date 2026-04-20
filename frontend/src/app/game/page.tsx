@@ -192,18 +192,18 @@ function createPlayer(x: number, y: number): ActorState {
   return {
     x,
     y,
-    width: 48,
-    height: 48,
+    width: 32,
+    height: 32,
     speed: 2.5,
     direction: "Front",
     currentFrame: 1,
     frameCount: 0,
     animationSpeed: 6,
     isMoving: false,
-    collisionWidth: 24,
+    collisionWidth: 16,
     collisionHeight: 16,
-    collisionOffsetX: 12,
-    collisionOffsetY: 32,
+    collisionOffsetX: 8,
+    collisionOffsetY: 16,
   };
 }
 
