@@ -334,7 +334,6 @@ export function buildMapNpcs(
       }
       return matches;
     })
-    .slice(0, 8)
     .map((user) => {
       const seed = buildDynamicUserSeed(user);
       const npc = createNpcFromSeed(
