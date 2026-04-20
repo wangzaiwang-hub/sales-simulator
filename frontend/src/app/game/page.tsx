@@ -207,6 +207,9 @@ function createPlayer(x: number, y: number): ActorState {
   };
 }
 
+const ACTOR_DEPTH_OFFSET = 8;
+const GROUP_DEPTH_OFFSET = 3;
+
 function hydrateNpcRoster(npcs: NpcState[] | undefined, tileSize: number, mapWidth: number, mapHeight: number) {
   if (!npcs?.length) {
     return [];
@@ -1661,10 +1664,10 @@ export default function GamePage() {
           }
 
           if (obj.isGroup) {
-            return obj.collision ? obj.collision.y + 3 : obj.y + obj.height;
+            return obj.collision ? obj.collision.y + GROUP_DEPTH_OFFSET : obj.y + obj.height;
           }
 
-          return obj.collision ? obj.collision.y + 15 : obj.y + obj.height;
+          return obj.collision ? obj.collision.y + ACTOR_DEPTH_OFFSET : obj.y + obj.height;
         };
 
         const actorSortY = (actor: ActorState) =>
