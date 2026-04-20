@@ -22,6 +22,9 @@ router.put('/progress', gameController.updateProgress);
 // 获取当前用户地图
 router.get('/map', gameController.getMap);
 
+// 获取当前地图应显示的用户/NPC名单
+router.get('/map-roster', gameController.getMapRoster);
+
 // 根据传送门编号获取目标地图
 router.get('/portal-target', gameController.getPortalTarget);
 
@@ -48,6 +51,9 @@ router.get('/npc-states', gameController.getNpcStates);
 
 // 更新所有NPC的状态（AI驱动）
 router.post('/update-npc-states', gameController.updateNpcStates);
+
+// NPC 传送到另一张地图
+router.post('/teleport-npc', gameController.teleportNpc);
 
 // 获取角色外观
 router.get('/character-appearance', gameController.getCharacterAppearance);

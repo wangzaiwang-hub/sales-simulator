@@ -591,6 +591,7 @@ export const gameController = {
         hasCustomMap: Boolean(map),
         isShared,
         mapId,
+        mapKey: viewedMapKey,
         map,
         npcs,
       });
@@ -675,6 +676,7 @@ export const gameController = {
         return res.json({
           isShared: true,
           mapId: sharedMap.id,
+          mapKey: `shared:${sharedMap.id}`,
           map,
           npcs,
           spawn: {
@@ -695,6 +697,71 @@ export const gameController = {
     } catch (error) {
       console.error('Get portal target error:', error);
       return res.status(500).json({ error: 'Failed to resolve portal target' });
+    }
+  },
+
+  async getMapRoster(req: Request, res: Response) {
+    try {
+      const userId = (req as any).userId;
+      const mapId = typeof req.query.mapId === 'string' ? req.query.mapId.trim() : '';
+      const requestedMapKey = typeof req.query.mapKey === 'string' ? req.query.mapKey.trim() : '';
+
+      let viewedMapKey = requestedMapKey || 'main';
+      let map: any = null;
+
+      if (mapId) {
+        const sharedMap = await selectOne<Row>('SharedMap', {
+          select: '*',
+          ...eq('id', mapId),
+        });
+
+        if (!sharedMap?.mapData) {
+          return res.status(404).json({ error: 'Map not found' });
+        }
+
+        map = parseStoredMap(sharedMap.mapData);
+        viewedMapKey = `shared:${sharedMap.id}`;
+      } else if (viewedMapKey.startsWith('shared:')) {
+        const sharedMapId = viewedMapKey.slice('shared:'.length);
+        const sharedMap = await selectOne<Row>('SharedMap', {
+          select: '*',
+          ...eq('id', sharedMapId),
+        });
+
+        if (!sharedMap?.mapData) {
+          return res.status(404).json({ error: 'Map not found' });
+        }
+
+        map = parseStoredMap(sharedMap.mapData);
+      } else {
+        const progress = await selectOne<Row>('GameProgress', {
+          select: '*',
+          ...eq('userId', userId),
+        });
+
+        if (!progress) {
+          return res.status(404).json({ error: 'Progress not found' });
+        }
+
+        viewedMapKey =
+          requestedMapKey ||
+          (typeof progress.currentMap === 'string' && progress.currentMap ? progress.currentMap : 'main');
+        map = parseStoredMap(progress.currentMap);
+      }
+
+      if (!map) {
+        map = getDefaultMap();
+      }
+
+      const npcs = await buildMapNpcPayload(userId, map, viewedMapKey);
+
+      return res.json({
+        mapKey: viewedMapKey,
+        npcs,
+      });
+    } catch (error) {
+      console.error('Get map roster error:', error);
+      return res.status(500).json({ error: 'Failed to get map roster' });
     }
   },
 

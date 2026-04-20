@@ -127,6 +127,7 @@ type MapResponse = {
   hasCustomMap: boolean;
   map: MapData | null;
   mapId?: string | null;
+  mapKey?: string | null;
   npcs?: NpcState[];
   error?: string;
 };
@@ -402,6 +403,7 @@ export default function GamePage() {
   const mapRef = useRef<MapData | null>(null);
   const saveTimerRef = useRef<number | null>(null);
   const currentSharedMapIdRef = useRef<string | null>(null);
+  const currentMapKeyRef = useRef<string>("main");
   const portalLockRef = useRef<string | null>(null);
   const teleportingRef = useRef(false);
   const npcPortalLockRef = useRef<Set<string>>(new Set());
@@ -534,6 +536,9 @@ export default function GamePage() {
 
         mapRef.current = mapPayload.map as MapData;
         currentSharedMapIdRef.current = mapPayload.mapId ?? null;
+        currentMapKeyRef.current =
+          mapPayload.mapKey ||
+          (mapPayload.mapId ? `shared:${mapPayload.mapId}` : me.gameProgress?.currentMap || "main");
         npcsRef.current = hydrateNpcRoster(
           mapPayload.npcs,
           (mapPayload.map as any).gridSize || mapPayload.map.tileSize || 48,
@@ -556,6 +561,53 @@ export default function GamePage() {
 
     void load();
   }, [router]);
+
+  useEffect(() => {
+    const token = getStoredAuthToken();
+    if (!token || !hasMap) return;
+
+    let cancelled = false;
+
+    const syncMapRoster = async () => {
+      try {
+        const params = new URLSearchParams();
+        if (currentSharedMapIdRef.current) {
+          params.set("mapId", currentSharedMapIdRef.current);
+        } else if (currentMapKeyRef.current) {
+          params.set("mapKey", currentMapKeyRef.current);
+        }
+
+        const response = await fetch(`${apiUrl}/api/game/map-roster?${params.toString()}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (!response.ok) return;
+
+        const payload = await response.json() as { mapKey?: string; npcs?: NpcState[] };
+        if (cancelled) return;
+
+        currentMapKeyRef.current = payload.mapKey || currentMapKeyRef.current;
+        npcsRef.current = hydrateNpcRoster(
+          payload.npcs,
+          ((mapRef.current as any)?.gridSize || mapRef.current?.tileSize || 48),
+          ((mapRef.current as any)?.cols || mapRef.current?.width || 20),
+          ((mapRef.current as any)?.rows || mapRef.current?.height || 15),
+        );
+      } catch (error) {
+        console.error("Failed to sync map roster:", error);
+      }
+    };
+
+    void syncMapRoster();
+    const interval = setInterval(() => {
+      void syncMapRoster();
+    }, 4000);
+
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
+  }, [hasMap]);
 
   useEffect(() => {
     if (!selectedNpcId) return;
@@ -1157,7 +1209,11 @@ export default function GamePage() {
         body: JSON.stringify({
           positionX,
           positionY,
-          ...(currentSharedMapIdRef.current ? { currentMap: `shared:${currentSharedMapIdRef.current}` } : {}),
+          ...(currentSharedMapIdRef.current
+            ? { currentMap: `shared:${currentSharedMapIdRef.current}` }
+            : currentMapKeyRef.current
+              ? { currentMap: currentMapKeyRef.current }
+              : {}),
         }),
       }).catch(() => {});
     };
@@ -1209,6 +1265,9 @@ export default function GamePage() {
         mapRef.current = nextMap;
         syncCanvasToMap(nextMap);
         currentSharedMapIdRef.current = payload.mapId ?? null;
+        currentMapKeyRef.current =
+          payload.mapKey ||
+          (payload.mapId ? `shared:${payload.mapId}` : currentMapKeyRef.current);
         npcsRef.current = hydrateNpcRoster(
           payload.npcs,
           (nextMap as any).gridSize || nextMap.tileSize || 48,
