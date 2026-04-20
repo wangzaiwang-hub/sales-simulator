@@ -207,10 +207,6 @@ function createPlayer(x: number, y: number): ActorState {
   };
 }
 
-const getActorDepthOffset = (actor?: Pick<ActorState, "collisionOffsetY" | "collisionHeight">) => {
-  if (!actor) return 8;
-  return Math.max(6, Math.round((actor.collisionOffsetY + actor.collisionHeight) * 0.35));
-};
 const GROUP_DEPTH_OFFSET = 3;
 
 function hydrateNpcRoster(npcs: NpcState[] | undefined, tileSize: number, mapWidth: number, mapHeight: number) {
@@ -1697,12 +1693,7 @@ export default function GamePage() {
             return obj.collision ? obj.collision.y + GROUP_DEPTH_OFFSET : obj.y + obj.height;
           }
 
-          return obj.collision
-            ? obj.collision.y + Math.min(
-                obj.collision.height || getActorDepthOffset(playerRef.current),
-                getActorDepthOffset(playerRef.current) + 4,
-              )
-            : obj.y + obj.height;
+          return obj.collision ? obj.collision.y + 15 : obj.y + obj.height;
         };
 
         const actorSortY = (actor: ActorState) =>
@@ -1724,20 +1715,11 @@ export default function GamePage() {
             }
         > = [];
 
-        const sortedObjects = [...objects].sort((a, b) => {
-          const aLayer = a.isBackground ? -9999 : (a.layer ?? 0);
-          const bLayer = b.isBackground ? -9999 : (b.layer ?? 0);
-          if (aLayer !== bLayer) {
-            return aLayer - bLayer;
-          }
-          return (a.y + a.height) - (b.y + b.height);
-        });
-
-        sortedObjects.forEach((obj, index) => {
+        objects.forEach((obj, index) => {
           renderables.push({
             type: "object",
             obj,
-            layer: obj.isBackground ? -9999 : (obj.layer ?? 0),
+            layer: obj.layer ?? 0,
             order: index,
             sortY: objectSortY(obj),
           });
@@ -1753,7 +1735,7 @@ export default function GamePage() {
             spriteColumnOffset: npc.spriteColumnOffset,
             characterRow: npc.characterRow,
             layer: 1,
-            order: sortedObjects.length + index,
+            order: objects.length + index,
             sortY: actorSortY(npc),
           });
         });
@@ -1770,10 +1752,6 @@ export default function GamePage() {
           sortY: actorSortY(playerRef.current),
         });
 
-        // Align runtime depth sorting with the editor preview:
-        // 1. sort by sortY for all renderables
-        // 2. then preserve object-vs-object layer ordering only
-        renderables.sort((a, b) => a.sortY - b.sortY);
         renderables.sort((a, b) => {
           if (a.type === "object" && b.type === "object" && a.layer !== b.layer) {
             return a.layer - b.layer;
