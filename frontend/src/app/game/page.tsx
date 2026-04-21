@@ -194,11 +194,19 @@ function toAvatarUrl(path?: string) {
 }
 
 async function fetchGameApi(path: string, init?: RequestInit) {
-  const primaryUrl = `${apiUrl}${path}`;
+  const useNetlifyProxy =
+    !apiUrl &&
+    typeof window !== "undefined" &&
+    window.location.hostname.endsWith("netlify.app");
+
+  const primaryUrl = useNetlifyProxy
+    ? `/.netlify/functions/api-proxy?path=${encodeURIComponent(path)}`
+    : `${apiUrl}${path}`;
+
   try {
     return await fetch(primaryUrl, init);
   } catch (error) {
-    if (apiUrl) {
+    if (apiUrl || useNetlifyProxy) {
       throw error;
     }
 
