@@ -1277,41 +1277,69 @@ export const gameController = {
 
         // 生成NPC回复
         let reply: string | null = null;
-        try {
-          const npcProfile = {
-            id: npcId,
-            name: userNpc.username,
-            profession: userNpc.profession,
-            interests: userNpc.interests,
-            personaSummary: userNpc.personaSummary,
-            npcBehavior: userNpc.npcBehavior,
-            sourceType: 'secondme' as const,
-            secondmeAccessToken: userNpc.secondmeAccessToken,
-            secondmeApiKey: userNpc.secondmeApiKey,
-          };
+        let replySource: 'secondme-visitor' | 'secondme-chat' | 'local-fallback' = 'local-fallback';
+        let secondMeSessionId: string | null = null;
+        let secondMeSessionSource: 'cached' | 'new' | 'reinit' | null = null;
+        const npcProfile = {
+          id: npcId,
+          name: userNpc.username,
+          profession: userNpc.profession,
+          interests: userNpc.interests,
+          personaSummary: userNpc.personaSummary,
+          npcBehavior: userNpc.npcBehavior,
+          sourceType: 'secondme' as const,
+          secondmeAccessToken: userNpc.secondmeAccessToken,
+          secondmeApiKey: userNpc.secondmeApiKey,
+        };
 
-          reply = userNpc.secondmeAccessToken
-            ? userNpc.secondmeApiKey
-            ? await requestSecondMeNpcReply(
-                npcProfile,
-                message,
-                visitorUserId,
-                visitorUser?.username || `player-${visitorUserId}`,
-                chatHistory, // 传递聊天历史
-                memorySummaries,
-              )
-            : await requestSecondMeDirectReply(
-                npcProfile,
-                message,
-                chatHistory, // 传递聊天历史
-                memorySummaries,
-              )
-            : null;
+        try {
+          if (userNpc.secondmeAccessToken && userNpc.secondmeApiKey) {
+            const visitorReply = await requestSecondMeNpcReply(
+              npcProfile,
+              message,
+              visitorUserId,
+              visitorUser?.username || `player-${visitorUserId}`,
+              chatHistory,
+              memorySummaries,
+            );
+            reply = visitorReply.reply;
+            replySource = 'secondme-visitor';
+            secondMeSessionId = visitorReply.sessionId;
+            secondMeSessionSource = visitorReply.sessionSource;
+          } else if (userNpc.secondmeAccessToken) {
+            reply = await requestSecondMeDirectReply(
+              npcProfile,
+              message,
+              chatHistory,
+              memorySummaries,
+            );
+            if (reply) {
+              replySource = 'secondme-chat';
+            }
+          }
         } catch (error) {
-          console.error('SecondMe NPC chat fallback:', error);
+          console.error('SecondMe NPC visitor chat failed, will try direct chat:', error);
         }
 
-        // 如果没有回复，使用本地回退
+        // visitor-chat 失败后再降级到 secondme direct chat，最后才走本地模板
+        if (!reply && userNpc.secondmeAccessToken) {
+          try {
+            reply = await requestSecondMeDirectReply(
+              npcProfile,
+              message,
+              chatHistory,
+              memorySummaries,
+            );
+            if (reply) {
+              replySource = 'secondme-chat';
+              console.warn('SecondMe NPC fallback path: visitor -> direct chat');
+            }
+          } catch (error) {
+            console.error('SecondMe NPC direct chat failed, will use local fallback:', error);
+          }
+        }
+
+        // 最后一层兜底：本地模板
         if (!reply) {
           reply = buildLocalNpcReply(
             {
@@ -1324,6 +1352,8 @@ export const gameController = {
             },
             message,
           );
+          replySource = 'local-fallback';
+          console.warn('SecondMe NPC fallback path: local template reply');
         }
 
         // 现在有了回复，使用AI评估关系变化
@@ -1452,7 +1482,6 @@ export const gameController = {
         }
 
         // 保存聊天记录到数据库
-        const replySource = userNpc.secondmeApiKey ? 'secondme-visitor' : 'secondme-chat';
         try {
           console.log('💾 正在保存聊天记录到数据库...');
           await insertRows<Row>('ChatMessage', {
@@ -1514,6 +1543,13 @@ export const gameController = {
         return res.json({
           reply,
           source: replySource,
+          secondMeDebug:
+            secondMeSessionId && secondMeSessionSource
+              ? {
+                  sessionId: secondMeSessionId,
+                  sessionSource: secondMeSessionSource,
+                }
+              : null,
           relationship: {
             affinity: newAffinity,
             familiarity: newFamiliarity,

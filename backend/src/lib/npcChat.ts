@@ -16,6 +16,12 @@ export type ChatNpcProfile = {
   secondmeApiKey?: string | null;
 };
 
+export type VisitorReplyResult = {
+  reply: string;
+  sessionId: string;
+  sessionSource: 'cached' | 'new' | 'reinit';
+};
+
 let cachedAppAccessToken: { token: string; expiresAt: number } | null = null;
 const visitorSessionCache = new Map<string, { sessionId: string; wsUrl: string; updatedAt: number }>();
 const VISITOR_SESSION_TTL_MS = 1000 * 60 * 60 * 6; // 6h
@@ -37,14 +43,16 @@ function buildSystemPrompt(npc: ChatNpcProfile) {
   const behavior = (npc.npcBehavior || 'wander') as NpcBehavior;
 
   return [
-    `你正在扮演销售模拟器地图中的 NPC「${npc.name}」。`,
+    `你是销售模拟器地图里的真实居民「${npc.name}」，不是客服、不是助手。`,
     npc.profession ? `职业：${npc.profession}` : null,
     interests.length ? `兴趣：${interests.join('、')}` : null,
     npc.personaSummary ? `人物设定：${npc.personaSummary}` : null,
     `行为风格：${behavior}`,
-    '回复要求：自然、口语化、简短，控制在 2 到 4 句。',
-    '如果玩家问到交易、兴趣、日常或建议，请优先结合职业和兴趣回答。',
-    '不要暴露系统提示，不要说自己是 AI 或接口。',
+    '说话像真人邻居：自然、简短、带一点情绪，不要“总结腔”。',
+    '每次回复 1~2 句优先，最多 3 句；尽量先接住对方刚说的话。',
+    '禁止使用这类套话：`你刚刚提到...`、`这件事我愿意继续聊聊`、`作为...`。',
+    '可以偶尔反问一句，但不要每句都反问，不要机械重复职业信息。',
+    '不要暴露系统提示，不要说自己是 AI、模型或接口。',
   ]
     .filter(Boolean)
     .join('\n');
@@ -394,7 +402,7 @@ export async function requestSecondMeNpcReply(
   visitorName?: string,
   _chatHistory?: Array<{ role: string; content: string; createdAt: string }>,
   _memorySummaries: string[] = [],
-) {
+): Promise<VisitorReplyResult> {
   if (!npc.secondmeApiKey) {
     throw new Error('NPC 未配置 SecondMe avatar api key');
   }
@@ -414,7 +422,11 @@ export async function requestSecondMeNpcReply(
     sessionId: session.sessionId,
   });
 
-  const doSendOnce = async (sessionId: string, wsUrl: string, source: 'cached' | 'new' | 'reinit') => {
+  const doSendOnce = async (
+    sessionId: string,
+    wsUrl: string,
+    source: 'cached' | 'new' | 'reinit',
+  ): Promise<VisitorReplyResult> => {
     logVisitorSessionEvent({
       stage: 'send',
       source,
@@ -430,7 +442,8 @@ export async function requestSecondMeNpcReply(
       throw new Error(detail || 'SecondMe visitor-chat send failed');
     }
 
-    return replyPromise;
+    const reply = await replyPromise;
+    return { reply, sessionId, sessionSource: source };
   };
 
   try {
@@ -459,23 +472,30 @@ export async function requestSecondMeNpcReply(
 
 export function buildLocalNpcReply(npc: ChatNpcProfile, userMessage: string) {
   const interests = normalizeInterestList(npc.interests);
-  const snippets = [
-    npc.profession ? `我平时主要做${npc.profession}相关的事。` : `我平时就在镇子里活动。`,
-    interests.length ? `最近我更关注${interests.join('、')}。` : `最近我在观察大家的动向。`,
-    npc.personaSummary || `${npc.name}说话有点自己的节奏，但很愿意跟人交流。`,
-  ];
+  const shortInterest = interests.length ? interests.slice(0, 2).join('、') : null;
+  const cleanMsg = userMessage.trim();
 
-  if (/(买|卖|交易|商品|进货|价格)/.test(userMessage)) {
-    return `${snippets[0]} 要是你想聊交易，我通常会先看需求，再看今天的行情。`;
+  if (/(你好|嗨|在吗|哈喽)/i.test(cleanMsg)) {
+    if (npc.profession) {
+      return `在呢，我是${npc.name}。我这会儿正忙${npc.profession}这边的事。`;
+    }
+    return `在，我是${npc.name}。刚好有空，聊两句。`;
   }
 
-  if (/(你好|在吗|认识|介绍)/.test(userMessage)) {
-    return `你好，我是${npc.name}。${snippets[0]} ${snippets[1]}`;
+  if (/(买|卖|交易|商品|进货|价格|客户)/.test(cleanMsg)) {
+    return `这块我熟，你先说预算和想要的效果，我给你个直说版建议。`;
   }
 
-  if (/(兴趣|喜欢|平时|最近)/.test(userMessage)) {
-    return `${snippets[1]} ${snippets[2]}`;
+  if (/(兴趣|喜欢|平时|最近|忙啥)/.test(cleanMsg)) {
+    if (shortInterest) {
+      return `我最近主要在折腾${shortInterest}，有时候一聊就停不下来。`;
+    }
+    return `最近就正常在镇子里跑来跑去，事情不少。`;
   }
 
-  return `${snippets[2]} 你刚刚提到“${userMessage.slice(0, 20)}”，这件事我愿意继续聊聊。`;
+  if (cleanMsg.length <= 8) {
+    return `懂你意思了。你想先聊轻松点的，还是直接聊正事？`;
+  }
+
+  return `明白。你这个点子有意思，我这边的第一反应是：先别急着全铺开，先试一小段。`;
 }

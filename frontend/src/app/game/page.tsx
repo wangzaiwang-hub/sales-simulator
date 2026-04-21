@@ -527,7 +527,7 @@ export default function GamePage() {
       if (!occupants.length) return;
 
       try {
-        await fetch(`${apiUrl}/api/game/sync-npc-positions`, {
+        const response = await fetch(`${apiUrl}/api/game/sync-npc-positions`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -535,6 +535,11 @@ export default function GamePage() {
           },
           body: JSON.stringify({ occupants }),
         });
+
+        if (!response.ok) {
+          const detail = await response.text();
+          throw new Error(`sync-npc-positions ${response.status}: ${detail || "unknown error"}`);
+        }
       } catch (error) {
         console.error("Failed to sync npc positions:", error);
       }
@@ -2126,6 +2131,14 @@ export default function GamePage() {
       const data = await response.json();
       if (!response.ok) {
         throw new Error(data.error || "NPC 回复失败");
+      }
+      if (data?.secondMeDebug?.sessionId) {
+        console.log(
+          `🟣 会话调试: sessionId=${data.secondMeDebug.sessionId} source=${data.secondMeDebug.sessionSource || "unknown"} npc=${selectedNpc.id}`,
+        );
+      }
+      if (data?.source === "local-fallback") {
+        console.warn("⚠️ 当前回复来自本地兜底模板，不是 SecondMe 实时回复");
       }
 
       // 添加NPC回复，包含关系信息
