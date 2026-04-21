@@ -12,13 +12,39 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-const corsOrigin = process.env.CORS_ORIGIN || process.env.FRONTEND_URL || 'https://sales-simulator-zeta.vercel.app';
-console.log('CORS origin:', corsOrigin);
+const rawCorsOrigins =
+  process.env.CORS_ORIGIN ||
+  process.env.FRONTEND_URL ||
+  'https://sales-simulator-zeta.vercel.app,https://xiaoguan.netlify.app';
 
-app.use(cors({
-  origin: corsOrigin,
-  credentials: true
-}));
+const allowedOrigins = rawCorsOrigins
+  .split(',')
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
+console.log('CORS allowed origins:', allowedOrigins.join(', '));
+
+app.use(
+  cors({
+    origin(origin, callback) {
+      if (!origin) {
+        return callback(null, true);
+      }
+
+      const exactMatch = allowedOrigins.includes(origin);
+      const netlifyMatch = /^https:\/\/[a-z0-9-]+\.netlify\.app$/i.test(origin);
+      const vercelMatch = /^https:\/\/[a-z0-9-]+\.vercel\.app$/i.test(origin);
+      const localhostMatch = /^https?:\/\/localhost(?::\d+)?$/i.test(origin);
+
+      if (exactMatch || netlifyMatch || vercelMatch || localhostMatch) {
+        return callback(null, true);
+      }
+
+      return callback(new Error(`CORS blocked origin: ${origin}`));
+    },
+    credentials: true,
+  }),
+);
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 

@@ -817,7 +817,13 @@ export const gameController = {
         map = getDefaultMap();
       }
 
-      const npcs = await buildMapNpcPayload(userId, map, viewedMapKey);
+      let npcs: any[] = [];
+      try {
+        npcs = await buildMapNpcPayload(userId, map, viewedMapKey);
+      } catch (npcError) {
+        console.error('Get map roster: buildMapNpcPayload failed, fallback to empty roster:', npcError);
+        npcs = [];
+      }
 
       return res.json({
         mapKey: viewedMapKey,

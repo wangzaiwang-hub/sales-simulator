@@ -10,6 +10,9 @@ import { RpgButton, RpgKeyBadge, RpgLinkButton, RpgPromptPanel } from "@/compone
 import { getStoredAuthToken } from "@/lib/auth-storage";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "";
+const fallbackApiUrl =
+  process.env.NEXT_PUBLIC_FALLBACK_API_URL?.trim() ||
+  "https://backend-production-1dc96.up.railway.app";
 const CGS_CHARACTER_SPRITE = "CGS_RU_HouseFree/img/characters/CGS_Char_1.png";
 const PLAYER_SPRITE_COLUMN_OFFSET = 0;
 const PLAYER_CHARACTER_ROW = 4;
@@ -188,6 +191,21 @@ function toAvatarUrl(path?: string) {
     return path;
   }
   return toAssetUrl(path);
+}
+
+async function fetchGameApi(path: string, init?: RequestInit) {
+  const primaryUrl = `${apiUrl}${path}`;
+  try {
+    return await fetch(primaryUrl, init);
+  } catch (error) {
+    if (apiUrl) {
+      throw error;
+    }
+
+    const fallbackUrl = `${fallbackApiUrl}${path}`;
+    console.warn(`Primary API request failed, fallback to direct backend: ${fallbackUrl}`);
+    return fetch(fallbackUrl, init);
+  }
 }
 
 function createPlayer(x: number, y: number): ActorState {
@@ -527,7 +545,7 @@ export default function GamePage() {
       if (!occupants.length) return;
 
       try {
-        const response = await fetch(`${apiUrl}/api/game/sync-npc-positions`, {
+        const response = await fetchGameApi(`/api/game/sync-npc-positions`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -667,7 +685,7 @@ export default function GamePage() {
           params.set("mapKey", currentMapKeyRef.current);
         }
 
-        const response = await fetch(`${apiUrl}/api/game/map-roster?${params.toString()}`, {
+        const response = await fetchGameApi(`/api/game/map-roster?${params.toString()}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 

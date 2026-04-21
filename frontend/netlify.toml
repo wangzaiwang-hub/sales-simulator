@@ -6,3 +6,4 @@
   from = "/api/*"
   to = "https://backend-production-1dc96.up.railway.app/api/:splat"
   status = 200
+  force = true
