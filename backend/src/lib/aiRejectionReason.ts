@@ -14,6 +14,9 @@ type FallbackRejectionOptions = {
   userMessage?: string;
   npcName?: string;
   isRepeatReject?: boolean;
+  moodReason?: string | null;
+  activityDetail?: string | null;
+  recentStatusEvent?: string | null;
 };
 
 // 构建AI拒绝理由提示词
@@ -28,6 +31,9 @@ export function buildRejectionPrompt(
   currentState: {
     currentMood?: string;
     activityStatus?: string;
+    moodReason?: string;
+    activityDetail?: string;
+    recentStatusEvent?: string;
   },
   rejectionContext: {
     isFirstMeeting: boolean;
@@ -38,7 +44,7 @@ export function buildRejectionPrompt(
   recentHistory: RejectionHistoryMessage[] = [],
 ): string {
   const { profession, interests, personaSummary, personalityTraits } = npcPersonality;
-  const { currentMood, activityStatus } = currentState;
+  const { currentMood, activityStatus, moodReason, activityDetail, recentStatusEvent } = currentState;
   const { isFirstMeeting, relationshipType, reason } = rejectionContext;
   
   // 解析性格特征
@@ -84,6 +90,9 @@ ${traits ? `- 性格特征：
 【当前状态】
 - 心情：${currentMood || '平静'}
 - 正在做：${activityStatus || '闲逛'}
+- 手头细节：${activityDetail || '没有特别具体的安排'}
+- 心情原因：${moodReason || '暂时说不上来，就是不太想聊'}
+- 刚发生的事：${recentStatusEvent || '没有特别大的事'}
 - 关系：${isFirstMeeting ? '陌生人（第一次见面）' : relationshipType || '陌生人'}
 
 【情况】
@@ -103,10 +112,12 @@ ${recentDialogue}
 1. 要符合你的性格特征
 2. 要真实、自然，不要太生硬
 3. 可以简短，也可以稍微解释一下原因，但要接住对方刚刚那句话
-4. 不要太冷漠，保持基本的礼貌
-5. 根据你的性格，可以直接一点或委婉一点
-6. 不要输出任何标题、分点、括号说明、设定复述
-7. 不要重复固定句式，例如“改天再聊吧”连续说两次
+4. 如果你是因为累、烦、忙、焦虑才不想聊，要直接说出手头细节或刚发生的事
+5. 让人感觉你是真的在生活里被打断，而不是系统弹出一个拒绝模板
+6. 不要太冷漠，保持基本的礼貌
+7. 根据你的性格，可以直接一点或委婉一点
+8. 不要输出任何标题、分点、括号说明、设定复述
+9. 不要重复固定句式，例如“改天再聊吧”连续说两次
 
 请直接回复拒绝的话（不要JSON，不要解释）：
 
@@ -227,8 +238,14 @@ export function fallbackRejectionReason(
 ): string {
   const message = options.userMessage?.trim() || '';
   const repeated = options.isRepeatReject;
+  const activityDetail = options.activityDetail?.trim();
+  const moodReason = options.moodReason?.trim();
+  const recentStatusEvent = options.recentStatusEvent?.trim();
 
   if (/怎么了|咋了|怎么回事|怎么啦/.test(message)) {
+    if (moodReason) {
+      return repeated ? `${moodReason} 我还是想先自己消化一下。` : moodReason;
+    }
     if (reason === 'tired') {
       return repeated ? '还是有点撑不住，想先歇一会儿，晚点再说。' : '没什么大事，就是我现在有点累，想先缓一缓。';
     }
@@ -241,6 +258,11 @@ export function fallbackRejectionReason(
   }
 
   if (/在干嘛|做什么|忙什么/.test(message)) {
+    if (activityDetail) {
+      return recentStatusEvent
+        ? `我这会儿还在${activityDetail}，${recentStatusEvent}，所以想先把这点做完。`
+        : `我这会儿还在${activityDetail}，想先把手头这点收一收。`;
+    }
     if (reason === 'busy') {
       return '我这边正忙着呢，先不细聊了。';
     }

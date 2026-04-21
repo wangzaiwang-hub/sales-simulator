@@ -66,8 +66,11 @@ export type MapNpcPayload = {
   roamRadius: number;
   // 新增情绪和性格字段
   personalityTraits: PersonalityTraits;
-  currentMood: Mood;
-  activityStatus: ActivityStatus;
+  currentMood: string;
+  activityStatus: string;
+  moodReason?: string | null;
+  activityDetail?: string | null;
+  recentStatusEvent?: string | null;
   socialEnergy: number;
   stressLevel: number;
   interactingWithNpcId?: string | null;
@@ -87,8 +90,11 @@ type UserRecord = {
   npcBehavior?: string | null;
   isNpcVisible?: boolean | null;
   personalityTraits?: PersonalityTraits | string | null;
-  currentMood?: Mood | null;
-  activityStatus?: ActivityStatus | null;
+  currentMood?: string | null;
+  activityStatus?: string | null;
+  moodReason?: string | null;
+  activityDetail?: string | null;
+  recentStatusEvent?: string | null;
   characterAppearance?: CharacterAppearance | string | null;
   currentMap?: string | null;
   positionX?: number | null;
@@ -145,6 +151,23 @@ function normalizeInterests(value: UserRecord['interests']) {
   }
 
   return [];
+}
+
+function normalizeStoredPersonalityTraits(value: UserRecord['personalityTraits']) {
+  if (!value) {
+    return null;
+  }
+
+  if (typeof value === 'string') {
+    try {
+      const parsed = JSON.parse(value) as PersonalityTraits;
+      return parsed;
+    } catch {
+      return null;
+    }
+  }
+
+  return value;
 }
 
 const USER_PROFESSIONS = ['创作者', '设计师', '独立开发者', '产品经理', '研究员', '讲述者'];
@@ -349,6 +372,12 @@ export function buildMapNpcs(
         resolvedMapKey: user.currentMap || viewedMapKey,
         hasStoredPosition,
         sourceType: 'secondme' as const,
+        personalityTraits: normalizeStoredPersonalityTraits(user.personalityTraits) || npc.personalityTraits,
+        currentMood: user.currentMood || npc.currentMood,
+        activityStatus: user.activityStatus || npc.activityStatus,
+        moodReason: user.moodReason || null,
+        activityDetail: user.activityDetail || null,
+        recentStatusEvent: user.recentStatusEvent || null,
       };
     });
 

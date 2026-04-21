@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
 import { useRouter } from "next/navigation";
-import type { PersonalityTraits, Mood, ActivityStatus } from "@/types/npc-emotions";
+import type { PersonalityTraits } from "@/types/npc-emotions";
 import { getStatusDisplayText, getStatusColor } from "@/types/npc-emotions";
 import { getRelationshipText, getAffinityText, getAffinityColor, getFamiliarityText } from "@/utils/relationship";
 import { AssetCounter, AssetIconButton } from "@/components/game/mobile-casual-ui";
@@ -118,8 +118,11 @@ type NpcState = ActorState & {
   roamRadius: number;
   // 新增情绪和性格字段
   personalityTraits?: PersonalityTraits;
-  currentMood?: Mood;
-  activityStatus?: ActivityStatus;
+  currentMood?: string;
+  activityStatus?: string;
+  moodReason?: string | null;
+  activityDetail?: string | null;
+  recentStatusEvent?: string | null;
   socialEnergy?: number;
   stressLevel?: number;
   interactingWithNpcId?: string | null;
@@ -533,18 +536,33 @@ export default function GamePage() {
 
     const updateNpcStates = async () => {
       try {
-        const response = await fetch(`${apiUrl}/api/game/npc-states-public`);
+        const response = await fetchGameApi(`/api/game/npc-states-public`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
 
         if (!response.ok) return;
 
-        const data = await response.json() as { states: Array<{ npcId: string; npcName: string; currentMood: string; activityStatus: string }> };
+        const data = await response.json() as {
+          states: Array<{
+            npcId: string;
+            npcName: string;
+            currentMood: string;
+            activityStatus: string;
+            moodReason?: string | null;
+            activityDetail?: string | null;
+            recentStatusEvent?: string | null;
+          }>;
+        };
 
         // 更新NPC状态
         for (const state of data.states) {
           const npc = npcsRef.current.find(n => n.id === state.npcId);
           if (npc) {
-            npc.currentMood = state.currentMood as Mood;
-            npc.activityStatus = state.activityStatus as ActivityStatus;
+            npc.currentMood = state.currentMood;
+            npc.activityStatus = state.activityStatus;
+            npc.moodReason = state.moodReason ?? null;
+            npc.activityDetail = state.activityDetail ?? null;
+            npc.recentStatusEvent = state.recentStatusEvent ?? null;
           }
         }
       } catch (error) {
@@ -1583,7 +1601,7 @@ export default function GamePage() {
       let statusColor: string | undefined;
       
       if (npc && npc.activityStatus && npc.currentMood) {
-        statusText = getStatusDisplayText(npc.activityStatus, npc.currentMood);
+        statusText = getStatusDisplayText(npc.activityStatus, npc.currentMood, npc.activityDetail || undefined);
         statusColor = getStatusColor(npc.activityStatus);
       }
 

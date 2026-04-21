@@ -4,6 +4,7 @@ import { eq, inList, insertRows, order, selectMany, selectOne, updateRows } from
 import { buildMapNpcs } from '../config/npcs';
 import { buildLocalNpcReply, requestSecondMeDirectReply, requestSecondMeNpcReply } from '../lib/npcChat';
 import { syncSecondMeAvatarApiKey } from '../lib/secondmeAvatar';
+import { mergeNpcStatusMemory, readNpcStatusMemory } from '../lib/npcStatusMemory';
 import {
   extractMemorySummaries,
   MEMORY_SUMMARY_SOURCE,
@@ -50,6 +51,137 @@ function normalizePersonalityTraits(raw: unknown) {
     extraversion: normalizeTraitValue(source.extraversion),
     agreeableness: normalizeTraitValue(source.agreeableness),
     neuroticism: normalizeTraitValue(source.neuroticism),
+  };
+}
+
+function normalizeInterestList(value: unknown) {
+  if (Array.isArray(value)) {
+    return value.map((item) => String(item).trim()).filter(Boolean);
+  }
+
+  if (typeof value === 'string') {
+    return value
+      .split(/[、,，|/]/)
+      .map((item) => item.trim())
+      .filter(Boolean);
+  }
+
+  return [] as string[];
+}
+
+function shortenText(value: unknown, max = 16) {
+  const text = String(value || '').replace(/\s+/g, ' ').trim();
+  if (!text) {
+    return '';
+  }
+
+  return text.length > max ? `${text.slice(0, max)}…` : text;
+}
+
+function classifyMessageTone(message: string) {
+  const normalized = message.trim();
+
+  return {
+    caring:
+      /(关心|怎么了|咋了|辛苦|累不累|还好吗|心情|陪你|别难过|抱抱|心疼|照顾|休息|别太累|揉揉|陪你聊|哄你)/.test(
+        normalized,
+      ),
+    flirty:
+      /(想你|喜欢你|心里跑了一天|撩|亲亲|抱抱|宝贝|宝宝|你真甜|你真可爱|心疼你|只对你|小笨蛋|小可爱|土味情话)/.test(
+        normalized,
+      ),
+    hostile: /(滚|闭嘴|烦死|有病|讨厌|笨|傻|无聊死了)/.test(normalized),
+  };
+}
+
+function buildRecentNpcEventsFromChats(rows: Row[]) {
+  const events: string[] = [];
+
+  for (const row of rows) {
+    const userText = shortenText(row?.message, 14);
+    const replyText = shortenText(row?.reply, 14);
+
+    if (userText) {
+      events.push(`刚有人跟我提起“${userText}”`);
+    }
+
+    if (replyText && /累|忙|缓|先不聊|不太想聊|改天/.test(String(row?.reply || ''))) {
+      events.push(`我刚才还在跟人解释自己为什么想先缓一缓`);
+    }
+  }
+
+  return Array.from(new Set(events)).slice(0, 4);
+}
+
+function buildStatusMemoryAfterChat(params: {
+  message: string;
+  reply: string;
+  newMood: string;
+  newActivityStatus: string;
+  emotionalResponse?: string;
+  profession?: string | null;
+  currentDetail?: string | null;
+  currentReason?: string | null;
+}) {
+  const {
+    message,
+    reply,
+    newMood,
+    newActivityStatus,
+    emotionalResponse,
+    profession,
+    currentDetail,
+    currentReason,
+  } = params;
+  const cleanMessage = message.trim();
+  const topic = shortenText(cleanMessage, 14) || '刚才的话题';
+  const { caring, flirty, hostile } = classifyMessageTone(cleanMessage);
+  const statusKey = (newActivityStatus || '').trim().toLowerCase();
+
+  let activityDetail = currentDetail?.trim() || '';
+  if (/chat|聊|交流|说话/.test(statusKey)) {
+    activityDetail = `在接着聊“${topic}”`;
+  } else if (/work|忙|做|写|改|处理|创作/.test(statusKey)) {
+    activityDetail = currentDetail?.trim() || (profession ? `在忙${profession}手头的细活` : '在处理手边的小事');
+  } else if (/rest|休|缓/.test(statusKey)) {
+    activityDetail = '坐着缓缓刚才起伏的情绪';
+  } else if (/think|ponder|思|想/.test(statusKey)) {
+    activityDetail = `在回想你刚刚那句“${topic}”`;
+  } else if (/laugh|笑/.test(statusKey)) {
+    activityDetail = '边笑边回味刚才的聊天';
+  } else if (!activityDetail) {
+    activityDetail = profession ? `在忙${profession}相关的小事` : '在附近慢慢晃神';
+  }
+
+  let moodReason = currentReason?.trim() || '';
+  if (hostile) {
+    moodReason = `你刚刚那句“${topic}”有点顶到我了，所以我这会儿情绪还绷着。`;
+  } else if (flirty) {
+    moodReason = `你刚刚那句“${topic}”有点把我说愣了，我嘴上装镇定，其实心里已经起波澜了。`;
+  } else if (caring) {
+    moodReason = `你刚刚认真关心了我一句，我原本那股别扭劲松下来一点，所以现在没那么硬撑着了。`;
+  } else if (/哈哈|笑/.test(cleanMessage) || /笑/.test(reply)) {
+    moodReason = `刚才这段聊得我有点想笑，情绪比前面松了不少。`;
+  } else if (emotionalResponse) {
+    moodReason = `刚和你聊完之后，我会觉得${emotionalResponse}。`;
+  } else if (!moodReason) {
+    moodReason = `刚和你聊了几句以后，我这会儿更多是在顺着那点${newMood}的感觉往下走。`;
+  }
+
+  let recentStatusEvent = `刚和你聊到“${topic}”`;
+  if (hostile) {
+    recentStatusEvent = `刚被一句“${topic}”顶得情绪紧了一下`;
+  } else if (flirty) {
+    recentStatusEvent = '刚被你一阵直球撩得有点乱';
+  } else if (caring) {
+    recentStatusEvent = '刚被你认真关心了几句';
+  }
+
+  return {
+    moodReason,
+    activityDetail,
+    recentStatusEvent,
+    statusUpdatedAt: new Date().toISOString(),
   };
 }
 
@@ -334,6 +466,9 @@ async function buildMapNpcPayload(userId: string, map: any, viewedMapKey: string
     personalityTraits?: any;
     currentMood?: string | null;
     activityStatus?: string | null;
+    moodReason?: string | null;
+    activityDetail?: string | null;
+    recentStatusEvent?: string | null;
   }>('User', {
     select: 'id,secondmeId,username,avatar,secondmeProfile,profession,interests,personaSummary,npcBehavior,isNpcVisible,personalityTraits,currentMood,activityStatus',
     order: order('createdAt', false),
@@ -354,6 +489,7 @@ async function buildMapNpcPayload(userId: string, map: any, viewedMapKey: string
   const playableMapKeySet = new Set(playableMapKeys);
   const normalizedUsers = users.map((user) => {
     const progress = progressByUserId.get(user.id);
+    const statusMemory = readNpcStatusMemory(user.secondmeProfile);
     const storedMap =
       typeof progress?.currentMap === 'string' ? progress.currentMap.trim() : '';
     const normalizedMap =
@@ -369,6 +505,9 @@ async function buildMapNpcPayload(userId: string, map: any, viewedMapKey: string
       currentMap: normalizedMap,
       positionX: progress?.positionX ?? null,
       positionY: progress?.positionY ?? null,
+      moodReason: statusMemory.moodReason,
+      activityDetail: statusMemory.activityDetail,
+      recentStatusEvent: statusMemory.recentStatusEvent,
       __hadStoredMap: storedMap,
       __hadProgress: !!progress,
     } as any;
@@ -1161,13 +1300,15 @@ export const gameController = {
       if (npcId.startsWith('user-npc-')) {
         const ownerUserId = npcId.replace('user-npc-', '');
         const userNpc = await selectOne<Row>('User', {
-          select: 'id,username,profession,interests,personaSummary,npcBehavior,secondmeAccessToken,secondmeApiKey,personalityTraits,currentMood,activityStatus',
+          select: 'id,username,profession,interests,personaSummary,npcBehavior,secondmeAccessToken,secondmeApiKey,personalityTraits,currentMood,activityStatus,secondmeProfile',
           ...eq('id', ownerUserId),
         });
 
         if (!userNpc) {
           return res.status(404).json({ error: 'NPC not found' });
         }
+
+        const npcStatusMemory = readNpcStatusMemory(userNpc.secondmeProfile);
 
         // 检查或创建关系
         let relationship = await selectOne<Row>('Relationship', {
@@ -1261,6 +1402,9 @@ export const gameController = {
               {
                 currentMood: userNpc.currentMood,
                 activityStatus: userNpc.activityStatus,
+                moodReason: npcStatusMemory.moodReason || undefined,
+                activityDetail: npcStatusMemory.activityDetail || undefined,
+                recentStatusEvent: npcStatusMemory.recentStatusEvent || undefined,
               },
               {
                 isFirstMeeting,
@@ -1282,6 +1426,9 @@ export const gameController = {
                 npcName: userNpc.username,
                 isRepeatReject:
                   chatHistory.slice(-2).some((entry) => entry.role === 'assistant' && /不想聊|改天再聊|有点累|不太想聊天/.test(entry.content)),
+                moodReason: npcStatusMemory.moodReason,
+                activityDetail: npcStatusMemory.activityDetail,
+                recentStatusEvent: npcStatusMemory.recentStatusEvent,
               });
             }
           }
@@ -1307,6 +1454,29 @@ export const gameController = {
             });
           } catch (saveRejectError) {
             console.warn('保存拒绝聊天记录失败:', saveRejectError);
+          }
+
+          const rejectionStatusMemory = buildStatusMemoryAfterChat({
+            message,
+            reply: rejectionReason,
+            newMood: userNpc.currentMood || '有点烦',
+            newActivityStatus: userNpc.activityStatus || 'busy',
+            emotionalResponse: '我现在更想先顾住自己手头的状态',
+            profession: userNpc.profession,
+            currentDetail: npcStatusMemory.activityDetail,
+            currentReason: npcStatusMemory.moodReason,
+          });
+
+          try {
+            await updateRows<Row>(
+              'User',
+              { ...eq('id', ownerUserId) },
+              {
+                secondmeProfile: mergeNpcStatusMemory(userNpc.secondmeProfile, rejectionStatusMemory),
+              },
+            );
+          } catch (rejectMemoryError) {
+            console.warn('保存拒绝状态记忆失败:', rejectMemoryError);
           }
           
           return res.json({
@@ -1359,6 +1529,11 @@ export const gameController = {
           sourceType: 'secondme' as const,
           secondmeAccessToken: userNpc.secondmeAccessToken,
           secondmeApiKey: userNpc.secondmeApiKey,
+          currentMood: userNpc.currentMood,
+          activityStatus: userNpc.activityStatus,
+          moodReason: npcStatusMemory.moodReason,
+          activityDetail: npcStatusMemory.activityDetail,
+          recentStatusEvent: npcStatusMemory.recentStatusEvent,
         };
 
         try {
@@ -1421,6 +1596,11 @@ export const gameController = {
               interests: userNpc.interests,
               personaSummary: userNpc.personaSummary,
               npcBehavior: userNpc.npcBehavior,
+              currentMood: userNpc.currentMood,
+              activityStatus: userNpc.activityStatus,
+              moodReason: npcStatusMemory.moodReason,
+              activityDetail: npcStatusMemory.activityDetail,
+              recentStatusEvent: npcStatusMemory.recentStatusEvent,
             },
             message,
           );
@@ -1534,12 +1714,24 @@ export const gameController = {
         }
 
         // 更新NPC的心情和状态
+        const nextStatusMemory = buildStatusMemoryAfterChat({
+          message,
+          reply,
+          newMood: evaluation.newMood,
+          newActivityStatus: evaluation.newActivityStatus,
+          emotionalResponse: evaluation.emotionalResponse,
+          profession: userNpc.profession,
+          currentDetail: npcStatusMemory.activityDetail,
+          currentReason: npcStatusMemory.moodReason,
+        });
+
         await updateRows<Row>(
           'User',
           { ...eq('id', ownerUserId) },
           {
             currentMood: evaluation.newMood,
             activityStatus: evaluation.newActivityStatus,
+            secondmeProfile: mergeNpcStatusMemory(userNpc.secondmeProfile, nextStatusMemory),
           }
         );
 
@@ -1746,7 +1938,7 @@ export const gameController = {
     try {
       // 获取所有可见的NPC用户
       const npcs = await selectMany<Row>('User', {
-        select: 'id,username,profession,interests,personaSummary,personalityTraits,currentMood,activityStatus,secondmeAccessToken',
+        select: 'id,username,profession,interests,personaSummary,personalityTraits,currentMood,activityStatus,secondmeAccessToken,secondmeProfile',
         ...eq('isNpcVisible', true),
         limit: 20,
       });
@@ -1756,19 +1948,31 @@ export const gameController = {
       const updates = [];
 
       for (const npc of npcs) {
+        const statusMemory = readNpcStatusMemory(npc.secondmeProfile);
+        const recentChatRows = await selectMany<Row>('ChatMessage', {
+          select: 'message,reply,createdAt,source',
+          ...eq('targetUserId', npc.id),
+          order: order('createdAt', false),
+          limit: 4,
+        });
+
         // 构建状态更新提示
         const prompt = buildStateUpdatePrompt(
           npc.username,
           {
             profession: npc.profession,
-            interests: Array.isArray(npc.interests) ? npc.interests : [],
+            interests: normalizeInterestList(npc.interests),
             personaSummary: npc.personaSummary,
             personalityTraits: npc.personalityTraits,
           },
           {
             currentMood: npc.currentMood,
             activityStatus: npc.activityStatus,
-          }
+            moodReason: statusMemory.moodReason || undefined,
+            activityDetail: statusMemory.activityDetail || undefined,
+            recentStatusEvent: statusMemory.recentStatusEvent || undefined,
+          },
+          buildRecentNpcEventsFromChats(recentChatRows),
         );
 
         // 尝试使用AI更新
@@ -1776,7 +1980,11 @@ export const gameController = {
 
         // 如果AI失败，使用回退方案
         if (!result) {
-          result = fallbackStateUpdate(npc.personalityTraits, npc.currentMood);
+          result = fallbackStateUpdate(npc.personalityTraits, npc.currentMood, {
+            profession: npc.profession,
+            interests: normalizeInterestList(npc.interests),
+            currentActivityDetail: statusMemory.activityDetail || undefined,
+          });
         }
 
         // 更新数据库
@@ -1786,6 +1994,12 @@ export const gameController = {
           {
             currentMood: result.currentMood,
             activityStatus: result.activityStatus,
+            secondmeProfile: mergeNpcStatusMemory(npc.secondmeProfile, {
+              moodReason: result.moodReason,
+              activityDetail: result.activityDetail,
+              recentStatusEvent: result.recentStatusEvent,
+              statusUpdatedAt: new Date().toISOString(),
+            }),
           }
         );
 
@@ -1796,6 +2010,9 @@ export const gameController = {
           newMood: result.currentMood,
           oldStatus: npc.activityStatus,
           newStatus: result.activityStatus,
+          moodReason: result.moodReason,
+          activityDetail: result.activityDetail,
+          recentStatusEvent: result.recentStatusEvent,
           reasoning: result.reasoning,
         });
       }
@@ -1875,17 +2092,23 @@ export const gameController = {
   async getNpcStates(req: Request, res: Response) {
     try {
       const npcs = await selectMany<Row>('User', {
-        select: 'id,username,currentMood,activityStatus',
+        select: 'id,username,currentMood,activityStatus,secondmeProfile',
         ...eq('isNpcVisible', true),
         limit: 50,
       });
 
-      const states = npcs.map(npc => ({
-        npcId: npc.id,
-        npcName: npc.username,
-        currentMood: npc.currentMood,
-        activityStatus: npc.activityStatus,
-      }));
+      const states = npcs.map((npc) => {
+        const statusMemory = readNpcStatusMemory(npc.secondmeProfile);
+        return {
+          npcId: npc.id,
+          npcName: npc.username,
+          currentMood: npc.currentMood,
+          activityStatus: npc.activityStatus,
+          moodReason: statusMemory.moodReason,
+          activityDetail: statusMemory.activityDetail,
+          recentStatusEvent: statusMemory.recentStatusEvent,
+        };
+      });
 
       res.json({ states });
     } catch (error) {
