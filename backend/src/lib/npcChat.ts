@@ -210,6 +210,19 @@ function clearVisitorSession(npc: ChatNpcProfile, visitorId?: string) {
   visitorSessionCache.delete(key);
 }
 
+function logVisitorSessionEvent(params: {
+  stage: 'init' | 'send' | 'retry';
+  source: 'cached' | 'new' | 'reinit';
+  npc: ChatNpcProfile;
+  visitorId?: string;
+  sessionId: string;
+}) {
+  const { stage, source, npc, visitorId, sessionId } = params;
+  console.log(
+    `[SecondMe session] stage=${stage} source=${source} npcId=${npc.id} visitorId=${visitorId || 'anonymous'} sessionId=${sessionId}`,
+  );
+}
+
 async function initVisitorSession(
   accessToken: string,
   npc: ChatNpcProfile,
@@ -389,9 +402,26 @@ export async function requestSecondMeNpcReply(
   const accessToken = await resolveSecondMeAccessToken(npc.secondmeAccessToken);
   // visitor-chat 本身维护会话上下文；这里不再把大段系统提示拼进 message，
   // 只复用 sessionId 并发送当前用户原句，避免“每句像新会话”。
-  const session = getCachedVisitorSession(npc, visitorId) || (await initVisitorSession(accessToken, npc, visitorId, visitorName));
+  const cachedSession = getCachedVisitorSession(npc, visitorId);
+  const session =
+    cachedSession || (await initVisitorSession(accessToken, npc, visitorId, visitorName));
+  const sessionSource: 'cached' | 'new' = cachedSession ? 'cached' : 'new';
+  logVisitorSessionEvent({
+    stage: 'init',
+    source: sessionSource,
+    npc,
+    visitorId,
+    sessionId: session.sessionId,
+  });
 
-  const doSendOnce = async (sessionId: string, wsUrl: string) => {
+  const doSendOnce = async (sessionId: string, wsUrl: string, source: 'cached' | 'new' | 'reinit') => {
+    logVisitorSessionEvent({
+      stage: 'send',
+      source,
+      npc,
+      visitorId,
+      sessionId,
+    });
     const replyPromise = waitForVisitorReply(wsUrl);
     const sendResponse = await sendVisitorMessage(accessToken, npc.secondmeApiKey!, sessionId, userMessage);
 
@@ -404,7 +434,7 @@ export async function requestSecondMeNpcReply(
   };
 
   try {
-    return await doSendOnce(session.sessionId, session.wsUrl);
+    return await doSendOnce(session.sessionId, session.wsUrl, sessionSource);
   } catch (error) {
     const errText = error instanceof Error ? error.message : String(error);
     const shouldRetry =
@@ -416,7 +446,14 @@ export async function requestSecondMeNpcReply(
 
     clearVisitorSession(npc, visitorId);
     const refreshed = await initVisitorSession(accessToken, npc, visitorId, visitorName);
-    return doSendOnce(refreshed.sessionId, refreshed.wsUrl);
+    logVisitorSessionEvent({
+      stage: 'retry',
+      source: 'reinit',
+      npc,
+      visitorId,
+      sessionId: refreshed.sessionId,
+    });
+    return doSendOnce(refreshed.sessionId, refreshed.wsUrl, 'reinit');
   }
 }
 
