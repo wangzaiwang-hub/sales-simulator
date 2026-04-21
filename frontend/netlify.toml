@@ -1,5 +1,5 @@
 [build]
-  command = "cd frontend && npm ci && npm run build"
+  command = "cd frontend && npm ci && npm run build && cp public/_redirects out/_redirects"
   publish = "frontend/out"
 
 [[redirects]]
