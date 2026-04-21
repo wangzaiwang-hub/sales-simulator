@@ -17,6 +17,8 @@ export type ChatNpcProfile = {
 };
 
 let cachedAppAccessToken: { token: string; expiresAt: number } | null = null;
+const visitorSessionCache = new Map<string, { sessionId: string; wsUrl: string; updatedAt: number }>();
+const VISITOR_SESSION_TTL_MS = 1000 * 60 * 60 * 6; // 6h
 
 export function normalizeInterestList(value: ChatNpcProfile['interests']) {
   if (Array.isArray(value)) {
@@ -172,6 +174,104 @@ function waitForVisitorReply(wsUrl: string) {
   });
 }
 
+function getVisitorSessionCacheKey(npc: ChatNpcProfile, visitorId?: string) {
+  return `${npc.id}::${visitorId || 'anonymous'}`;
+}
+
+function getCachedVisitorSession(npc: ChatNpcProfile, visitorId?: string) {
+  const key = getVisitorSessionCacheKey(npc, visitorId);
+  const cached = visitorSessionCache.get(key);
+  if (!cached) return null;
+
+  if (Date.now() - cached.updatedAt > VISITOR_SESSION_TTL_MS) {
+    visitorSessionCache.delete(key);
+    return null;
+  }
+
+  return cached;
+}
+
+function cacheVisitorSession(
+  npc: ChatNpcProfile,
+  visitorId: string | undefined,
+  sessionId: string,
+  wsUrl: string,
+) {
+  const key = getVisitorSessionCacheKey(npc, visitorId);
+  visitorSessionCache.set(key, {
+    sessionId,
+    wsUrl,
+    updatedAt: Date.now(),
+  });
+}
+
+function clearVisitorSession(npc: ChatNpcProfile, visitorId?: string) {
+  const key = getVisitorSessionCacheKey(npc, visitorId);
+  visitorSessionCache.delete(key);
+}
+
+async function initVisitorSession(
+  accessToken: string,
+  npc: ChatNpcProfile,
+  visitorId?: string,
+  visitorName?: string,
+) {
+  const initResponse = await fetch('https://api.mindverse.com/gate/lab/api/secondme/visitor-chat/init', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      apiKey: npc.secondmeApiKey,
+      ...(visitorId ? { visitorId } : {}),
+      ...(visitorName ? { visitorName } : {}),
+    }),
+  });
+
+  if (!initResponse.ok) {
+    const detail = await initResponse.text();
+    throw new Error(detail || 'SecondMe visitor-chat init failed');
+  }
+
+  const initPayload = (await initResponse.json()) as {
+    data?: {
+      sessionId?: string;
+      wsUrl?: string;
+    };
+  };
+
+  const sessionId = initPayload?.data?.sessionId;
+  const wsUrl = initPayload?.data?.wsUrl;
+
+  if (!sessionId || !wsUrl) {
+    throw new Error('visitor-chat init missing session info');
+  }
+
+  cacheVisitorSession(npc, visitorId, sessionId, wsUrl);
+  return { sessionId, wsUrl, updatedAt: Date.now() };
+}
+
+async function sendVisitorMessage(
+  accessToken: string,
+  apiKey: string,
+  sessionId: string,
+  message: string,
+) {
+  return fetch('https://api.mindverse.com/gate/lab/api/secondme/visitor-chat/send', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      sessionId,
+      apiKey,
+      message,
+    }),
+  });
+}
+
 export async function requestSecondMeDirectReply(
   npc: ChatNpcProfile,
   userMessage: string,
@@ -279,104 +379,45 @@ export async function requestSecondMeNpcReply(
   userMessage: string,
   visitorId?: string,
   visitorName?: string,
-  chatHistory?: Array<{ role: string; content: string; createdAt: string }>,
-  memorySummaries: string[] = [],
+  _chatHistory?: Array<{ role: string; content: string; createdAt: string }>,
+  _memorySummaries: string[] = [],
 ) {
   if (!npc.secondmeApiKey) {
     throw new Error('NPC 未配置 SecondMe avatar api key');
   }
 
   const accessToken = await resolveSecondMeAccessToken(npc.secondmeAccessToken);
+  // visitor-chat 本身维护会话上下文；这里不再把大段系统提示拼进 message，
+  // 只复用 sessionId 并发送当前用户原句，避免“每句像新会话”。
+  const session = getCachedVisitorSession(npc, visitorId) || (await initVisitorSession(accessToken, npc, visitorId, visitorName));
 
-  const initResponse = await fetch('https://api.mindverse.com/gate/lab/api/secondme/visitor-chat/init', {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      apiKey: npc.secondmeApiKey,
-      ...(visitorId ? { visitorId } : {}),
-      ...(visitorName ? { visitorName } : {}),
-    }),
-  });
+  const doSendOnce = async (sessionId: string, wsUrl: string) => {
+    const replyPromise = waitForVisitorReply(wsUrl);
+    const sendResponse = await sendVisitorMessage(accessToken, npc.secondmeApiKey!, sessionId, userMessage);
 
-  if (!initResponse.ok) {
-    const detail = await initResponse.text();
-    throw new Error(detail || 'SecondMe visitor-chat init failed');
-  }
+    if (!sendResponse.ok) {
+      const detail = await sendResponse.text();
+      throw new Error(detail || 'SecondMe visitor-chat send failed');
+    }
 
-  const initPayload = (await initResponse.json()) as {
-    data?: {
-      sessionId?: string;
-      wsUrl?: string;
-    };
+    return replyPromise;
   };
-  const sessionId = initPayload?.data?.sessionId;
-  const wsUrl = initPayload?.data?.wsUrl;
 
-  if (!sessionId || !wsUrl) {
-    throw new Error('visitor-chat init missing session info');
-  }
+  try {
+    return await doSendOnce(session.sessionId, session.wsUrl);
+  } catch (error) {
+    const errText = error instanceof Error ? error.message : String(error);
+    const shouldRetry =
+      /session_not_found|session_expired|init missing session|visitor-chat websocket error|visitor-chat timeout/i.test(errText);
 
-  const replyPromise = waitForVisitorReply(wsUrl);
-
-  // 构建带上下文的消息
-  let finalMessage = userMessage;
-  
-  if (chatHistory && chatHistory.length > 0) {
-    // 导入上下文管理器
-    const { buildContextFromHistory, compressContext } = await import('./contextManager');
-    
-    // 构建历史上下文
-    const historyMessages = buildContextFromHistory(chatHistory, 15);
-    
-    // 压缩上下文
-    const compressed = await compressContext(historyMessages, 1500, accessToken);
-    
-    // 构建上下文字符串
-    let contextStr = '';
-    if (compressed.summary) {
-      contextStr += `${compressed.summary}\n\n`;
+    if (!shouldRetry) {
+      throw error;
     }
 
-    if (memorySummaries.length > 0) {
-      contextStr += `持久化记忆：\n${memorySummaries.slice(-3).join('\n')}\n\n`;
-    }
-    
-    // 添加最近的对话
-    const recentMessages = compressed.messages.slice(-6); // 最近6条
-    if (recentMessages.length > 0) {
-      contextStr += '最近的对话：\n';
-      recentMessages.forEach(msg => {
-        const speaker = msg.role === 'user' ? visitorName || '访客' : npc.name;
-        contextStr += `${speaker}: ${msg.content}\n`;
-      });
-      contextStr += '\n';
-    }
-    
-    finalMessage = `${contextStr}当前消息：${userMessage}`;
+    clearVisitorSession(npc, visitorId);
+    const refreshed = await initVisitorSession(accessToken, npc, visitorId, visitorName);
+    return doSendOnce(refreshed.sessionId, refreshed.wsUrl);
   }
-
-  const sendResponse = await fetch('https://api.mindverse.com/gate/lab/api/secondme/visitor-chat/send', {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      sessionId,
-      apiKey: npc.secondmeApiKey,
-      message: `${buildSystemPrompt(npc)}\n\n${finalMessage}`,
-    }),
-  });
-
-  if (!sendResponse.ok) {
-    const detail = await sendResponse.text();
-    throw new Error(detail || 'SecondMe visitor-chat send failed');
-  }
-
-  return replyPromise;
 }
 
 export function buildLocalNpcReply(npc: ChatNpcProfile, userMessage: string) {
