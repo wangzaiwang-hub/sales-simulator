@@ -302,39 +302,26 @@ export async function requestSecondMeDirectReply(
 ) {
   const accessToken = await resolveSecondMeAccessToken(npc.secondmeAccessToken);
 
-  // 导入上下文管理器
-  const { buildContextFromHistory, buildFullContext } = await import('./contextManager');
-  
-  // 构建系统提示
   const systemPrompt = buildSystemPrompt(npc);
-  
-  // 构建上下文
-  let messages: Array<{ role: 'user' | 'assistant' | 'system'; content: string }>;
-  
-  if (chatHistory && chatHistory.length > 0) {
-    // 有历史记录，使用智能上下文管理
-    const historyMessages = buildContextFromHistory(chatHistory, 20);
-    messages = await buildFullContext(
-      systemPrompt,
-      historyMessages,
-      userMessage,
-      2000, // 最大token数
-      accessToken
-    );
-  } else {
-    // 没有历史记录，使用简单上下文
-    messages = [
-      { role: 'system', content: systemPrompt },
-      { role: 'user', content: userMessage },
-    ];
-  }
-
-  if (memorySummaries.length > 0) {
-    messages.splice(1, 0, {
-      role: 'system',
-      content: `[持久化记忆]\n${memorySummaries.slice(-3).join('\n\n')}`,
-    });
-  }
+  const recentTurns = (chatHistory || [])
+    .slice(-6)
+    .map((item) => `${item.role === 'assistant' ? '你' : '用户'}: ${item.content}`)
+    .join('\n');
+  const memoryBlock = memorySummaries.length
+    ? `\n[长期记忆]\n${memorySummaries.slice(-3).join('\n')}\n`
+    : '';
+  const historyBlock = recentTurns ? `\n[最近对话]\n${recentTurns}\n` : '';
+  const directMessage = [
+    '[角色设定]',
+    systemPrompt,
+    memoryBlock.trim(),
+    historyBlock.trim(),
+    '[用户刚刚说]',
+    userMessage,
+    '请直接像真人一样回复用户，不要复述设定，不要输出标题。',
+  ]
+    .filter(Boolean)
+    .join('\n');
 
   const response = await fetch('https://api.mindverse.com/gate/lab/api/secondme/chat/stream', {
     method: 'POST',
@@ -343,7 +330,7 @@ export async function requestSecondMeDirectReply(
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      messages, // 使用完整的消息数组而不是单条消息
+      message: directMessage,
     }),
   });
 
