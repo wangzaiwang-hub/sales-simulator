@@ -16,18 +16,24 @@ const rawCorsOrigins =
   process.env.CORS_ORIGIN ||
   process.env.FRONTEND_URL ||
   'https://sales-simulator-zeta.vercel.app,https://xiaoguan.netlify.app';
+const corsStrict = process.env.CORS_STRICT === 'true';
 
 const allowedOrigins = rawCorsOrigins
   .split(',')
   .map((origin) => origin.trim())
   .filter(Boolean);
 
+console.log('CORS mode:', corsStrict ? 'strict' : 'open');
 console.log('CORS allowed origins:', allowedOrigins.join(', '));
 
 app.use(
   cors({
     origin(origin, callback) {
       if (!origin) {
+        return callback(null, true);
+      }
+
+      if (!corsStrict) {
         return callback(null, true);
       }
 
@@ -42,7 +48,7 @@ app.use(
 
       return callback(new Error(`CORS blocked origin: ${origin}`));
     },
-    credentials: true,
+    credentials: false,
   }),
 );
 app.use(express.json({ limit: '10mb' }));
