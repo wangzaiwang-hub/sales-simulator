@@ -30,6 +30,7 @@ exports.handler = async (event) => {
   try {
     const response = await fetch(upstreamUrl.toString(), {
       method: event.httpMethod,
+      signal: AbortSignal.timeout(10000),
       headers,
       body:
         event.httpMethod === "GET" || event.httpMethod === "HEAD"
@@ -51,14 +52,18 @@ exports.handler = async (event) => {
       body: bodyText,
     };
   } catch (error) {
+    const timedOut =
+      error instanceof Error &&
+      (/timeout/i.test(error.message) || error.name === "TimeoutError" || error.name === "AbortError");
+
     return {
-      statusCode: 502,
+      statusCode: timedOut ? 504 : 502,
       headers: {
         "content-type": "application/json",
         "cache-control": "no-store",
       },
       body: JSON.stringify({
-        error: "Proxy request failed",
+        error: timedOut ? "Proxy request timed out" : "Proxy request failed",
         detail: error instanceof Error ? error.message : String(error),
       }),
     };

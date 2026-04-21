@@ -164,6 +164,13 @@ type JoystickState = {
   y: number;
 };
 
+type NpcPositionOccupant = {
+  npcUserId: string;
+  currentMap: string;
+  positionX: number;
+  positionY: number;
+};
+
 function toAssetUrl(path?: string) {
   if (!path) return "";
   if (/^data:|^blob:/.test(path)) return path;
@@ -326,6 +333,14 @@ function mergeNpcRoster(
       moveTimer: currentNpc.moveTimer,
     };
   });
+}
+
+function buildNpcSyncSignature(occupants: NpcPositionOccupant[]) {
+  return occupants
+    .slice()
+    .sort((a, b) => a.npcUserId.localeCompare(b.npcUserId))
+    .map((occupant) => `${occupant.npcUserId}:${occupant.currentMap}:${occupant.positionX}:${occupant.positionY}`)
+    .join("|");
 }
 
 // 检测并修复玩家与NPC重叠
@@ -526,6 +541,9 @@ export default function GamePage() {
   const chatScrollRef = useRef<HTMLDivElement>(null);
   const joystickVectorRef = useRef({ x: 0, y: 0 });
   const joystickPointerIdRef = useRef<number | null>(null);
+  const npcSyncInFlightRef = useRef(false);
+  const lastNpcSyncSignatureRef = useRef("");
+  const mapRosterSyncInFlightRef = useRef(false);
 
   const selectedNpc = npcsRef.current.find((npc) => npc.id === selectedNpcId) || null;
 
@@ -586,8 +604,12 @@ export default function GamePage() {
     if (!token || !hasMap) return;
 
     const syncNpcPositions = async () => {
-      const occupants = npcsRef.current
-        .filter((npc) => npc.ownerUserId)
+      if (npcSyncInFlightRef.current) {
+        return;
+      }
+
+      const occupants: NpcPositionOccupant[] = npcsRef.current
+        .filter((npc): npc is NpcState & { ownerUserId: string } => typeof npc.ownerUserId === "string" && npc.ownerUserId.length > 0)
         .map((npc) => ({
           npcUserId: npc.ownerUserId,
           currentMap:
@@ -601,7 +623,13 @@ export default function GamePage() {
 
       if (!occupants.length) return;
 
+      const nextSignature = buildNpcSyncSignature(occupants);
+      if (nextSignature === lastNpcSyncSignatureRef.current) {
+        return;
+      }
+
       try {
+        npcSyncInFlightRef.current = true;
         const response = await fetchGameApi(`/api/game/sync-npc-positions`, {
           method: "POST",
           headers: {
@@ -615,15 +643,19 @@ export default function GamePage() {
           const detail = await response.text();
           throw new Error(`sync-npc-positions ${response.status}: ${detail || "unknown error"}`);
         }
+
+        lastNpcSyncSignatureRef.current = nextSignature;
       } catch (error) {
         console.error("Failed to sync npc positions:", error);
+      } finally {
+        npcSyncInFlightRef.current = false;
       }
     };
 
     void syncNpcPositions();
     npcPositionSyncTimerRef.current = window.setInterval(() => {
       void syncNpcPositions();
-    }, 1000);
+    }, 2500);
 
     return () => {
       if (npcPositionSyncTimerRef.current) {
@@ -734,7 +766,12 @@ export default function GamePage() {
     let cancelled = false;
 
     const syncMapRoster = async () => {
+      if (mapRosterSyncInFlightRef.current) {
+        return;
+      }
+
       try {
+        mapRosterSyncInFlightRef.current = true;
         const params = new URLSearchParams();
         if (currentSharedMapIdRef.current) {
           params.set("mapId", currentSharedMapIdRef.current);
@@ -763,6 +800,8 @@ export default function GamePage() {
         currentMapKeyRef.current = nextMapKey;
       } catch (error) {
         console.error("Failed to sync map roster:", error);
+      } finally {
+        mapRosterSyncInFlightRef.current = false;
       }
     };
 
