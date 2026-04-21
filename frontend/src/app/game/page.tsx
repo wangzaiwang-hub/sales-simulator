@@ -227,6 +227,26 @@ async function fetchGameApi(path: string, init?: RequestInit) {
   }
 }
 
+async function parseApiResponse<T>(response: Response): Promise<{ data: T | null; rawText: string }> {
+  const rawText = await response.text();
+
+  if (!rawText) {
+    return { data: null, rawText: "" };
+  }
+
+  try {
+    return {
+      data: JSON.parse(rawText) as T,
+      rawText,
+    };
+  } catch {
+    return {
+      data: null,
+      rawText,
+    };
+  }
+}
+
 function createPlayer(x: number, y: number): ActorState {
   return {
     x,
@@ -771,19 +791,20 @@ export default function GamePage() {
       console.log(`🔵 前端：开始加载聊天历史，NPC ID: ${selectedNpcId}`);
 
       try {
-        const response = await fetch(
-          `${apiUrl}/api/game/chat-history?targetUserId=${selectedNpcId}&limit=50`,
+        const response = await fetchGameApi(
+          `/api/game/chat-history?targetUserId=${encodeURIComponent(selectedNpcId)}&limit=50`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
         );
 
         if (!response.ok) {
-          console.error('🔴 前端：加载聊天历史失败', response.status);
+          const { rawText } = await parseApiResponse(response);
+          console.error('🔴 前端：加载聊天历史失败', response.status, rawText);
           return;
         }
 
-        const history = await response.json() as Array<{
+        const { data } = await parseApiResponse<Array<{
           userId: string;
           targetUserId: string;
           message: string;
@@ -796,7 +817,9 @@ export default function GamePage() {
           aiReasoning?: string;
           aiEmotionalResponse?: string;
           createdAt: string;
-        }>;
+        }>>(response);
+
+        const history = data || [];
 
         console.log(`🔵 前端：收到 ${history.length} 条历史记录`, history);
 
@@ -2153,7 +2176,7 @@ export default function GamePage() {
     }));
 
     try {
-      const response = await fetch(`${apiUrl}/api/game/npc-chat`, {
+      const response = await fetchGameApi(`/api/game/npc-chat`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -2165,9 +2188,26 @@ export default function GamePage() {
         }),
       });
 
-      const data = await response.json();
+      const { data, rawText } = await parseApiResponse<{
+        error?: string;
+        reply?: string;
+        source?: string;
+        relationship?: ChatMessage["relationship"];
+        aiEvaluation?: ChatMessage["aiEvaluation"];
+        secondMeDebug?: {
+          sessionId?: string | null;
+          sessionSource?: string | null;
+          authMode?: string | null;
+          fallbackReason?: string | null;
+        };
+      }>(response);
+
       if (!response.ok) {
-        throw new Error(data.error || "NPC 回复失败");
+        throw new Error(
+          data?.error ||
+            rawText ||
+            (response.status === 504 ? "NPC 暂时没有回上来，可能是上游接口超时了。" : `NPC 回复失败（${response.status}）`),
+        );
       }
       if (data?.secondMeDebug?.sessionId) {
         console.log(
@@ -2184,10 +2224,10 @@ export default function GamePage() {
       // 添加NPC回复，包含关系信息
       const npcMessage: ChatMessage = {
         role: "npc",
-        text: data.reply || "...",
+        text: data?.reply || "...",
         senderId: selectedNpc.id, // NPC is the sender
-        relationship: data.relationship,
-        aiEvaluation: data.aiEvaluation,
+        relationship: data?.relationship,
+        aiEvaluation: data?.aiEvaluation,
       };
 
       setChatMessages((prev) => ({

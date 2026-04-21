@@ -26,6 +26,8 @@ export type VisitorReplyResult = {
 let cachedAppAccessToken: { token: string; expiresAt: number } | null = null;
 const visitorSessionCache = new Map<string, { sessionId: string; wsUrl: string; updatedAt: number }>();
 const VISITOR_SESSION_TTL_MS = 1000 * 60 * 60 * 6; // 6h
+const SECONDME_HTTP_TIMEOUT_MS = 7000;
+const VISITOR_REPLY_TIMEOUT_MS = 8000;
 
 export function normalizeInterestList(value: ChatNpcProfile['interests']) {
   if (Array.isArray(value)) {
@@ -134,7 +136,7 @@ function waitForVisitorReply(wsUrl: string) {
         settled = true;
         reject(new Error('visitor-chat timeout'));
       }
-    }, 20000);
+    }, VISITOR_REPLY_TIMEOUT_MS);
 
     const ws = new WebSocket(wsUrl);
 
@@ -240,6 +242,7 @@ async function initVisitorSession(
 ) {
   const initResponse = await fetch('https://api.mindverse.com/gate/lab/api/secondme/visitor-chat/init', {
     method: 'POST',
+    signal: AbortSignal.timeout(SECONDME_HTTP_TIMEOUT_MS),
     headers: {
       Authorization: `Bearer ${accessToken}`,
       'Content-Type': 'application/json',
@@ -282,6 +285,7 @@ async function sendVisitorMessage(
 ) {
   return fetch('https://api.mindverse.com/gate/lab/api/secondme/visitor-chat/send', {
     method: 'POST',
+    signal: AbortSignal.timeout(SECONDME_HTTP_TIMEOUT_MS),
     headers: {
       Authorization: `Bearer ${accessToken}`,
       'Content-Type': 'application/json',
@@ -325,6 +329,7 @@ export async function requestSecondMeDirectReply(
 
   const response = await fetch('https://api.mindverse.com/gate/lab/api/secondme/chat/stream', {
     method: 'POST',
+    signal: AbortSignal.timeout(SECONDME_HTTP_TIMEOUT_MS),
     headers: {
       Authorization: `Bearer ${accessToken}`,
       'Content-Type': 'application/json',
@@ -444,7 +449,7 @@ export async function requestSecondMeNpcReply(
     } catch (error) {
       const errText = error instanceof Error ? error.message : String(error);
       const shouldRetry =
-        /session_not_found|session_expired|init missing session|visitor-chat websocket error|visitor-chat timeout/i.test(errText);
+        /session_not_found|session_expired|init missing session|visitor-chat websocket error/i.test(errText);
 
       if (!shouldRetry) {
         throw error;
@@ -466,12 +471,13 @@ export async function requestSecondMeNpcReply(
   try {
     return await tryOnce(appAccessToken, 'app');
   } catch (appError) {
-    if (!userAccessToken) {
+    const appErrorText = appError instanceof Error ? appError.message : String(appError);
+    if (!userAccessToken || /timeout/i.test(appErrorText)) {
       throw appError;
     }
     console.warn(
       '[SecondMe session] app token failed, retry with user token:',
-      appError instanceof Error ? appError.message : appError,
+      appErrorText,
     );
     return tryOnce(userAccessToken, 'user');
   }

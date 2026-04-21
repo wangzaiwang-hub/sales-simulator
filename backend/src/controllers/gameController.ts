@@ -1576,7 +1576,12 @@ export const gameController = {
             npcStatusAfter: evaluation.newActivityStatus,
           });
           console.log('✅ 聊天记录保存成功');
+        } catch (error) {
+          console.error('❌ Failed to save chat message:', error);
+          // 不影响主流程，继续返回结果
+        }
 
+        void (async () => {
           try {
             const allRows = await selectMany<Row>('ChatMessage', {
               select: 'id,userId,targetUserId,message,reply,createdAt,source,aiReasoning',
@@ -1606,10 +1611,7 @@ export const gameController = {
               memoryError instanceof Error ? memoryError.message : memoryError,
             );
           }
-        } catch (error) {
-          console.error('❌ Failed to save chat message:', error);
-          // 不影响主流程，继续返回结果
-        }
+        })();
 
         // 返回回复和关系信息
         return res.json({

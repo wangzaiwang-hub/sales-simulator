@@ -136,6 +136,7 @@ export async function evaluateWithAI(
   try {
     const response = await fetch('https://api.mindverse.com/gate/lab/api/secondme/chat/stream', {
       method: 'POST',
+      signal: AbortSignal.timeout(5000),
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${secondmeAccessToken}`,
