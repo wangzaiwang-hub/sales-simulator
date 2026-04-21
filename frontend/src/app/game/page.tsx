@@ -2152,8 +2152,11 @@ export default function GamePage() {
       }
       if (data?.secondMeDebug?.sessionId) {
         console.log(
-          `🟣 会话调试: sessionId=${data.secondMeDebug.sessionId} source=${data.secondMeDebug.sessionSource || "unknown"} npc=${selectedNpc.id}`,
+          `🟣 会话调试: sessionId=${data.secondMeDebug.sessionId} source=${data.secondMeDebug.sessionSource || "unknown"} auth=${data.secondMeDebug.authMode || "unknown"} npc=${selectedNpc.id}`,
         );
+      }
+      if (data?.secondMeDebug?.fallbackReason) {
+        console.warn(`🟠 SecondMe fallback reason: ${data.secondMeDebug.fallbackReason}`);
       }
       if (data?.source === "local-fallback") {
         console.warn("⚠️ 当前回复来自本地兜底模板，不是 SecondMe 实时回复");

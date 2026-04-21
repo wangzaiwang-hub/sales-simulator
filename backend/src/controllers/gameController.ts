@@ -1317,6 +1317,8 @@ export const gameController = {
         let replySource: 'secondme-visitor' | 'secondme-chat' | 'local-fallback' = 'local-fallback';
         let secondMeSessionId: string | null = null;
         let secondMeSessionSource: 'cached' | 'new' | 'reinit' | null = null;
+        let secondMeAuthMode: 'app' | 'user' | null = null;
+        let fallbackReason: string | null = null;
         const npcProfile = {
           id: npcId,
           name: userNpc.username,
@@ -1343,6 +1345,7 @@ export const gameController = {
             replySource = 'secondme-visitor';
             secondMeSessionId = visitorReply.sessionId;
             secondMeSessionSource = visitorReply.sessionSource;
+            secondMeAuthMode = visitorReply.authMode;
           } else if (userNpc.secondmeAccessToken) {
             reply = await requestSecondMeDirectReply(
               npcProfile,
@@ -1355,6 +1358,7 @@ export const gameController = {
             }
           }
         } catch (error) {
+          fallbackReason = error instanceof Error ? error.message : String(error);
           console.error('SecondMe NPC visitor chat failed, will try direct chat:', error);
         }
 
@@ -1372,6 +1376,7 @@ export const gameController = {
               console.warn('SecondMe NPC fallback path: visitor -> direct chat');
             }
           } catch (error) {
+            fallbackReason = error instanceof Error ? error.message : String(error);
             console.error('SecondMe NPC direct chat failed, will use local fallback:', error);
           }
         }
@@ -1585,8 +1590,15 @@ export const gameController = {
               ? {
                   sessionId: secondMeSessionId,
                   sessionSource: secondMeSessionSource,
+                  authMode: secondMeAuthMode,
+                  fallbackReason,
                 }
-              : null,
+              : {
+                  sessionId: null,
+                  sessionSource: null,
+                  authMode: secondMeAuthMode,
+                  fallbackReason,
+                },
           relationship: {
             affinity: newAffinity,
             familiarity: newFamiliarity,

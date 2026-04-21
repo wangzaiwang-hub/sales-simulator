@@ -20,6 +20,7 @@ export type VisitorReplyResult = {
   reply: string;
   sessionId: string;
   sessionSource: 'cached' | 'new' | 'reinit';
+  authMode: 'app' | 'user';
 };
 
 let cachedAppAccessToken: { token: string; expiresAt: number } | null = null;
@@ -406,23 +407,15 @@ export async function requestSecondMeNpcReply(
   if (!npc.secondmeApiKey) {
     throw new Error('NPC 未配置 SecondMe avatar api key');
   }
-
-  const accessToken = await resolveSecondMeAccessToken(npc.secondmeAccessToken);
+  const userAccessToken = npc.secondmeAccessToken?.trim() || '';
+  // visitor-chat 统一优先使用应用 token（client_credentials），
+  // 避免用户 OAuth token 过期/权限不完整导致长期掉兜底。
+  const appAccessToken = await getSecondMeAppAccessToken();
   // visitor-chat 本身维护会话上下文；这里不再把大段系统提示拼进 message，
   // 只复用 sessionId 并发送当前用户原句，避免“每句像新会话”。
-  const cachedSession = getCachedVisitorSession(npc, visitorId);
-  const session =
-    cachedSession || (await initVisitorSession(accessToken, npc, visitorId, visitorName));
-  const sessionSource: 'cached' | 'new' = cachedSession ? 'cached' : 'new';
-  logVisitorSessionEvent({
-    stage: 'init',
-    source: sessionSource,
-    npc,
-    visitorId,
-    sessionId: session.sessionId,
-  });
-
-  const doSendOnce = async (
+  const doSendWithToken = async (
+    accessToken: string,
+    authMode: 'app' | 'user',
     sessionId: string,
     wsUrl: string,
     source: 'cached' | 'new' | 'reinit',
@@ -443,30 +436,57 @@ export async function requestSecondMeNpcReply(
     }
 
     const reply = await replyPromise;
-    return { reply, sessionId, sessionSource: source };
+    return { reply, sessionId, sessionSource: source, authMode };
+  };
+
+  const tryOnce = async (accessToken: string, authMode: 'app' | 'user') => {
+    const cachedSession = getCachedVisitorSession(npc, visitorId);
+    const session =
+      cachedSession || (await initVisitorSession(accessToken, npc, visitorId, visitorName));
+    const sessionSource: 'cached' | 'new' = cachedSession ? 'cached' : 'new';
+    logVisitorSessionEvent({
+      stage: 'init',
+      source: sessionSource,
+      npc,
+      visitorId,
+      sessionId: session.sessionId,
+    });
+
+    try {
+      return await doSendWithToken(accessToken, authMode, session.sessionId, session.wsUrl, sessionSource);
+    } catch (error) {
+      const errText = error instanceof Error ? error.message : String(error);
+      const shouldRetry =
+        /session_not_found|session_expired|init missing session|visitor-chat websocket error|visitor-chat timeout/i.test(errText);
+
+      if (!shouldRetry) {
+        throw error;
+      }
+
+      clearVisitorSession(npc, visitorId);
+      const refreshed = await initVisitorSession(accessToken, npc, visitorId, visitorName);
+      logVisitorSessionEvent({
+        stage: 'retry',
+        source: 'reinit',
+        npc,
+        visitorId,
+        sessionId: refreshed.sessionId,
+      });
+      return doSendWithToken(accessToken, authMode, refreshed.sessionId, refreshed.wsUrl, 'reinit');
+    }
   };
 
   try {
-    return await doSendOnce(session.sessionId, session.wsUrl, sessionSource);
-  } catch (error) {
-    const errText = error instanceof Error ? error.message : String(error);
-    const shouldRetry =
-      /session_not_found|session_expired|init missing session|visitor-chat websocket error|visitor-chat timeout/i.test(errText);
-
-    if (!shouldRetry) {
-      throw error;
+    return await tryOnce(appAccessToken, 'app');
+  } catch (appError) {
+    if (!userAccessToken) {
+      throw appError;
     }
-
-    clearVisitorSession(npc, visitorId);
-    const refreshed = await initVisitorSession(accessToken, npc, visitorId, visitorName);
-    logVisitorSessionEvent({
-      stage: 'retry',
-      source: 'reinit',
-      npc,
-      visitorId,
-      sessionId: refreshed.sessionId,
-    });
-    return doSendOnce(refreshed.sessionId, refreshed.wsUrl, 'reinit');
+    console.warn(
+      '[SecondMe session] app token failed, retry with user token:',
+      appError instanceof Error ? appError.message : appError,
+    );
+    return tryOnce(userAccessToken, 'user');
   }
 }
 
