@@ -844,6 +844,7 @@ export const gameController = {
       }
 
       let updated = 0;
+      let failed = 0;
 
       for (const occupant of occupants) {
         const npcUserId = typeof occupant?.npcUserId === 'string' ? occupant.npcUserId.trim() : '';
@@ -855,40 +856,70 @@ export const gameController = {
           continue;
         }
 
-        let progress = await selectOne<Row>('GameProgress', {
-          select: '*',
-          ...eq('userId', npcUserId),
-        });
+        try {
+          let progress = await selectOne<Row>('GameProgress', {
+            select: '*',
+            ...eq('userId', npcUserId),
+          });
 
-        if (!progress) {
-          const [created] = await insertRows<Row>('GameProgress', {
-            id: crypto.randomUUID(),
-            userId: npcUserId,
-            level: 1,
-            experience: 0,
-            gold: 0,
+          if (!progress) {
+            try {
+              const [created] = await insertRows<Row>('GameProgress', {
+                id: crypto.randomUUID(),
+                userId: npcUserId,
+                level: 1,
+                experience: 0,
+                gold: 0,
+                currentMap,
+                positionX: Math.round(positionX),
+                positionY: Math.round(positionY),
+              });
+              progress = created ?? null;
+            } catch (insertError) {
+              // 并发场景下可能被其他请求先插入（userId 唯一约束），这里回退到 update
+              console.warn('syncNpcPositions insert fallback to update:', {
+                npcUserId,
+                error: insertError instanceof Error ? insertError.message : insertError,
+              });
+              const [patched] = await updateRows<Row>(
+                'GameProgress',
+                { ...eq('userId', npcUserId) },
+                {
+                  currentMap,
+                  positionX: Math.round(positionX),
+                  positionY: Math.round(positionY),
+                },
+              );
+              progress = patched ?? null;
+            }
+          } else {
+            await updateRows<Row>(
+              'GameProgress',
+              { ...eq('userId', npcUserId) },
+              {
+                currentMap,
+                positionX: Math.round(positionX),
+                positionY: Math.round(positionY),
+              },
+            );
+          }
+
+          if (progress) {
+            updated += 1;
+          }
+        } catch (occupantError) {
+          failed += 1;
+          console.error('syncNpcPositions occupant failed:', {
+            npcUserId,
             currentMap,
             positionX: Math.round(positionX),
             positionY: Math.round(positionY),
+            error: occupantError instanceof Error ? occupantError.message : occupantError,
           });
-          progress = created ?? null;
-        } else {
-          await updateRows<Row>(
-            'GameProgress',
-            { ...eq('userId', npcUserId) },
-            {
-              positionX: Math.round(positionX),
-              positionY: Math.round(positionY),
-            },
-          );
-        }
-
-        if (progress) {
-          updated += 1;
         }
       }
 
-      return res.json({ success: true, updated });
+      return res.json({ success: true, updated, failed });
     } catch (error) {
       console.error('Sync NPC positions error:', error);
       return res.status(500).json({ error: 'Failed to sync npc positions' });
