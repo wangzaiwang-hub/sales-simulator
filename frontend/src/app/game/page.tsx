@@ -224,16 +224,30 @@ async function fetchGameApi(path: string, init?: RequestInit) {
     ? `/.netlify/functions/api-proxy?path=${encodeURIComponent(path)}`
     : `${normalizedApiBase}${path}`;
 
-  try {
-    return await fetch(primaryUrl, init);
-  } catch (error) {
-    if (normalizedApiBase || useNetlifyProxy) {
-      throw error;
-    }
-
+  const fetchDirectBackend = () => {
     const fallbackUrl = `${fallbackApiUrl}${path}`;
     console.warn(`Primary API request failed, fallback to direct backend: ${fallbackUrl}`);
     return fetch(fallbackUrl, init);
+  };
+
+  try {
+    const response = await fetch(primaryUrl, init);
+
+    if (useNetlifyProxy && (response.status === 502 || response.status === 504)) {
+      return fetchDirectBackend();
+    }
+
+    return response;
+  } catch (error) {
+    if (useNetlifyProxy) {
+      return fetchDirectBackend();
+    }
+
+    if (normalizedApiBase) {
+      throw error;
+    }
+
+    return fetchDirectBackend();
   }
 }
 
@@ -546,58 +560,6 @@ export default function GamePage() {
   const mapRosterSyncInFlightRef = useRef(false);
 
   const selectedNpc = npcsRef.current.find((npc) => npc.id === selectedNpcId) || null;
-
-  // 定期更新NPC状态（每30秒）
-  useEffect(() => {
-    const token = getStoredAuthToken();
-    if (!token || !hasMap) return;
-
-    const updateNpcStates = async () => {
-      try {
-        const response = await fetchGameApi(`/api/game/npc-states-public`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        if (!response.ok) return;
-
-        const data = await response.json() as {
-          states: Array<{
-            npcId: string;
-            npcName: string;
-            currentMood: string;
-            activityStatus: string;
-            moodReason?: string | null;
-            activityDetail?: string | null;
-            recentStatusEvent?: string | null;
-          }>;
-        };
-
-        // 更新NPC状态
-        for (const state of data.states) {
-          const npc = npcsRef.current.find(n => n.id === state.npcId);
-          if (npc) {
-            npc.currentMood = state.currentMood;
-            npc.activityStatus = state.activityStatus;
-            npc.moodReason = state.moodReason ?? null;
-            npc.activityDetail = state.activityDetail ?? null;
-            npc.recentStatusEvent = state.recentStatusEvent ?? null;
-          }
-        }
-      } catch (error) {
-        console.error('Failed to update NPC states:', error);
-      }
-    };
-
-    // 立即执行一次
-    void updateNpcStates();
-
-    // 每30秒更新一次
-    const interval = setInterval(() => {
-      void updateNpcStates();
-    }, 30000);
-
-    return () => clearInterval(interval);
-  }, [hasMap]);
 
   useEffect(() => {
     const token = getStoredAuthToken();
@@ -2286,6 +2248,12 @@ export default function GamePage() {
         relationship: data?.relationship,
         aiEvaluation: data?.aiEvaluation,
       };
+
+      const npc = npcsRef.current.find((item) => item.id === selectedNpc.id);
+      if (npc && data?.aiEvaluation) {
+        npc.currentMood = data.aiEvaluation.newMood || npc.currentMood;
+        npc.activityStatus = data.aiEvaluation.newActivityStatus || npc.activityStatus;
+      }
 
       setChatMessages((prev) => ({
         ...prev,

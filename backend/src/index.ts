@@ -234,11 +234,19 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
   res.status(500).json({ error: 'Internal server error' });
 });
 
+let npcStateUpdateInFlight = false;
+
 app.listen(PORT, () => {
   console.log('Server running on port ' + PORT);
   console.log('Environment: ' + (process.env.NODE_ENV || 'development'));
   
   setInterval(async () => {
+    if (npcStateUpdateInFlight) {
+      console.log('Skipping NPC state update: previous run still in progress');
+      return;
+    }
+
+    npcStateUpdateInFlight = true;
     try {
       console.log('Updating NPC states...');
       const response = await fetch('http://localhost:' + PORT + '/api/game/update-npc-states-public', {
@@ -254,6 +262,8 @@ app.listen(PORT, () => {
       }
     } catch (error) {
       console.error('Failed to update NPC states:', error);
+    } finally {
+      npcStateUpdateInFlight = false;
     }
   }, 5 * 60 * 1000);
   
