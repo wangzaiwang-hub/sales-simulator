@@ -1208,6 +1208,26 @@ export const gameController = {
           relationship = newRelationship;
         }
 
+        // 加载聊天历史（接受和拒绝两条链路都会用到）
+        let chatHistory: Array<{ role: string; content: string; createdAt: string }> = [];
+        let memorySummaries: string[] = [];
+        try {
+          const history = await selectMany<Row>('ChatMessage', {
+            select: 'id,message,reply,createdAt,source,aiReasoning',
+            ...eq('userId', visitorUserId),
+            ...eq('targetUserId', ownerUserId),
+          });
+          
+          if (history && history.length > 0) {
+            const { conversations, summaries } = splitChatRows(history as any);
+            chatHistory = normalizeChatHistoryRows(conversations);
+            memorySummaries = extractMemorySummaries(summaries as any);
+            console.log(`📚 加载了 ${chatHistory.length} 条聊天历史用于上下文`);
+          }
+        } catch (error) {
+          console.warn('加载聊天历史失败，将使用无上下文模式:', error);
+        }
+
         // 判断是否接受互动
         const { shouldAcceptInteraction } = await import('../lib/relationshipSystem');
         
@@ -1246,7 +1266,9 @@ export const gameController = {
                 isFirstMeeting,
                 relationshipType: relationship?.relationshipType,
                 reason: acceptResult.rejectionType,
-              }
+              },
+              message,
+              chatHistory,
             );
             
             const aiReason = await generateRejectionWithAI(rejectionPrompt, userNpc.secondmeAccessToken);
@@ -1255,8 +1277,36 @@ export const gameController = {
               rejectionReason = aiReason;
             } else if (acceptResult.rejectionType) {
               // AI失败，使用回退方案
-              rejectionReason = fallbackRejectionReason(acceptResult.rejectionType);
+              rejectionReason = fallbackRejectionReason(acceptResult.rejectionType, {
+                userMessage: message,
+                npcName: userNpc.username,
+                isRepeatReject:
+                  chatHistory.slice(-2).some((entry) => entry.role === 'assistant' && /不想聊|改天再聊|有点累|不太想聊天/.test(entry.content)),
+              });
             }
+          }
+
+          try {
+            await insertRows<Row>('ChatMessage', {
+              id: crypto.randomUUID(),
+              userId: visitorUserId,
+              targetUserId: ownerUserId,
+              message,
+              reply: rejectionReason,
+              source: 'rejected',
+              affinity: relationship!.affinity,
+              familiarity: relationship!.familiarity,
+              relationshipType: relationship!.relationshipType,
+              affinityChange: 0,
+              familiarityChange: 0,
+              aiReasoning: `rejected:${acceptResult.rejectionType || 'unknown'}`,
+              npcMoodBefore: userNpc.currentMood || 'neutral',
+              npcMoodAfter: userNpc.currentMood || 'neutral',
+              npcStatusBefore: userNpc.activityStatus || 'idle',
+              npcStatusAfter: userNpc.activityStatus || 'idle',
+            });
+          } catch (saveRejectError) {
+            console.warn('保存拒绝聊天记录失败:', saveRejectError);
           }
           
           return res.json({
@@ -1290,26 +1340,6 @@ export const gameController = {
               error instanceof Error ? error.message : error,
             );
           }
-        }
-
-        // 加载聊天历史（用于上下文）
-        let chatHistory: Array<{ role: string; content: string; createdAt: string }> = [];
-        let memorySummaries: string[] = [];
-        try {
-          const history = await selectMany<Row>('ChatMessage', {
-            select: 'id,message,reply,createdAt,source,aiReasoning',
-            ...eq('userId', visitorUserId),
-            ...eq('targetUserId', ownerUserId),
-          });
-          
-          if (history && history.length > 0) {
-            const { conversations, summaries } = splitChatRows(history as any);
-            chatHistory = normalizeChatHistoryRows(conversations);
-            memorySummaries = extractMemorySummaries(summaries as any);
-            console.log(`📚 加载了 ${chatHistory.length} 条聊天历史用于上下文`);
-          }
-        } catch (error) {
-          console.warn('加载聊天历史失败，将使用无上下文模式:', error);
         }
 
         // 生成NPC回复

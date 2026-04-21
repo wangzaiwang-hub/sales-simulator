@@ -4,6 +4,18 @@ export type AIRejectionResult = {
   reason: string; // AI生成的拒绝理由
 };
 
+type RejectionHistoryMessage = {
+  role: string;
+  content: string;
+  createdAt?: string;
+};
+
+type FallbackRejectionOptions = {
+  userMessage?: string;
+  npcName?: string;
+  isRepeatReject?: boolean;
+};
+
 // 构建AI拒绝理由提示词
 export function buildRejectionPrompt(
   npcName: string,
@@ -21,7 +33,9 @@ export function buildRejectionPrompt(
     isFirstMeeting: boolean;
     relationshipType?: string;
     reason: 'social_anxiety' | 'introverted' | 'nervous' | 'conservative' | 'bad_mood' | 'busy' | 'tired' | 'unfriendly' | 'enemy' | 'random';
-  }
+  },
+  userMessage?: string,
+  recentHistory: RejectionHistoryMessage[] = [],
 ): string {
   const { profession, interests, personaSummary, personalityTraits } = npcPersonality;
   const { currentMood, activityStatus } = currentState;
@@ -51,6 +65,11 @@ export function buildRejectionPrompt(
     random: '你现在不太想聊天',
   };
   
+  const recentDialogue = recentHistory
+    .slice(-4)
+    .map((item) => `${item.role === 'assistant' ? npcName : '对方'}：${item.content}`)
+    .join('\n');
+
   const prompt = `你是${npcName}，一个真实的人。有人想和你聊天，但你现在不想接受。
 
 【你的背景】
@@ -70,17 +89,26 @@ ${traits ? `- 性格特征：
 【情况】
 ${reasonDescriptions[reason]}
 
+【对方刚说的话】
+${userMessage || '（未提供）'}
+
+${recentDialogue ? `【刚才你们的对话】
+${recentDialogue}
+` : ''}
+
 【任务】
-请以${npcName}的视角，用1-2句话礼貌地拒绝对方的聊天请求。
+请以${npcName}的视角，用1-2句话礼貌地拒绝对方这一次的聊天请求。
 
 要求：
 1. 要符合你的性格特征
 2. 要真实、自然，不要太生硬
-3. 可以简短，也可以稍微解释一下原因
+3. 可以简短，也可以稍微解释一下原因，但要接住对方刚刚那句话
 4. 不要太冷漠，保持基本的礼貌
 5. 根据你的性格，可以直接一点或委婉一点
+6. 不要输出任何标题、分点、括号说明、设定复述
+7. 不要重复固定句式，例如“改天再聊吧”连续说两次
 
-请直接回复拒绝的话（不要JSON格式，直接说话）：
+请直接回复拒绝的话（不要JSON，不要解释）：
 
 示例1（内向社恐）：
 "不好意思，我不太习惯和陌生人说话..."
@@ -100,6 +128,17 @@ ${reasonDescriptions[reason]}
 请根据你的性格和情况，给出真实的拒绝理由：`;
 
   return prompt;
+}
+
+function sanitizeGeneratedRejection(raw: string) {
+  return raw
+    .replace(/^\s*#{1,6}.*$/gm, '')
+    .replace(/^\s*【.*】\s*$/gm, '')
+    .replace(/^\s*背景与身份.*$/gm, '')
+    .replace(/^\s*目前处于.*$/gm, '')
+    .replace(/\n{2,}/g, '\n')
+    .trim()
+    .replace(/^["'“”]+|["'“”]+$/g, '');
 }
 
 // 调用SecondMe API生成拒绝理由
@@ -171,15 +210,9 @@ export async function generateRejectionWithAI(
     }
 
     // 移除可能的引号
-    let reason = content;
-    if (reason.startsWith('"') && reason.endsWith('"')) {
-      reason = reason.slice(1, -1);
-    }
-    if (reason.startsWith('"') && reason.endsWith('"')) {
-      reason = reason.slice(1, -1);
-    }
+    const reason = sanitizeGeneratedRejection(content);
 
-    return reason;
+    return reason || null;
   } catch (error) {
     console.error('AI rejection generation error:', error);
     return null;
@@ -188,8 +221,33 @@ export async function generateRejectionWithAI(
 
 // 回退方案：基于规则的拒绝理由
 export function fallbackRejectionReason(
-  reason: 'social_anxiety' | 'introverted' | 'nervous' | 'conservative' | 'bad_mood' | 'busy' | 'tired' | 'unfriendly' | 'enemy' | 'random'
+  reason: 'social_anxiety' | 'introverted' | 'nervous' | 'conservative' | 'bad_mood' | 'busy' | 'tired' | 'unfriendly' | 'enemy' | 'random',
+  options: FallbackRejectionOptions = {},
 ): string {
+  const message = options.userMessage?.trim() || '';
+  const repeated = options.isRepeatReject;
+
+  if (/怎么了|咋了|怎么回事|怎么啦/.test(message)) {
+    if (reason === 'tired') {
+      return repeated ? '还是有点撑不住，想先歇一会儿，晚点再说。' : '没什么大事，就是我现在有点累，想先缓一缓。';
+    }
+    if (reason === 'bad_mood') {
+      return repeated ? '就还是提不起劲，今天不太想多说。' : '情绪有点低，我现在不太想展开聊。';
+    }
+    if (reason === 'busy') {
+      return repeated ? '手上的事还没弄完，我得先顾这边。' : '这会儿手头卡着事，我得先处理一下。';
+    }
+  }
+
+  if (/在干嘛|做什么|忙什么/.test(message)) {
+    if (reason === 'busy') {
+      return '我这边正忙着呢，先不细聊了。';
+    }
+    if (reason === 'tired') {
+      return '没忙什么，就是状态有点掉下来了，想安静会儿。';
+    }
+  }
+
   const fallbackReasons: Record<typeof reason, string[]> = {
     social_anxiety: [
       '不好意思，我不太习惯和陌生人说话...',
@@ -234,5 +292,6 @@ export function fallbackRejectionReason(
   };
 
   const reasons = fallbackReasons[reason];
-  return reasons[Math.floor(Math.random() * reasons.length)];
+  const offset = repeated ? 1 : 0;
+  return reasons[(Math.floor(Math.random() * reasons.length) + offset) % reasons.length];
 }
