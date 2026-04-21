@@ -1454,7 +1454,11 @@ export const gameController = {
         );
 
         // 尝试使用AI评估
-        let evaluation = await evaluateWithAI(evaluationPrompt, userNpc.secondmeAccessToken);
+        let evaluation = await evaluateWithAI(evaluationPrompt, userNpc.secondmeAccessToken, {
+          userMessage: message,
+          npcInterests: Array.isArray(userNpc.interests) ? userNpc.interests : [],
+          currentMood: userNpc.currentMood || 'neutral',
+        });
 
         // 如果AI评估失败，使用回退方案
         if (!evaluation) {

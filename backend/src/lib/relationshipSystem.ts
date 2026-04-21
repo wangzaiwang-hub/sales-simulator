@@ -61,21 +61,32 @@ export function calculateInitialAffinity(
   const similarityScore = 100 - (opennessDiff + extraversionDiff + agreeablenessDiff) / 3;
   
   // 宜人性高的人初始好感更高
-  const agreeablenessBonus = (person1Traits.agreeableness + person2Traits.agreeableness) / 4;
-  
-  // 心情影响第一印象
-  let moodModifier = 0;
-  if (person1Mood === 'happy' || person1Mood === 'excited') moodModifier += 10;
-  if (person1Mood === 'angry' || person1Mood === 'sad') moodModifier -= 10;
-  if (person2Mood === 'happy' || person2Mood === 'excited') moodModifier += 10;
-  if (person2Mood === 'angry' || person2Mood === 'sad') moodModifier -= 10;
-  
-  // 计算初始好感度（-20 到 40 范围，陌生人不会一开始就很高）
-  const initialAffinity = Math.round(
-    (similarityScore * 0.3 + agreeablenessBonus * 0.4 + moodModifier) * 0.4 - 20
-  );
-  
-  return Math.max(-20, Math.min(40, initialAffinity));
+  const agreeablenessScore = (person1Traits.agreeableness + person2Traits.agreeableness) / 2;
+
+  const moodToScore = (mood: Mood) => {
+    switch (mood) {
+      case 'happy':
+      case 'excited':
+        return 65;
+      case 'angry':
+      case 'sad':
+      case 'anxious':
+        return 40;
+      default:
+        return 50;
+    }
+  };
+
+  // 第一印象按 7:3 权重：
+  // 70% 看性格匹配和基础亲和度，30% 才看当下心情。
+  const personalityScore = similarityScore * 0.6 + agreeablenessScore * 0.4;
+  const moodScore = (moodToScore(person1Mood) + moodToScore(person2Mood)) / 2;
+  const weightedScore = personalityScore * 0.7 + moodScore * 0.3;
+
+  // 中性开局尽量靠近 0，避免一句“你好”之前就先掉很多好感。
+  const initialAffinity = Math.round((weightedScore - 50) * 0.45);
+
+  return Math.max(-8, Math.min(18, initialAffinity));
 }
 
 // 判断是否愿意接受社交（考虑关系）

@@ -9,6 +9,73 @@ export type AIEvaluationResult = {
   emotionalResponse: string; // 情绪反应描述
 };
 
+function isGreetingMessage(message: string) {
+  return /^(你好|您好|嗨|哈喽|hello|hi|早上好|中午好|晚上好|在吗)[!！,.，。?？~～\s]*$/i.test(message.trim());
+}
+
+function getMoodAffinityBias(currentMood: string) {
+  const mood = (currentMood || '').trim().toLowerCase();
+
+  if (/happy|excited|开心|兴奋|期待|愉快|高兴/.test(mood)) {
+    return 1;
+  }
+
+  if (/angry|sad|anxious|烦|焦虑|生气|难过|低落|疲惫|有点累|累/.test(mood)) {
+    return -2;
+  }
+
+  return 0;
+}
+
+function getMessageAffinitySignal(userMessage: string, npcInterests: string[]) {
+  const message = userMessage.trim();
+  const lower = message.toLowerCase();
+
+  let score = 0;
+
+  if (isGreetingMessage(message)) score += 1;
+  if (message.length > 12) score += 1;
+  if (message.length > 28) score += 1;
+
+  const topicMatch = npcInterests.some((interest) => lower.includes(String(interest).toLowerCase()));
+  if (topicMatch) score += 2;
+
+  if (/(关心|怎么了|咋了|辛苦|累不累|还好吗|心情|陪你|找你玩|别难过|抱抱)/.test(message)) {
+    score += 2;
+  }
+
+  if (/(谢谢|感谢|喜欢|棒|真好|开心|有趣|可爱|厉害)/.test(message)) {
+    score += 2;
+  }
+
+  if (/(讨厌|滚|闭嘴|有病|傻|笨|烦死|无聊|差劲)/.test(message)) {
+    score -= 4;
+  } else if (/(不好|不行|算了|没意思|无语|一般般)/.test(message)) {
+    score -= 2;
+  }
+
+  return Math.max(-6, Math.min(6, score));
+}
+
+export function rebalanceAffinityChange(
+  rawAffinityChange: number,
+  userMessage: string,
+  npcInterests: string[],
+  currentMood: string,
+) {
+  const messageSignal = getMessageAffinitySignal(userMessage, npcInterests);
+  const moodBias = getMoodAffinityBias(currentMood);
+  const messageDrivenScore = rawAffinityChange * 0.5 + messageSignal * 0.5;
+
+  let nextAffinityChange = Math.round(messageDrivenScore * 0.7 + moodBias * 0.3);
+
+  if (isGreetingMessage(userMessage) && nextAffinityChange < 0) {
+    nextAffinityChange = 0;
+  }
+
+  return Math.max(-8, Math.min(8, nextAffinityChange));
+}
+
 // 构建AI评估提示词
 export function buildEvaluationPrompt(
   npcName: string,
@@ -66,10 +133,12 @@ ${traits ? `- 性格特征：
 请以${npcName}的视角，真实地评估这次对话：
 
 1. 好感度变化（-10到+10）：
+   - 权重按 7:3 处理：70% 看对方这句话本身的内容、态度、是否有关心或共鸣；30% 才看你此刻的心情状态
    - 对方的话让你感觉如何？
    - 是否触及你感兴趣的话题？
    - 对话是否让你感到舒适/不适？
    - 考虑你的性格特征（外向/内向、友善/直率等）
+   - 如果对方只是正常礼貌地打招呼，不要一下给明显负分
 
 2. 熟悉度变化（0到+10）：
    - 这次对话让你对对方了解更多了吗？
@@ -127,7 +196,12 @@ ${traits ? `- 性格特征：
 // 调用SecondMe API进行评估
 export async function evaluateWithAI(
   prompt: string,
-  secondmeAccessToken?: string | null
+  secondmeAccessToken?: string | null,
+  context?: {
+    userMessage?: string;
+    npcInterests?: string[];
+    currentMood?: string;
+  },
 ): Promise<AIEvaluationResult | null> {
   if (!secondmeAccessToken) {
     return null;
@@ -205,7 +279,12 @@ export async function evaluateWithAI(
 
     // 验证和规范化结果
     return {
-      affinityChange: Math.max(-10, Math.min(10, Number(result.affinityChange) || 0)),
+      affinityChange: rebalanceAffinityChange(
+        Math.max(-10, Math.min(10, Number(result.affinityChange) || 0)),
+        context?.userMessage || '',
+        context?.npcInterests || [],
+        context?.currentMood || '',
+      ),
       familiarityChange: Math.max(0, Math.min(10, Number(result.familiarityChange) || 2)),
       newMood: String(result.newMood || '平静'),
       newActivityStatus: String(result.newActivityStatus || '闲逛'),
@@ -262,12 +341,13 @@ export function fallbackEvaluation(
   const negativeWords = ['不好', '差', '烂', '讨厌', '无聊', '糟糕'];
   const hasNegative = negativeWords.some(word => userMessage.includes(word));
   
-  // 计算好感度变化
-  let affinityChange = 0;
-  if (topicMatch) affinityChange += 2;
-  if (hasPositive) affinityChange += 2;
-  if (hasNegative) affinityChange -= 3;
-  if (userMessage.length > 20) affinityChange += 1;
+  // 先算一个基础分，再按“用户话语 70%，心情状态 30%”重平衡
+  let rawAffinityChange = 0;
+  if (topicMatch) rawAffinityChange += 2;
+  if (hasPositive) rawAffinityChange += 2;
+  if (hasNegative) rawAffinityChange -= 3;
+  if (userMessage.length > 20) rawAffinityChange += 1;
+  const affinityChange = rebalanceAffinityChange(rawAffinityChange, userMessage, npcInterests, currentMood);
   
   // 计算熟悉度变化
   let familiarityChange = 2; // 基础值
