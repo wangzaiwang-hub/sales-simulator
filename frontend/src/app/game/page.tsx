@@ -207,6 +207,9 @@ async function fetchGameApi(path: string, init?: RequestInit) {
   const useNetlifyProxy =
     typeof window !== "undefined" &&
     window.location.hostname.endsWith("netlify.app");
+  const preferDirectBackend =
+    useNetlifyProxy &&
+    /^\/api\/game\/(npc-chat|chat-history|map-roster|sync-npc-positions)(?:[/?]|$)/.test(path);
 
   const normalizedApiBase =
     typeof window !== "undefined" && apiUrl
@@ -220,34 +223,53 @@ async function fetchGameApi(path: string, init?: RequestInit) {
         })()
       : apiUrl;
 
+  const proxyUrl = `/.netlify/functions/api-proxy?path=${encodeURIComponent(path)}`;
+  const directUrl = `${fallbackApiUrl}${path}`;
+  const sameOriginUrl = `${normalizedApiBase}${path}`;
   const primaryUrl = useNetlifyProxy
-    ? `/.netlify/functions/api-proxy?path=${encodeURIComponent(path)}`
-    : `${normalizedApiBase}${path}`;
+    ? preferDirectBackend
+      ? directUrl
+      : proxyUrl
+    : sameOriginUrl;
+  const fallbackUrl = useNetlifyProxy
+    ? preferDirectBackend
+      ? proxyUrl
+      : directUrl
+    : directUrl;
 
-  const fetchDirectBackend = () => {
-    const fallbackUrl = `${fallbackApiUrl}${path}`;
-    console.warn(`Primary API request failed, fallback to direct backend: ${fallbackUrl}`);
-    return fetch(fallbackUrl, init);
+  const fetchWithLog = (url: string, reason: string) => {
+    console.warn(`${reason}: ${url}`);
+    return fetch(url, init);
   };
 
   try {
     const response = await fetch(primaryUrl, init);
 
     if (useNetlifyProxy && (response.status === 502 || response.status === 504)) {
-      return fetchDirectBackend();
+      return fetchWithLog(
+        fallbackUrl,
+        preferDirectBackend
+          ? "Direct backend request failed, fallback to Netlify proxy"
+          : "Primary API request failed, fallback to direct backend",
+      );
     }
 
     return response;
   } catch (error) {
     if (useNetlifyProxy) {
-      return fetchDirectBackend();
+      return fetchWithLog(
+        fallbackUrl,
+        preferDirectBackend
+          ? "Direct backend request threw, fallback to Netlify proxy"
+          : "Primary API request threw, fallback to direct backend",
+      );
     }
 
     if (normalizedApiBase) {
       throw error;
     }
 
-    return fetchDirectBackend();
+    return fetchWithLog(fallbackUrl, "Primary API request failed, fallback to direct backend");
   }
 }
 
