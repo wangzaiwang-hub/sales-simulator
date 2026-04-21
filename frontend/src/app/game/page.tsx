@@ -2580,7 +2580,7 @@ export default function GamePage() {
                           <span className="h-1 w-1 animate-bounce rounded-full bg-slate-800" style={{ animationDelay: "150ms" }} />
                           <span className="h-1 w-1 animate-bounce rounded-full bg-slate-800" style={{ animationDelay: "300ms" }} />
                         </div>
-                        <span className="font-game-readable text-[9px] font-medium text-slate-700">输入中...</span>
+                        <span className="font-game-readable text-[9px] font-medium text-slate-700">对方正在输入中...</span>
                       </div>
                     </div>
                   ) : (
@@ -2731,7 +2731,7 @@ export default function GamePage() {
                     }
                   }}
                   rows={2}
-                  placeholder={`给 ${selectedNpc.name} 发消息...`}
+                  placeholder={chatLoading ? `等待 ${selectedNpc.name} 回复...` : `给 ${selectedNpc.name} 发消息...`}
                   className="font-game-ui min-h-[44px] flex-1 resize-none rounded-[16px] border border-slate-200 bg-slate-50 px-3 py-2 text-[13px] text-slate-800 outline-none placeholder:text-slate-400 focus:border-cyan-400"
                   />
                 <button
@@ -2740,7 +2740,7 @@ export default function GamePage() {
                   onClick={() => void sendNpcMessage()}
                   className="rounded-[16px] bg-[#12d6df] px-4 py-2 text-[13px] font-semibold text-slate-950 transition disabled:cursor-not-allowed disabled:bg-slate-300"
                   >
-                  {chatLoading ? "发送中" : "发送"}
+                  {chatLoading ? "已发送" : "发送"}
                 </button>
               </div>
             </div>

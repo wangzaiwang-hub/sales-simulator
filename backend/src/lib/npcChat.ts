@@ -31,8 +31,8 @@ export type VisitorReplyResult = {
 let cachedAppAccessToken: { token: string; expiresAt: number } | null = null;
 const visitorSessionCache = new Map<string, { sessionId: string; wsUrl: string; updatedAt: number }>();
 const VISITOR_SESSION_TTL_MS = 1000 * 60 * 60 * 6; // 6h
-const SECONDME_HTTP_TIMEOUT_MS = 7000;
-const VISITOR_REPLY_TIMEOUT_MS = 8000;
+const SECONDME_HTTP_TIMEOUT_MS = 9000;
+const VISITOR_REPLY_TIMEOUT_MS = 12000;
 
 export function normalizeInterestList(value: ChatNpcProfile['interests']) {
   if (Array.isArray(value)) {
@@ -482,7 +482,7 @@ export async function requestSecondMeNpcReply(
     return await tryOnce(appAccessToken, 'app');
   } catch (appError) {
     const appErrorText = appError instanceof Error ? appError.message : String(appError);
-    if (!userAccessToken || /timeout/i.test(appErrorText)) {
+    if (!userAccessToken) {
       throw appError;
     }
     console.warn(
