@@ -57,6 +57,42 @@ function getMessageAffinitySignal(userMessage: string, npcInterests: string[]) {
   return Math.max(-6, Math.min(6, score));
 }
 
+function getRelationalTone(userMessage: string) {
+  const message = userMessage.trim();
+
+  const caring =
+    /(关心|怎么了|咋了|辛苦|累不累|还好吗|心情|陪你|找你玩|别难过|抱抱|心疼|照顾|休息|别太累|揉揉|给你揉|陪你聊|哄你)/.test(
+      message,
+    );
+  const flirty =
+    /(在我心里|土味情话|想你|喜欢你|撩|亲亲|抱抱|宝贝|宝宝|你真甜|你真可爱|你最好看|月亮不睡|星星|心都化了|为你|只对你)/.test(
+      message,
+    );
+  const hostile = /(讨厌|滚|闭嘴|有病|傻|笨|烦死|无聊|差劲)/.test(message);
+
+  return { caring, flirty, hostile };
+}
+
+function rebalanceFamiliarityChange(
+  rawFamiliarityChange: number,
+  userMessage: string,
+  npcInterests: string[],
+) {
+  const message = userMessage.trim();
+  const topicMatch = npcInterests.some((interest) => message.toLowerCase().includes(String(interest).toLowerCase()));
+  const { caring, flirty } = getRelationalTone(message);
+
+  let nextFamiliarityChange = rawFamiliarityChange;
+
+  if (message.length > 18) nextFamiliarityChange += 1;
+  if (message.length > 36) nextFamiliarityChange += 1;
+  if (topicMatch) nextFamiliarityChange += 1;
+  if (caring) nextFamiliarityChange += 2;
+  if (flirty) nextFamiliarityChange += 2;
+
+  return Math.max(1, Math.min(8, nextFamiliarityChange));
+}
+
 export function rebalanceAffinityChange(
   rawAffinityChange: number,
   userMessage: string,
@@ -65,12 +101,21 @@ export function rebalanceAffinityChange(
 ) {
   const messageSignal = getMessageAffinitySignal(userMessage, npcInterests);
   const moodBias = getMoodAffinityBias(currentMood);
-  const messageDrivenScore = rawAffinityChange * 0.5 + messageSignal * 0.5;
+  const { caring, flirty, hostile } = getRelationalTone(userMessage);
+  const messageDrivenScore = rawAffinityChange * 0.25 + messageSignal * 0.75;
 
   let nextAffinityChange = Math.round(messageDrivenScore * 0.7 + moodBias * 0.3);
 
   if (isGreetingMessage(userMessage) && nextAffinityChange < 0) {
     nextAffinityChange = 0;
+  }
+
+  if (!hostile && caring && nextAffinityChange < 2) {
+    nextAffinityChange = 2;
+  }
+
+  if (!hostile && flirty && nextAffinityChange < 3) {
+    nextAffinityChange = 3;
   }
 
   return Math.max(-8, Math.min(8, nextAffinityChange));
@@ -139,6 +184,7 @@ ${traits ? `- 性格特征：
    - 对话是否让你感到舒适/不适？
    - 考虑你的性格特征（外向/内向、友善/直率等）
    - 如果对方只是正常礼貌地打招呼，不要一下给明显负分
+   - 如果对方明显在关心你、安慰你、逗你开心，或者说了有点暧昧/土味情话，通常应该是正向加分，除非内容冒犯
 
 2. 熟悉度变化（0到+10）：
    - 这次对话让你对对方了解更多了吗？
@@ -285,7 +331,11 @@ export async function evaluateWithAI(
         context?.npcInterests || [],
         context?.currentMood || '',
       ),
-      familiarityChange: Math.max(0, Math.min(10, Number(result.familiarityChange) || 2)),
+      familiarityChange: rebalanceFamiliarityChange(
+        Math.max(0, Math.min(10, Number(result.familiarityChange) || 2)),
+        context?.userMessage || '',
+        context?.npcInterests || [],
+      ),
       newMood: String(result.newMood || '平静'),
       newActivityStatus: String(result.newActivityStatus || '闲逛'),
       reasoning: String(result.reasoning || ''),
@@ -340,6 +390,7 @@ export function fallbackEvaluation(
   // 检查消极词汇
   const negativeWords = ['不好', '差', '烂', '讨厌', '无聊', '糟糕'];
   const hasNegative = negativeWords.some(word => userMessage.includes(word));
+  const { caring, flirty } = getRelationalTone(userMessage);
   
   // 先算一个基础分，再按“用户话语 70%，心情状态 30%”重平衡
   let rawAffinityChange = 0;
@@ -350,14 +401,13 @@ export function fallbackEvaluation(
   const affinityChange = rebalanceAffinityChange(rawAffinityChange, userMessage, npcInterests, currentMood);
   
   // 计算熟悉度变化
-  let familiarityChange = 2; // 基础值
-  if (userMessage.length > 30) familiarityChange += 1;
-  if (userMessage.length > 50) familiarityChange += 1;
-  if (topicMatch) familiarityChange += 1;
+  const familiarityChange = rebalanceFamiliarityChange(2, userMessage, npcInterests);
   
   // 确定新心情
   let newMood = currentMood || '平静';
-  if (hasPositive && topicMatch) {
+  if (flirty || caring) {
+    newMood = '有点心动';
+  } else if (hasPositive && topicMatch) {
     newMood = '开心';
   } else if (hasNegative) {
     newMood = '有点失望';
@@ -366,14 +416,14 @@ export function fallbackEvaluation(
   }
   
   // 确定新状态
-  const newActivityStatus = topicMatch ? '继续聊天' : '思考中';
+  const newActivityStatus = flirty || caring ? '继续聊天' : topicMatch ? '继续聊天' : '思考中';
   
   return {
     affinityChange,
     familiarityChange,
     newMood,
     newActivityStatus,
-    reasoning: topicMatch ? '对方提到了我感兴趣的话题。' : '普通的对话。',
-    emotionalResponse: hasPositive ? '感觉还不错。' : '还行吧。',
+    reasoning: flirty || caring ? '对方的话明显带着关心和暧昧，我会更容易对TA有好感。' : topicMatch ? '对方提到了我感兴趣的话题。' : '普通的对话。',
+    emotionalResponse: flirty ? '这话听得我有点想笑，也有点被撩到。' : caring ? '能感觉到TA是在认真关心我。' : hasPositive ? '感觉还不错。' : '还行吧。',
   };
 }
