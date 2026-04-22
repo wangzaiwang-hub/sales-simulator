@@ -2574,13 +2574,13 @@ export default function GamePage() {
                 <div className="min-w-0 max-w-[180px] flex-1">
                   {chatLoading ? (
                     <div className="py-1 text-center">
-                      <div className="inline-flex items-center gap-1 rounded-full bg-white/30 px-2 py-1">
-                        <div className="flex gap-0.5">
+                      <div className="inline-flex flex-col items-center gap-1 rounded-full bg-white/30 px-3 py-1.5">
+                        <span className="font-game-readable text-[9px] font-medium text-slate-700">对方正在输入中</span>
+                        <div className="flex items-center justify-center gap-0.5">
                           <span className="h-1 w-1 animate-bounce rounded-full bg-slate-800" style={{ animationDelay: "0ms" }} />
                           <span className="h-1 w-1 animate-bounce rounded-full bg-slate-800" style={{ animationDelay: "150ms" }} />
                           <span className="h-1 w-1 animate-bounce rounded-full bg-slate-800" style={{ animationDelay: "300ms" }} />
                         </div>
-                        <span className="font-game-readable text-[9px] font-medium text-slate-700">对方正在输入中...</span>
                       </div>
                     </div>
                   ) : (
