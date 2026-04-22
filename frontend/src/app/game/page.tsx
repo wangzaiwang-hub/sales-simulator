@@ -312,6 +312,21 @@ function createPlayer(x: number, y: number): ActorState {
   };
 }
 
+function faceActorTowardTarget(actor: ActorState, target: Pick<ActorState, "x" | "y" | "width" | "height">) {
+  const actorCenterX = actor.x + actor.width / 2;
+  const actorCenterY = actor.y + actor.height / 2;
+  const targetCenterX = target.x + target.width / 2;
+  const targetCenterY = target.y + target.height / 2;
+  const deltaX = targetCenterX - actorCenterX;
+  const deltaY = targetCenterY - actorCenterY;
+
+  if (Math.abs(deltaX) >= Math.abs(deltaY)) {
+    actor.direction = deltaX >= 0 ? "Right" : "Left";
+  } else {
+    actor.direction = deltaY >= 0 ? "Front" : "Back";
+  }
+}
+
 const GROUP_DEPTH_OFFSET = 3;
 
 function hydrateNpcRoster(npcs: NpcState[] | undefined, tileSize: number, mapWidth: number, mapHeight: number) {
@@ -577,11 +592,33 @@ export default function GamePage() {
   const chatScrollRef = useRef<HTMLDivElement>(null);
   const joystickVectorRef = useRef({ x: 0, y: 0 });
   const joystickPointerIdRef = useRef<number | null>(null);
+  const selectedNpcIdRef = useRef<string | null>(null);
   const npcSyncInFlightRef = useRef(false);
   const lastNpcSyncSignatureRef = useRef("");
   const mapRosterSyncInFlightRef = useRef(false);
 
   const selectedNpc = npcsRef.current.find((npc) => npc.id === selectedNpcId) || null;
+
+  useEffect(() => {
+    selectedNpcIdRef.current = selectedNpcId;
+
+    if (!selectedNpcId) {
+      return;
+    }
+
+    keysRef.current = {};
+    joystickPointerIdRef.current = null;
+    joystickVectorRef.current = { x: 0, y: 0 };
+    setJoystick({ active: false, x: 0, y: 0 });
+    playerRef.current.isMoving = false;
+
+    const chattingNpc = npcsRef.current.find((npc) => npc.id === selectedNpcId);
+    if (chattingNpc) {
+      chattingNpc.isMoving = false;
+      faceActorTowardTarget(playerRef.current, chattingNpc);
+      faceActorTowardTarget(chattingNpc, playerRef.current);
+    }
+  }, [selectedNpcId]);
 
   useEffect(() => {
     const token = getStoredAuthToken();
@@ -1702,6 +1739,12 @@ export default function GamePage() {
     };
 
     const updatePlayer = () => {
+      if (selectedNpcIdRef.current) {
+        playerRef.current.isMoving = false;
+        updateAnimationFrame(playerRef.current);
+        return;
+      }
+
       let inputX = 0;
       let inputY = 0;
 
@@ -1775,8 +1818,15 @@ export default function GamePage() {
 
     const updateNpcs = () => {
       const directions: Direction[] = ["Front", "Back", "Left", "Right"];
+      const chattingNpcId = selectedNpcIdRef.current;
 
       for (const npc of npcsRef.current) {
+        if (chattingNpcId && npc.id === chattingNpcId) {
+          npc.isMoving = false;
+          updateAnimationFrame(npc);
+          continue;
+        }
+
         npc.moveTimer += 1;
 
         if (npc.moveTimer >= npc.moveInterval) {
